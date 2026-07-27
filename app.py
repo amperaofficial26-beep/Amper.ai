@@ -74,7 +74,7 @@ st.markdown(
 
 # Layout Sidebar untuk Kontrol Lightroom
 with st.sidebar:
-  st.markdown("## 🎛️ Lightroom Control Panel")
+  st.markdown("## 🎛️ Ampera-AI PRO Control Panel")
 
   st.markdown("### 1. Light & Exposure")
   exposure = st.slider(
