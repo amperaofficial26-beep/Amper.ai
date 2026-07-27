@@ -1,229 +1,122 @@
-import streamlit as st
+import base64
+import io
 import cv2
 import numpy as np
 from PIL import Image
-import io
-import base64
+import streamlit as st
 
-st.set_page_config(page_title="AMPER.AI -  Pro Editing", page_icon="👌", layout="wide")
+st.set_page_config(page_title="AMPER.AI", page_icon="⚡", layout="centered")
 
-# Fungsi Background & Styling Profesional
+
+# Fungsi untuk mengubah gambar lokal agar bisa dibaca CSS sebagai Background Base64
 def set_background(image_file):
-    try:
-        with open(image_file, "rb") as f:
-            encoded = base64.b64encode(f.read()).decode()
-        css = f"""
-        <style>
-        .stApp {{
-            background-image: linear-gradient( rgba(10, 10, 10, 0.90), rgba(10, 10, 10, 0.90) ), url("data:image/jpeg;base64,{encoded}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            color: #e0e0e0;
-        }}
-        h1, h2, h3 {{ color: #ffd700 !important; font-family: 'serif'; }}
-        .stButton>button {{
-            background: linear-gradient(90deg, #b8860b, #ffd700);
-            color: #000000;
-            font-weight: bold;
-            border-radius: 8px;
-            border: none;
-            padding: 0.6em 1.2em;
-            transition: all 0.3s ease;
-        }}
-        .stButton>button:hover {{
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-        }}
-        .css-1544g2n {{ padding-top: 2rem; }}
-        </style>
-        """
-        st.markdown(css, unsafe_allow_html=True)
-    except:
-        css = """
-        <style>
-        .stApp {{
-            background-color: #0e0e0e;
-            color: #e0e0e0;
-        }}
-        h1, h2, h3 {{ color: #ffd700 !important; font-family: 'serif'; }}
-        .stButton>button {{
-            background: linear-gradient(90deg, #b8860b, #ffd700);
-            color: #000000;
-            font-weight: bold;
-            border-radius: 8px;
-            border: none;
-        }}
-        </style>
-        """
-        st.markdown(css, unsafe_allow_html=True)
+  with open(image_file, "rb") as f:
+    encoded = base64.b64encode(f.read()).decode()
 
-set_background("bg_amper.jpg")
+  css = f"""
+    <style>
+    .stApp {{
+        background-image: linear-gradient( rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8) ), url("data:image/jpeg;base64,{encoded}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: #d4af37;
+    }
+    h1, h2, h3 {{ color: #ffd700 !important; font-family: 'serif'; }}
+    .stButton>button {{
+        background: linear-gradient(90deg, #b8860b, #ffd700);
+        color: #000000;
+        font-weight: bold;
+        border-radius: 8px;
+        border: none;
+    }
+    </style>
+    """
+  st.markdown(css, unsafe_allow_html=True)
 
-# Header Aplikasi
-st.title("🎚️ AMPER.AI — Professional Editing & 4K Upscaler Suite")
-st.markdown("<p style='color: #a3a3a3; font-size: 1.1em;'>Platform pengolahan foto pintar berstandar industri dengan kontrol parameter lengkap & AI Upscaling.</p>", unsafe_allow_html=True)
 
-# Layout Utama: Sidebar untuk Kontrol, Area Utama untuk Preview & Hasil
-with st.sidebar:
-    st.markdown("## 🎛️ Ampera-Pro Control Panel")
-    
-    st.markdown("### 1. Light & Exposure")
-    exposure = st.slider("Exposure", -2.0, 2.0, 0.0, 0.1, help="Menyesuaikan keseluruhan pencahayaan")
-    contrast = st.slider("Contrast", -50, 50, 10, 1, help="Mempertajam perbedaan terang dan gelap")
-    highlights = st.slider("Highlights", -100, 100, -20, 1, help="Mengatur area paling terang")
-    shadows = st.slider("Shadows", -100, 100, 25, 1, help="Mengangkat detail pada area gelap")
-    whites = st.slider("Whites", -50, 50, 0, 1)
-    blacks = st.slider("Blacks", -50, 50, 0, 1)
+# Panggil fungsi background (Pastikan nama file gambarnya sesuai di folder proyekmu)
+# Tips: Ubah nama file gambar yang kamu upload menjadi 'bg_amper.jpg' dan simpan sefolder dengan app.py
+try:
+  set_background("bg_amper.jpg")
+except:
+  pass  # Fallback jika gambar belum dimasukkan
 
-    st.markdown("### 2. Color & White Balance")
-    temp = st.slider("Temperature (Kelvin/Tint)", -50, 50, -5, 1, help="Nuansa warna Hangat (Kuning) ke Dingin (Biru)")
-    tint = st.slider("Tint", -50, 50, 0, 1, help="Nuansa Hijau ke Magenta")
-    vibrance = st.slider("Vibrance", -50, 50, 15, 1, help="Menaikkan warna yang belum jenuh")
-    saturation = st.slider("Saturation", -50, 50, 10, 1, help="Kepadatan warna keseluruhan")
+st.title("⚡ AMPER.AI")
+st.markdown(
+    "<p style='color: #a3a3a3;'>Next-Gen Local Image & Video Upscaler</p>",
+    unsafe_allow_html=True,
+)
 
-    st.markdown("### 3. Detail, Clarity & Effects")
-    clarity = st.slider("Clarity / Texture", -50, 50, 20, 1, help="Mempertegas kontras midtone/tekstur")
-    dehaze = st.slider("Dehaze", -50, 50, 10, 1, help="Menghilangkan kabut/asap tipis")
-    sharpen = st.slider("Sharpening HD", 0, 100, 30, 1, help="Mempertajam detail tepi objek")
-    vignette = st.slider("Vignette (Cinematic Edge)", 0, 100, 25, 1, help="Memberikan bayangan artistik di tepi foto")
-    
-    st.markdown("---")
-    upscale_choice = st.selectbox("Resolution Upscaling", ["2x (HD Standard)", "4x (Ultra HD 4K)"], index=0)
-    process_btn = st.button("⬆️ Terapkan & Render Instan")
-
-# Upload Foto
-uploaded_file = st.file_uploader("📂 Unggah File Foto Kamu (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader(
+    "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
+)
 
 if uploaded_file is not None:
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-    
-    # Tampilkan Preview Perbandingan (Sebelum & Sesudah secara real-time / setelah klik render)
-    col_orig, col_res = st.columns(2)
-    
-    with col_orig:
-        st.subheader("📷 Foto Asli")
-        st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_column_width=True)
+  # Baca gambar menggunakan OpenCV
+  file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+  img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-    if process_btn or 'processed_img' not in st.session_state:
-        with st.spinner("✨ Sedang merender mesin AI & Upscaler AI,Sabar Ya....."):
-            # 1. Menentukan skala upscaling
-            scale_factor = 2 if "2x" in upscale_choice else 4
-            h, w = img.shape[:2]
-            upscaled = cv2.resize(img, (w * scale_factor, h * scale_factor), interpolation=cv2.INTER_LANCZOS4)
-            
-            # 2. Pipeline Proses Lightroom
-            # Konversi ke float untuk akurasi tinggi
-            img_f = upscaled.astype("float32") / 255.0
-            
-            # Exposure & Brightness
-            if exposure != 0.0:
-                img_f = img_f * (2.0 ** exposure)
-            
-            # Contrast
-            if contrast != 0:
-                f_contrast = (259 * (contrast + 255)) / (255 * (259 - contrast))
-                img_f = f_contrast * (img_f - 0.5) + 0.5
-            
-            img_f = np.clip(img_f, 0, 1)
-            
-            # Konversi ke LAB untuk manipulasi L-Channel (Highlights, Shadows, Whites, Blacks)
-            lab = cv2.cvtColor((img_f * 255).astype("uint8"), cv2.COLOR_BGR2LAB).astype("float32")
-            l_ch, a_ch, b_ch = cv2.split(lab)
-            l_norm = l_ch / 255.0
-            
-            # Highlights & Shadows Masking
-            if highlights != 0:
-                hl_mask = np.clip((l_norm - 0.5) * 2.0, 0, 1)
-                l_ch += highlights * 0.3 * hl_mask
-            if shadows != 0:
-                sh_mask = np.clip((0.5 - l_norm) * 2.0, 0, 1)
-                l_ch += shadows * 0.3 * sh_mask
-                
-            # Whites & Blacks
-            if whites != 0:
-                w_mask = np.clip(l_norm, 0, 1)
-                l_ch += whites * 0.2 * w_mask
-            if blacks != 0:
-                b_mask = np.clip(1.0 - l_norm, 0, 1)
-                l_ch += blacks * 0.2 * b_mask
-                
-            l_ch = np.clip(l_ch, 0, 255)
-            lab = cv2.merge([l_ch, a_ch, b_ch])
-            adjusted_bgr = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR).astype("float32") / 255.0
-            
-            # Temperature & Tint
-            if temp != 0:
-                adjusted_bgr[:, :, 0] -= temp * 0.002  # Blue channel
-                adjusted_bgr[:, :, 2] += temp * 0.002  # Red channel
-            if tint != 0:
-                adjusted_bgr[:, :, 1] += tint * 0.002  # Green channel
-            
-            adjusted_bgr = np.clip(adjusted_bgr, 0, 1)
-            
-            # Saturation & Vibrance (HSV)
-            hsv = cv2.cvtColor((adjusted_bgr * 255).astype("uint8"), cv2.COLOR_BGR2HSV).astype("float32")
-            if saturation != 0:
-                sat_mult = 1.0 + (saturation / 100.0)
-                hsv[:, :, 1] *= sat_mult
-            if vibrance != 0:
-                # Vibrance memengaruhi warna yang kurang jenuh lebih kuat
-                v_mask = 1.0 - (hsv[:, :, 1] / 255.0)
-                hsv[:, :, 1] += vibrance * 0.5 * v_mask
-                
-            hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
-            sat_adj = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR).astype("float32") / 255.0
-            
-            # Clarity, Dehaze & Sharpening (Unsharp Mask & Bilateral Filter blend)
-            if clarity != 0 or dehaze != 0 or sharpen > 0:
-                gray = cv2.cvtColor((sat_adj * 255).astype("uint8"), cv2.COLOR_BGR2GRAY).astype("float32") / 255.0
-                
-                # Dehaze simulation via local contrast enhancement
-                if dehaze != 0:
-                    dark_channel = cv2.min(cv2.min(sat_adj[:,:,0], sat_adj[:,:,1]), sat_adj[:,:,2])
-                    dehaze_mask = 1.0 - (dark_channel * (dehaze / 50.0))
-                    sat_adj = sat_adj * np.dstack([dehaze_mask, dehaze_mask, dehaze_mask])
-                
-                # Clarity & Sharpening via Unsharp Mask
-                blur_radius = max(1, int(sat_adj.shape[0] / 200)) * 2 + 1
-                gaussian = cv2.GaussianBlur(sat_adj, (blur_radius, blur_radius), 0)
-                sharp_weight = (sharpen + abs(clarity)) / 40.0
-                sat_adj = cv2.addWeighted(sat_adj, 1.0 + sharp_weight, gaussian, -sharp_weight, 0)
-                sat_adj = np.clip(sat_adj, 0, 1)
+  st.image(
+      cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
+      caption="Foto Asli",
+      use_container_width=True,
+  )
 
-            # Vignette Effect
-            if vignette > 0:
-                rows, cols = sat_adj.shape[:2]
-                kernel_x = cv2.getGaussianKernel(cols, cols / 1.5)
-                kernel_y = cv2.getGaussianKernel(rows, rows / 1.5)
-                kernel = kernel_y * kernel_x.T
-                mask = kernel / kernel.max()
-                v_factor = vignette / 100.0
-                mask = np.power(mask, 1.0 - v_factor * 0.4)
-                mask = np.dstack([mask, mask, mask])
-                sat_adj = np.clip(sat_adj * mask, 0, 1)
+  if st.button("🚀 Proses Upscaling ke 4K"):
+    with st.spinner(
+        "Sedang memproses (Saturasi: 45, Suhu: 15, Ketajaman: 30)..."
+    ):
+      # 1. Resize gambar (Skala 2x)
+      height, width = img.shape[:2]
+      scale_factor = 2
+      new_width = width * scale_factor
+      new_height = height * scale_factor
 
-            final_bgr = (sat_adj * 255).astype("uint8")
-            st.session_state['processed_img'] = cv2.cvtColor(final_bgr, cv2.COLOR_BGR2RGB)
+      upscaled = cv2.resize(
+          img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
+      )
 
-    with col_res:
-        st.subheader("✨ Hasil Ampera Pro & Upscaled")
-        if 'processed_img' in st.session_state:
-            st.image(st.session_state['processed_img'], use_column_width=True)
-            
-            # Tombol Download
-            result_pil = Image.fromarray(st.session_state['processed_img'])
-            buf = io.BytesIO()
-            result_pil.save(buf, format="JPEG", quality=95)
-            byte_im = buf.getvalue()
-            
-            st.download_button(
-                label="📥 Unduh Foto HD kamu (JPEG)",
-                data=byte_im,
-                file_name="amper_ai_pro.jpg",
-                mime="image/jpeg",
-                use_container_width=True
-            )
-else:
-    st.info("👆 Silakan unggah foto terlebih dahulu melalui tombol di atas untuk mulai menggunakan suite lengkap Ampera-AI & Upscaler.")
+      # 2. Atur Saturasi (Nilai tetap 45%)
+      hsv = cv2.cvtColor(upscaled, cv2.COLOR_BGR2HSV).astype("float32")
+      hsv[:, :, 1] = hsv[:, :, 1] * 0.45
+      hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
+      saturated = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
+
+      # 3. Atur Suhu Warna / Temperature (Nilai tetap 15)
+      temp_val = 15
+      lab = cv2.cvtColor(saturated, cv2.COLOR_BGR2LAB).astype("float32")
+      lab[:, :, 2] += temp_val
+      lab = np.clip(lab, 0, 255)
+      temp_adjusted = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR)
+
+      # 4. Efek Halus (Denoise)
+      smoothed = cv2.bilateralFilter(
+          temp_adjusted, d=9, sigmaColor=75, sigmaSpace=75
+      )
+
+      # 5. Efek Ketajaman (Nilai tetap 30)
+      sharp_weight = 3.0
+      gaussian = cv2.GaussianBlur(smoothed, (0, 0), 3.0)
+      sharpened = cv2.addWeighted(
+          smoothed, 1.0 + sharp_weight, gaussian, -sharp_weight, 0
+      )
+
+      # Konversi kembali ke RGB untuk Streamlit
+      final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
+
+    st.success("✨ Selesai diproses dengan parameter kustom!")
+    st.image(final_image, caption="Hasil Upscaled 4K")
+
+    # Tombol Download
+    result_pil = Image.fromarray(final_image)
+    buf = io.BytesIO()
+    result_pil.save(buf, format="JPEG", quality=95)
+    byte_im = buf.getvalue()
+
+    st.download_button(
+        label="📥 Download Foto 4K",
+        data=byte_im,
+        file_name="amper_ai_4k.jpg",
+        mime="image/jpeg",
+    )
