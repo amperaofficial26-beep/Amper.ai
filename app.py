@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 
-st.set_page_config(page_title="AMPER.AI", page_icon="📸", layout="centered")
+st.set_page_config(page_title="AMPER.AI", page_icon="⚡", layout="centered")
 
 
 # Fungsi Background
@@ -66,14 +66,14 @@ try:
 except:
   pass
 
-st.title("📷 AMPER.AI")
+st.title("⚡ AMPER.AI")
 st.markdown(
     "<p style='color: #a3a3a3;'>Next-Gen Local Image & Video Upscaler</p>",
     unsafe_allow_html=True,
 )
 
 uploaded_file = st.file_uploader(
-    "Letak Foto Kamu Disini (JPG/PNG)", type=["jpg", "jpeg", "png"]
+    "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
@@ -86,7 +86,7 @@ if uploaded_file is not None:
       use_column_width=True,
   )
 
-  if st.button("🪛🪛Proses Upscaling & Auto Preset HD"):
+  if st.button("🚀 Proses Upscaling & Auto Preset HD"):
     with st.spinner("Sedang menerapkan preset otomatis dan upscaling 4K..."):
       height, width = img.shape[:2]
       scale_factor = 2
@@ -157,8 +157,8 @@ if uploaded_file is not None:
 
       final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
-    st.success("✨ Selesai,Selamat Fotonya udah jadi..🥳🥳!")
-    st.image(final_image, caption="(AFTER)Hasil Peningkatan Gambar..."
+    st.success("✨ Selesai diproses secara otomatis dengan preset HD!")
+    st.image(final_image, caption="Hasil Upscaled 4K")
 
     result_pil = Image.fromarray(final_image)
     buf = io.BytesIO()
@@ -166,7 +166,7 @@ if uploaded_file is not None:
     byte_im = buf.getvalue()
 
     st.download_button(
-        label="📥 Mau Di-Downlaod Fotonya,Silahkan....",
+        label="📥 Download Foto 4K",
         data=byte_im,
         file_name="amper_ai_4k.jpg",
         mime="image/jpeg",
