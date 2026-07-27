@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 
-st.set_page_config(page_title="AMPER.AI", page_icon="⚡", layout="centered")
+st.set_page_config(page_title="AMPER.AI", page_icon="👾", layout="centered")
 
 
 # Fungsi Background
@@ -73,7 +73,7 @@ st.markdown(
 )
 
 uploaded_file = st.file_uploader(
-    "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
+    "Letak Foto Kamu disini.. (JPG/PNG)", type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
@@ -82,7 +82,7 @@ if uploaded_file is not None:
 
   st.image(
       cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
-      caption="asli",
+      caption="Before....",
       use_column_width=True,
   )
 
@@ -101,8 +101,8 @@ if uploaded_file is not None:
       # 2. Nilai Preset Otomatis (Hardcoded sesuai resep)
       exposure_val = -12
       brightness_val = -23
-      contrast_val = 7
-      saturation_val = 15
+      contrast_val = 10
+      saturation_val = 30
       temp_val = -16
       sharpen_val = 16
       clarity_val = 13
@@ -146,7 +146,7 @@ if uploaded_file is not None:
       final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
     st.success("✨ Selesai,Selamat Foto Kamu Udah Jadi....!")
-    st.image(final_image, caption="Hasil Gambar Lebih Baik")
+    st.image(final_image, caption="(After) Hasil Gambar Lebih Baik....")
 
     result_pil = Image.fromarray(final_image)
     buf = io.BytesIO()
@@ -154,7 +154,7 @@ if uploaded_file is not None:
     byte_im = buf.getvalue()
 
     st.download_button(
-        label="📥 Download Foto 4K",
+        label="📥 Mau Di-Download Foto 4K Nya...,Silahkan.",
         data=byte_im,
         file_name="amper_ai_4k.jpg",
         mime="image/jpeg",
