@@ -1,6 +1,6 @@
-Import base64
-import cv2
+import base64
 import io
+import cv2
 import numpy as np
 from PIL import Image
 import streamlit as st
@@ -86,8 +86,19 @@ if uploaded_file is not None:
       use_column_width=True,
   )
 
-  if st.button("🚀 Proses Upscaling & Auto Preset HD"):
-    with st.spinner("Sedang menerapkan preset otomatis dan upscaling 4K..."):
+  # Tambahan Sidebar/Pilihan Efek ala Lightroom di Streamlit
+  st.markdown("### 🎛️ Pengaturan Efek Lightroom")
+  col1, col2 = st.columns(2)
+  with col1:
+    preset_highlights = st.slider("Highlights", -50, 50, -15)
+    preset_shadows = st.slider("Shadows", -50, 50, 20)
+  with col2:
+    vignette_strength = st.slider(
+        "Vignette (Efek Pinggiran Gelap)", 0, 100, 35
+    )
+
+  if st.button("🚀 Proses Upscaling & Lightroom Preset HD"):
+    with st.spinner("Sedang menerapkan efek Lightroom & Upscaling 4K..."):
       height, width = img.shape[:2]
       scale_factor = 2
       new_width = width * scale_factor
@@ -98,19 +109,15 @@ if uploaded_file is not None:
           img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
       )
 
-      # ==========================================
-      # TAMBAHAN: PENYESUAIAN OTOMATIS (AUTO-ENHANCE)
-      # ==========================================
-      # Menerapkan CLAHE secara otomatis untuk menyeimbangkan kecerahan & detail bayangan
+      # 2. Auto-Enhance CLAHE (Dasar Kejernihan)
       lab_auto = cv2.cvtColor(upscaled, cv2.COLOR_BGR2LAB)
       l_auto, a_auto, b_auto = cv2.split(lab_auto)
       clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
       l_auto = clahe.apply(l_auto)
       lab_auto = cv2.merge((l_auto, a_auto, b_auto))
       upscaled = cv2.cvtColor(lab_auto, cv2.COLOR_LAB2BGR)
-      # ==========================================
 
-      # 2. Nilai Preset Otomatis (Hardcoded sesuai resep)
+      # 3. Nilai Preset Dasar
       exposure_val = -12
       brightness_val = -23
       contrast_val = 7
@@ -118,9 +125,8 @@ if uploaded_file is not None:
       temp_val = -16
       sharpen_val = 16
       clarity_val = 13
-      structure_val = -13
 
-      # 3. Exposure, Brightness & Contrast (LAB L-Channel)
+      # 4. Exposure, Brightness & Contrast (LAB L-Channel)
       lab = cv2.cvtColor(upscaled, cv2.COLOR_BGR2LAB).astype("float32")
       l_channel, a_channel, b_channel = cv2.split(lab)
 
@@ -129,24 +135,41 @@ if uploaded_file is not None:
         factor = (259 * (contrast_val + 255)) / (255 * (259 - contrast_val))
         l_channel = factor * (l_channel - 128) + 128
 
+      # --- EFEK LIGHTROOM: HIGHLIGHTS & SHADOWS ---
+      # Menyesuaikan bagian terang (highlights) dan bagian gelap (shadows) secara terpisah
+      l_normalized = l_channel / 255.0
+      # Highlights adjustment
+      l_channel = np.where(
+          l_normalized > 0.6,
+          l_channel + (preset_highlights * (l_normalized - 0.6)),
+          l_channel,
+      )
+      # Shadows adjustment
+      l_channel = np.where(
+          l_normalized < 0.4,
+          l_channel + (preset_shadows * (0.4 - l_normalized)),
+          l_channel,
+      )
+      # ---------------------------------------------
+
       l_channel = np.clip(l_channel, 0, 255)
       lab = cv2.merge([l_channel, a_channel, b_channel])
       adjusted = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR)
 
-      # 4. Temperature (Temp)
+      # 5. Temperature (Temp)
       lab_temp = cv2.cvtColor(adjusted, cv2.COLOR_BGR2LAB).astype("float32")
       lab_temp[:, :, 2] += temp_val * 0.5
       lab_temp = np.clip(lab_temp, 0, 255)
       temp_adjusted = cv2.cvtColor(lab_temp.astype("uint8"), cv2.COLOR_LAB2BGR)
 
-      # 5. Saturation
+      # 6. Saturation
       hsv = cv2.cvtColor(temp_adjusted, cv2.COLOR_BGR2HSV).astype("float32")
       sat_multiplier = 1.0 + (saturation_val / 100.0)
       hsv[:, :, 1] = hsv[:, :, 1] * sat_multiplier
       hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
       color_adjusted = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
 
-      # 6. Structure, Clarity & Sharpen (Unsharp Masking)
+      # 7. Structure, Clarity & Sharpen (Unsharp Masking)
       gaussian = cv2.GaussianBlur(
           color_adjusted, (0, 0), max(1.0, abs(clarity_val) / 3.0)
       )
@@ -155,10 +178,28 @@ if uploaded_file is not None:
           color_adjusted, 1.0 + sharp_weight, gaussian, -sharp_weight, 0
       )
 
+      # --- EFEK LIGHTROOM: VIGNETTE (Pinggiran Gelap Sinematik) ---
+      if vignette_strength > 0:
+        rows, cols = sharpened.shape[:2]
+        kernel_x = cv2.getGaussianKernel(cols, cols / 1.5)
+        kernel_y = cv2.getGaussianKernel(rows, rows / 1.5)
+        kernel = kernel_y * kernel_x.T
+        mask = kernel / kernel.max()
+
+        # Buat vignette berdasarkan kekuatan slider
+        vignette_factor = vignette_strength / 100.0
+        mask = np.power(mask, 1.0 - vignette_factor * 0.5)
+        mask = np.dstack([mask, mask, mask])
+
+        sharpened = np.clip(
+            sharpened.astype(np.float32) * mask, 0, 255
+        ).astype(np.uint8)
+      # ---------------------------------------------
+
       final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
-    st.success("✨ Selesai diproses secara otomatis dengan preset HD!")
-    st.image(final_image, caption="Hasil Upscaled 4K")
+    st.success("✨ Selesai diproses dengan efek gaya Lightroom HD!")
+    st.image(final_image, caption="Hasil Upscaled 4K + Lightroom Style")
 
     result_pil = Image.fromarray(final_image)
     buf = io.BytesIO()
@@ -166,8 +207,8 @@ if uploaded_file is not None:
     byte_im = buf.getvalue()
 
     st.download_button(
-        label="📥 Download Foto 4K",
+        label="📥 Download Foto 4K Lightroom",
         data=byte_im,
-        file_name="amper_ai_4k.jpg",
+        file_name="amper_ai_lightroom_4k.jpg",
         mime="image/jpeg",
     )
