@@ -6,94 +6,58 @@ from PIL import Image
 import streamlit as st
 
 st.set_page_config(
-    page_title="AMPER.AI - Amper-AI Pro Suite", page_icon="⚡", layout="wide"
+    page_title="AMPER.AI - Ampera-AI Pro Suite", page_icon="🎚️", layout="wide"
 )
 
 
-# Fungsi Background & Styling Profesional + Panel Kontrol Menarik
-def set_background(image_file):
-  try:
-    with open(image_file, "rb") as f:
-      encoded = base64.b64encode(f.read()).decode()
-    css = f"""
-        <style>
-        .stApp {{
-            background-image: linear-gradient( rgba(10, 10, 10, 0.90), rgba(10, 10, 10, 0.90) ), url("data:image/jpeg;base64,{encoded}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            color: #e0e0e0;
-        }}
-        
-        /* Mempercantik Sidebar / Panel Kontrol */
-        [data-testid="stSidebar"] {{
-            background: linear-gradient(180deg, rgba(20, 20, 20, 0.95), rgba(10, 10, 10, 0.98));
-            border-right: 1px solid rgba(212, 175, 55, 0.3);
-        }}
-        
-        /* Mengubah warna teks dan judul di dalam sidebar agar kontras dan estetik */
-        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {{
-            color: #ffdf00 !important;
-            font-family: 'serif';
-        }}
-        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
-            color: #e5e5e5 !important;
-        }}
-
-        h1, h2, h3 {{ color: #ffd700 !important; font-family: 'serif'; }}
-        
-        .stButton>button {{
-            background: linear-gradient(90deg, #b8860b, #ffd700);
-            color: #000000;
-            font-weight: bold;
-            border-radius: 8px;
-            border: none;
-            padding: 0.6em 1.2em;
-            transition: all 0.3s ease;
-        }}
-        .stButton>button:hover {{
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-        }}
-        </style>
-        """
-    st.markdown(css, unsafe_allow_html=True)
-  except:
-    css = """
-        <style>
-        .stApp {
-            background-color: #0e0e0e;
-            color: #e0e0e0;
-        }
-        [data-testid="stSidebar"] {
-            background-color: #141414;
-            border-right: 1px solid #b8860b;
-        }
-        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
-            color: #ffdf00 !important;
-        }
-        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
-            color: #e5e5e5 !important;
-        }
-        h1, h2, h3 { color: #ffd700 !important; font-family: 'serif'; }
-        .stButton>button {
-            background: linear-gradient(90deg, #b8860b, #ffd700);
-            color: #000000;
-            font-weight: bold;
-            border-radius: 8px;
-            border: none;
-        }
-        </style>
-        """
-    st.markdown(css, unsafe_allow_html=True)
+# Fungsi Styling & Background Aman (Tanpa mengubah stSidebar secara langsung agar tidak error)
+def set_custom_theme():
+  css = """
+    <style>
+    /* Styling Global / Background Utama */
+    .stApp {
+        background: linear-gradient(135deg, #0b0b0b 0%, #1a1a1a 100%);
+        color: #e0e0e0;
+    }
+    
+    /* Judul Utama */
+    h1, h2, h3 { 
+        color: #ffd700 !important; 
+        font-family: 'serif'; 
+    }
+    
+    /* Tombol Utama */
+    .stButton>button {
+        background: linear-gradient(90deg, #b8860b, #ffd700);
+        color: #000000;
+        font-weight: bold;
+        border-radius: 8px;
+        border: none;
+        padding: 0.6em 1.2em;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+    
+    /* Kotak/Container Info */
+    .stAlert {
+        background-color: rgba(20, 20, 20, 0.8);
+        color: #ffd700;
+        border: 1px solid #b8860b;
+    }
+    </style>
+    """
+  st.markdown(css, unsafe_allow_html=True)
 
 
-set_background("bg_amper.jpg")
+set_custom_theme()
 
 # Header Aplikasi
 st.title("🛠️ AMPER.AI — Professional Editing & 4K Upscaler Suite")
 st.markdown(
-    "<p style='color: #a3a3a3; font-size: 1.1em;'>Platform pengolahan foto"
+    "<p style='color: #d4af37; font-size: 1.1em;'>Platform pengolahan foto"
     " pintar berstandar industri dengan kontrol parameter lengkap ala"
     " Lightroom & AI Upscaling.</p>",
     unsafe_allow_html=True,
@@ -101,7 +65,7 @@ st.markdown(
 
 # Layout Sidebar untuk Kontrol Lightroom
 with st.sidebar:
-  st.markdown("## 🎛️ Ampera-AI PRO Panel")
+  st.markdown("## 🎛️ Ampera-AI Pro Control Panel")
 
   st.markdown("### 1. Light & Exposure")
   exposure = st.slider(
@@ -171,7 +135,7 @@ with st.sidebar:
 
 # Upload Foto
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Kamu (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
+    "📂 Unggah File Foto Kamu.. (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
