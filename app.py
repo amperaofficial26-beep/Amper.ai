@@ -1,3 +1,4 @@
+import base64
 import io
 import cv2
 import numpy as np
@@ -6,13 +7,23 @@ import streamlit as st
 
 st.set_page_config(page_title="AMPER.AI", page_icon="⚡", layout="centered")
 
-# Estetika Dark Luxury Gold
-st.markdown(
-    """
+
+# Fungsi untuk mengubah gambar lokal agar bisa dibaca CSS sebagai Background Base64
+def set_background(image_file):
+  with open(image_file, "rb") as f:
+    encoded = base64.b64encode(f.read()).decode()
+
+  css = f"""
     <style>
-    .main { background-color: #0e0e0e; color: #d4af37; }
-    h1, h2, h3 { color: #ffd700 !important; font-family: 'serif'; }
-    .stButton>button {
+    .stApp {{
+        background-image: linear-gradient( rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8) ), url("data:image/jpeg;base64,{encoded}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: #d4af37;
+    }
+    h1, h2, h3 {{ color: #ffd700 !important; font-family: 'serif'; }}
+    .stButton>button {{
         background: linear-gradient(90deg, #b8860b, #ffd700);
         color: #000000;
         font-weight: bold;
@@ -20,9 +31,16 @@ st.markdown(
         border: none;
     }
     </style>
-""",
-    unsafe_allow_html=True,
-)
+    """
+  st.markdown(css, unsafe_allow_html=True)
+
+
+# Panggil fungsi background (Pastikan nama file gambarnya sesuai di folder proyekmu)
+# Tips: Ubah nama file gambar yang kamu upload menjadi 'bg_amper.jpg' dan simpan sefolder dengan app.py
+try:
+  set_background("bg_amper.jpg")
+except:
+  pass  # Fallback jika gambar belum dimasukkan
 
 st.title("⚡ AMPER.AI")
 st.markdown(
@@ -59,18 +77,16 @@ if uploaded_file is not None:
           img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
       )
 
-      # 2. Atur Saturasi (Nilai tetap 45 -> faktor 0.45 atau penambahan mutlak)
-      # Menggunakan pengalian persentase 45% (0.45) dari warna normal
+      # 2. Atur Saturasi (Nilai tetap 45%)
       hsv = cv2.cvtColor(upscaled, cv2.COLOR_BGR2HSV).astype("float32")
       hsv[:, :, 1] = hsv[:, :, 1] * 0.45
       hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
       saturated = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
 
       # 3. Atur Suhu Warna / Temperature (Nilai tetap 15)
-      # Menyesuaikan channel Red (+) dan Blue (-) untuk efek suhu hangat/dingin
       temp_val = 15
       lab = cv2.cvtColor(saturated, cv2.COLOR_BGR2LAB).astype("float32")
-      lab[:, :, 2] += temp_val  # Menambah komponen warna merah/kuning (warmth)
+      lab[:, :, 2] += temp_val
       lab = np.clip(lab, 0, 255)
       temp_adjusted = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR)
 
@@ -79,7 +95,7 @@ if uploaded_file is not None:
           temp_adjusted, d=9, sigmaColor=75, sigmaSpace=75
       )
 
-      # 5. Efek Ketajaman (Nilai tetap 30 -> 3.0 dalam skala unsharp mask)
+      # 5. Efek Ketajaman (Nilai tetap 30)
       sharp_weight = 3.0
       gaussian = cv2.GaussianBlur(smoothed, (0, 0), 3.0)
       sharpened = cv2.addWeighted(
