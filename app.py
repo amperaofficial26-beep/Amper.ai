@@ -1,11 +1,11 @@
-import base64
-import io
+Import base64
 import cv2
+import io
 import numpy as np
 from PIL import Image
 import streamlit as st
 
-st.set_page_config(page_title="AMPER.AI", page_icon="👾", layout="centered")
+st.set_page_config(page_title="AMPER.AI", page_icon="📸", layout="centered")
 
 
 # Fungsi Background
@@ -66,14 +66,14 @@ try:
 except:
   pass
 
-st.title("👾 AMPER.AI")
+st.title("📷 AMPER.AI")
 st.markdown(
-    "<p style='color: #a3a3a3;'>Peningkat Video & Foto, Bikin Konten Jadi FYP</p>",
+    "<p style='color: #a3a3a3;'>Next-Gen Local Image & Video Upscaler</p>",
     unsafe_allow_html=True,
 )
 
 uploaded_file = st.file_uploader(
-    "Letak Foto Kamu disini.. (JPG/PNG)", type=["jpg", "jpeg", "png"]
+    "Letak Foto Kamu Disini (JPG/PNG)", type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
@@ -82,12 +82,12 @@ if uploaded_file is not None:
 
   st.image(
       cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
-      caption="Before....",
+      caption="Foto Asli",
       use_column_width=True,
   )
 
-  if st.button("👌 Proses Upscaling & Auto Preset HD"):
-    with st.spinner("Sedang menerapkan preset otomatis dan upscaling 4K, Sabar ya..."):
+  if st.button("🪛🪛Proses Upscaling & Auto Preset HD"):
+    with st.spinner("Sedang menerapkan preset otomatis dan upscaling 4K..."):
       height, width = img.shape[:2]
       scale_factor = 2
       new_width = width * scale_factor
@@ -98,15 +98,27 @@ if uploaded_file is not None:
           img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
       )
 
+      # ==========================================
+      # TAMBAHAN: PENYESUAIAN OTOMATIS (AUTO-ENHANCE)
+      # ==========================================
+      # Menerapkan CLAHE secara otomatis untuk menyeimbangkan kecerahan & detail bayangan
+      lab_auto = cv2.cvtColor(upscaled, cv2.COLOR_BGR2LAB)
+      l_auto, a_auto, b_auto = cv2.split(lab_auto)
+      clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
+      l_auto = clahe.apply(l_auto)
+      lab_auto = cv2.merge((l_auto, a_auto, b_auto))
+      upscaled = cv2.cvtColor(lab_auto, cv2.COLOR_LAB2BGR)
+      # ==========================================
+
       # 2. Nilai Preset Otomatis (Hardcoded sesuai resep)
-      exposure_val = -5
-      brightness_val = -20
-      contrast_val = 10
-      saturation_val = 30
-      temp_val = -10
-      sharpen_val = 17
-      clarity_val = 5
-      structure_val = -9
+      exposure_val = -12
+      brightness_val = -23
+      contrast_val = 7
+      saturation_val = 15
+      temp_val = -16
+      sharpen_val = 16
+      clarity_val = 13
+      structure_val = -13
 
       # 3. Exposure, Brightness & Contrast (LAB L-Channel)
       lab = cv2.cvtColor(upscaled, cv2.COLOR_BGR2LAB).astype("float32")
@@ -145,8 +157,8 @@ if uploaded_file is not None:
 
       final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
-    st.success("✨ Selesai,Selamat Foto Kamu Udah Jadi....!")
-    st.image(final_image, caption="(After) Hasil Gambar Lebih Baik....")
+    st.success("✨ Selesai,Selamat Fotonya udah jadi..🥳🥳!")
+    st.image(final_image, caption="(AFTER)Hasil Peningkatan Gambar..."
 
     result_pil = Image.fromarray(final_image)
     buf = io.BytesIO()
@@ -154,7 +166,7 @@ if uploaded_file is not None:
     byte_im = buf.getvalue()
 
     st.download_button(
-        label="📥 Mau Di-Download Foto 4K Nya...,Silahkan.",
+        label="📥 Mau Di-Downlaod Fotonya,Silahkan....",
         data=byte_im,
         file_name="amper_ai_4k.jpg",
         mime="image/jpeg",
