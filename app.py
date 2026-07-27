@@ -6,11 +6,11 @@ from PIL import Image
 import streamlit as st
 
 st.set_page_config(
-    page_title="AMPER.AI - PRO Suite", page_icon="🎚️", layout="wide"
+    page_title="AMPER.AI - Amper-AI Pro Suite", page_icon="⚡", layout="wide"
 )
 
 
-# Fungsi Background & Styling Profesional
+# Fungsi Background & Styling Profesional + Panel Kontrol Menarik
 def set_background(image_file):
   try:
     with open(image_file, "rb") as f:
@@ -24,7 +24,24 @@ def set_background(image_file):
             background-repeat: no-repeat;
             color: #e0e0e0;
         }}
+        
+        /* Mempercantik Sidebar / Panel Kontrol */
+        [data-testid="stSidebar"] {{
+            background: linear-gradient(180deg, rgba(20, 20, 20, 0.95), rgba(10, 10, 10, 0.98));
+            border-right: 1px solid rgba(212, 175, 55, 0.3);
+        }}
+        
+        /* Mengubah warna teks dan judul di dalam sidebar agar kontras dan estetik */
+        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {{
+            color: #ffdf00 !important;
+            font-family: 'serif';
+        }}
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
+            color: #e5e5e5 !important;
+        }}
+
         h1, h2, h3 {{ color: #ffd700 !important; font-family: 'serif'; }}
+        
         .stButton>button {{
             background: linear-gradient(90deg, #b8860b, #ffd700);
             color: #000000;
@@ -48,6 +65,16 @@ def set_background(image_file):
             background-color: #0e0e0e;
             color: #e0e0e0;
         }
+        [data-testid="stSidebar"] {
+            background-color: #141414;
+            border-right: 1px solid #b8860b;
+        }
+        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+            color: #ffdf00 !important;
+        }
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+            color: #e5e5e5 !important;
+        }
         h1, h2, h3 { color: #ffd700 !important; font-family: 'serif'; }
         .stButton>button {
             background: linear-gradient(90deg, #b8860b, #ffd700);
@@ -67,14 +94,14 @@ set_background("bg_amper.jpg")
 st.title("🛠️ AMPER.AI — Professional Editing & 4K Upscaler Suite")
 st.markdown(
     "<p style='color: #a3a3a3; font-size: 1.1em;'>Platform pengolahan foto"
-    " pintar berstandar industri dengan kontrol parameter lengkap "
-    " & AI Upscaling.</p>",
+    " pintar berstandar industri dengan kontrol parameter lengkap ala"
+    " Lightroom & AI Upscaling.</p>",
     unsafe_allow_html=True,
 )
 
 # Layout Sidebar untuk Kontrol Lightroom
 with st.sidebar:
-  st.markdown("## 🎛️ Ampera-AI PRO Control Panel")
+  st.markdown("## 🎛️ Ampera-AI PRO Panel")
 
   st.markdown("### 1. Light & Exposure")
   exposure = st.slider(
@@ -140,11 +167,11 @@ with st.sidebar:
   upscale_choice = st.selectbox(
       "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0
   )
-  process_btn = st.button("🚀 Terapkan & Render Instan")
+  process_btn = st.button("⬆️ Terapkan & Render Instan")
 
 # Upload Foto
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Kamu Disini.. (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
+    "📂 Unggah File Foto Kamu (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
@@ -154,13 +181,13 @@ if uploaded_file is not None:
   col_orig, col_res = st.columns(2)
 
   with col_orig:
-    st.subheader("📷 Foto Asli Kamu...")
+    st.subheader("📷 Foto Asli")
     st.image(
         cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True
     )
 
   if process_btn or "processed_img" not in st.session_state:
-    with st.spinner("✨ Sedang merender mesin AI & Upscaler AI..."):
+    with st.spinner("✨ Sedang merender mesin AI PRO & Upscaler AI..."):
       scale_factor = 2 if "2x" in upscale_choice else 4
       h, w = img.shape[:2]
       upscaled = cv2.resize(
@@ -287,5 +314,5 @@ if uploaded_file is not None:
 else:
   st.info(
       "👆 Silakan unggah foto terlebih dahulu melalui tombol di atas untuk"
-      " mulai menggunakan suite lengkap Ampera-PRO & Upscaler."
+      " mulai menggunakan suite lengkap Lightroom & Upscaler."
   )
