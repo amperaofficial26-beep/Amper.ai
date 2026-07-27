@@ -46,10 +46,12 @@ if uploaded_file is not None:
   )
 
   if st.button("🚀 Proses Upscaling ke 4K"):
-    with st.spinner("Sedang memproses detail AI & penghalusan 4K..."):
-      # 1. Resize menggunakan Lanczos Interpolation
+    with st.spinner(
+        "Sedang memproses (Saturasi: 45, Suhu: 15, Ketajaman: 30)..."
+    ):
+      # 1. Resize gambar (Skala 2x)
       height, width = img.shape[:2]
-      scale_factor = 2  # Bisa dinaikkan ke 4 jika ingin perbesaran ekstra
+      scale_factor = 2
       new_width = width * scale_factor
       new_height = height * scale_factor
 
@@ -57,20 +59,38 @@ if uploaded_file is not None:
           img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
       )
 
-      # 2. Efek Halus (Denoise ringan agar mulus tanpa ngeblur)
-      smoothed = cv2.bilateralFilter(upscaled, d=9, sigmaColor=75, sigmaSpace=75)
+      # 2. Atur Saturasi (Nilai tetap 45 -> faktor 0.45 atau penambahan mutlak)
+      # Menggunakan pengalian persentase 45% (0.45) dari warna normal
+      hsv = cv2.cvtColor(upscaled, cv2.COLOR_BGR2HSV).astype("float32")
+      hsv[:, :, 1] = hsv[:, :, 1] * 0.45
+      hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
+      saturated = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
 
-      # 3. Efek Ketajaman 4K (Unsharp Masking untuk menajamkan detail)
+      # 3. Atur Suhu Warna / Temperature (Nilai tetap 15)
+      # Menyesuaikan channel Red (+) dan Blue (-) untuk efek suhu hangat/dingin
+      temp_val = 15
+      lab = cv2.cvtColor(saturated, cv2.COLOR_BGR2LAB).astype("float32")
+      lab[:, :, 2] += temp_val  # Menambah komponen warna merah/kuning (warmth)
+      lab = np.clip(lab, 0, 255)
+      temp_adjusted = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR)
+
+      # 4. Efek Halus (Denoise)
+      smoothed = cv2.bilateralFilter(
+          temp_adjusted, d=9, sigmaColor=75, sigmaSpace=75
+      )
+
+      # 5. Efek Ketajaman (Nilai tetap 30 -> 3.0 dalam skala unsharp mask)
+      sharp_weight = 3.0
       gaussian = cv2.GaussianBlur(smoothed, (0, 0), 3.0)
-      sharpened = cv2.addWeighted(smoothed, 1.5, gaussian, -0.5, 0)
+      sharpened = cv2.addWeighted(
+          smoothed, 1.0 + sharp_weight, gaussian, -sharp_weight, 0
+      )
 
       # Konversi kembali ke RGB untuk Streamlit
       final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
-    st.success("✨ Upscaling Selesai!")
-    st.image(
-        final_image, caption="Hasil Upscaled 4K (Dihaluskan & Ditegaskan)"
-    )
+    st.success("✨ Selesai diproses dengan parameter kustom!")
+    st.image(final_image, caption="Hasil Upscaled 4K")
 
     # Tombol Download
     result_pil = Image.fromarray(final_image)
