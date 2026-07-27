@@ -66,9 +66,9 @@ try:
 except:
   pass
 
-st.title("⚡ AMPER.AI")
+st.title("👾 AMPER.AI")
 st.markdown(
-    "<p style='color: #a3a3a3;'>Next-Gen Local Image & Video Upscaler</p>",
+    "<p style='color: #a3a3a3;'>Peningkat Video & Foto, Bikin Konten Jadi FYP</p>",
     unsafe_allow_html=True,
 )
 
@@ -82,12 +82,12 @@ if uploaded_file is not None:
 
   st.image(
       cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
-      caption="Foto Asli",
+      caption="asli",
       use_column_width=True,
   )
 
-  if st.button("🚀 Proses Upscaling & Auto Preset HD"):
-    with st.spinner("Sedang menerapkan preset otomatis dan upscaling 4K..."):
+  if st.button("👌 Proses Upscaling & Auto Preset HD"):
+    with st.spinner("Sedang menerapkan preset otomatis dan upscaling 4K, Sabar ya..."):
       height, width = img.shape[:2]
       scale_factor = 2
       new_width = width * scale_factor
@@ -145,8 +145,8 @@ if uploaded_file is not None:
 
       final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
-    st.success("✨ Selesai diproses secara otomatis dengan preset HD!")
-    st.image(final_image, caption="Hasil Upscaled 4K")
+    st.success("✨ Selesai,Selamat Foto Kamu Udah Jadi....!")
+    st.image(final_image, caption="Hasil Gambar Lebih Baik")
 
     result_pil = Image.fromarray(final_image)
     buf = io.BytesIO()
