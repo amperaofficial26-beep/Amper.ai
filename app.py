@@ -99,14 +99,14 @@ if uploaded_file is not None:
       )
 
       # 2. Nilai Preset Otomatis (Hardcoded sesuai resep)
-      exposure_val = -12
-      brightness_val = -23
+      exposure_val = -5
+      brightness_val = -20
       contrast_val = 10
       saturation_val = 30
-      temp_val = -16
-      sharpen_val = 16
-      clarity_val = 13
-      structure_val = -13
+      temp_val = -10
+      sharpen_val = 17
+      clarity_val = 5
+      structure_val = -9
 
       # 3. Exposure, Brightness & Contrast (LAB L-Channel)
       lab = cv2.cvtColor(upscaled, cv2.COLOR_BGR2LAB).astype("float32")
