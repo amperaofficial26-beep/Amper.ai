@@ -8,7 +8,7 @@ import streamlit as st
 st.set_page_config(page_title="AMPER.AI", page_icon="⚡", layout="centered")
 
 
-# Fungsi Background Aman Tanpa Error f-string CSS
+# Fungsi Background
 def set_background(image_file):
   try:
     with open(image_file, "rb") as f:
@@ -58,10 +58,9 @@ def set_background(image_file):
     st.markdown(css, unsafe_allow_html=True)
 
 
-# Panggil fungsi background
 set_background("bg_amper.jpg")
 
-# Menampilkan Logo PNG jika ada di folder
+# Tampilkan Logo PNG jika ada
 try:
   st.image("logo_amper.png", width=120)
 except:
@@ -72,6 +71,20 @@ st.markdown(
     "<p style='color: #a3a3a3;'>Next-Gen Local Image & Video Upscaler</p>",
     unsafe_allow_html=True,
 )
+
+# Sidebar untuk Kontrol Parameter Sesuai Resep
+st.sidebar.header("🎛️ Pengaturan Preset Koloro")
+exposure_val = st.sidebar.slider("Exposure", -50, 50, -12)
+brightness_val = st.sidebar.slider("Brightness", -50, 50, -23)
+contrast_val = st.sidebar.slider("Contrast", -50, 50, 7)
+saturation_val = st.sidebar.slider("Saturation", -50, 50, 15)
+temp_val = st.sidebar.slider("Temperature (Temp)", -50, 50, -16)
+sharpen_val = st.sidebar.slider("Sharpen", 0, 50, 16)
+clarity_val = st.sidebar.slider("Clarity", -50, 50, 13)
+structure_val = st.sidebar.slider("Structure", -50, 50, -13)
+highlights_val = st.sidebar.slider("Highlights", -50, 50, -8)
+shadows_val = st.sidebar.slider("Shadows", -50, 50, -3)
+ambiance_val = st.sidebar.slider("Ambiance", -50, 50, 22)
 
 uploaded_file = st.file_uploader(
     "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
@@ -87,47 +100,62 @@ if uploaded_file is not None:
       use_column_width=True,
   )
 
-  if st.button("🚀 Proses Upscaling ke 4K"):
-    with st.spinner(
-        "Sedang memproses (Saturasi: 45, Suhu: 15, Ketajaman: 30)..."
-    ):
+  if st.button("🚀 Proses Upscaling & Preset 4K"):
+    with st.spinner("Sedang menerapkan resep warna dan upscaling..."):
       height, width = img.shape[:2]
       scale_factor = 2
       new_width = width * scale_factor
       new_height = height * scale_factor
 
+      # 1. Upscale Lanczos (4K Simulation)
       upscaled = cv2.resize(
           img, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4
       )
 
-      # 2. Saturasi 45%
-      hsv = cv2.cvtColor(upscaled, cv2.COLOR_BGR2HSV).astype("float32")
-      hsv[:, :, 1] = hsv[:, :, 1] * 0.45
+      # 2. Exposure & Brightness & Contrast (via LAB space L-channel)
+      lab = cv2.cvtColor(upscaled, cv2.COLOR_BGR2LAB).astype("float32")
+      l_channel, a_channel, b_channel = cv2.split(lab)
+
+      # Exposure & Brightness adjustment
+      l_channel += exposure_val + brightness_val
+
+      # Contrast adjustment
+      if contrast_val != 0:
+        factor = (259 * (contrast_val + 255)) / (255 * (259 - contrast_val))
+        l_channel = factor * (l_channel - 128) + 128
+
+      l_channel = np.clip(l_channel, 0, 255)
+      lab = cv2.merge([l_channel, a_channel, b_channel])
+      adjusted = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR)
+
+      # 3. Temperature (Temp)
+      lab_temp = cv2.cvtColor(adjusted, cv2.COLOR_BGR2LAB).astype("float32")
+      lab_temp[:, :, 2] += temp_val * 0.5  # Adjust b-channel for temperature
+      lab_temp = np.clip(lab_temp, 0, 255)
+      temp_adjusted = cv2.cvtColor(lab_temp.astype("uint8"), cv2.COLOR_LAB2BGR)
+
+      # 4. Saturation & Ambiance
+      hsv = cv2.cvtColor(temp_adjusted, cv2.COLOR_BGR2HSV).astype("float32")
+      sat_multiplier = 1.0 + (saturation_val / 100.0)
+      amb_multiplier = 1.0 + (ambiance_val / 200.0)
+      hsv[:, :, 1] = hsv[:, :, 1] * sat_multiplier * amb_multiplier
       hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
-      saturated = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
+      color_adjusted = cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
 
-      # 3. Suhu Warna 15
-      temp_val = 15
-      lab = cv2.cvtColor(saturated, cv2.COLOR_BGR2LAB).astype("float32")
-      lab[:, :, 2] += temp_val
-      lab = np.clip(lab, 0, 255)
-      temp_adjusted = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR)
-
-      # 4. Denoise
-      smoothed = cv2.bilateralFilter(
-          temp_adjusted, d=9, sigmaColor=75, sigmaSpace=75
+      # 5. Structure, Clarity & Sharpen (Unsharp Masking variations)
+      # Menggabungkan efek ketajaman dan struktur detail
+      blur_amount = max(1, int(structure_val / 5) * 2 + 3)
+      gaussian = cv2.GaussianBlur(
+          color_adjusted, (0, 0), max(1.0, abs(clarity_val) / 3.0)
       )
-
-      # 5. Ketajaman 30
-      sharp_weight = 3.0
-      gaussian = cv2.GaussianBlur(smoothed, (0, 0), 3.0)
+      sharp_weight = (sharpen_val + abs(clarity_val)) / 30.0
       sharpened = cv2.addWeighted(
-          smoothed, 1.0 + sharp_weight, gaussian, -sharp_weight, 0
+          color_adjusted, 1.0 + sharp_weight, gaussian, -sharp_weight, 0
       )
 
       final_image = cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB)
 
-    st.success("✨ Selesai diproses dengan parameter kustom!")
+    st.success("✨ Selesai diproses dengan preset custom!")
     st.image(final_image, caption="Hasil Upscaled 4K")
 
     result_pil = Image.fromarray(final_image)
