@@ -6,8 +6,10 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 
+from auth import render_auth_sidebar, get_credits, deduct_credit
+
 st.set_page_config(
-    page_title="AMPER.AI - Pro Suite", page_icon="⚡", layout="wide"
+    page_title="AMPER.AI - Lightroom Pro Suite", page_icon="😈", layout="wide"
 )
 
 # ==========================================================
@@ -109,13 +111,26 @@ def set_custom_theme():
 set_custom_theme()
 set_background(BG_PATH)
 
+# ---------------- Gerbang login ----------------
+is_logged_in = render_auth_sidebar()
+if not is_logged_in:
+  st.title("😈 AMPER.AI — Professional Editing & 4K Upscaler Suite")
+  st.info(
+      "Silakan **Masuk** atau **Daftar** dulu lewat panel di sebelah kiri"
+      " untuk mulai memakai Amper.AI. Setiap akun baru otomatis dapat"
+      " kredit gratis untuk dicoba."
+  )
+  st.stop()
+
+current_user = st.session_state["user"]
+
 # ---------------- Header dengan logo ----------------
 header_col1, header_col2 = st.columns([1, 6])
 with header_col1:
   try:
     st.image(LOGO_PATH, use_container_width=True)
   except Exception:
-    st.markdown("<h1 style='margin:0;'>⚡</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin:0;'>😈</h1>", unsafe_allow_html=True)
 
 with header_col2:
   st.title("AMPER.AI — Professional Editing & 4K Upscaler Suite")
@@ -188,11 +203,11 @@ with st.sidebar:
   upscale_choice = st.selectbox(
       "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0
   )
-  process_btn = st.button("🚀 Terapkan & Render Instan")
+  process_btn = st.button("⚒️ Langsung aja Terapkan & Render Instan")
 
 # ---------------- Upload foto ----------------
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Kamu (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
+    "📂 Unggah File Foto Keren kamu disini (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
@@ -219,18 +234,25 @@ if uploaded_file is not None:
         interpolation=cv2.INTER_AREA,
     )
     st.info(
-        "ℹ️ Foto asli diturunkan sementara ke resolusi lebih kecil sebelum"
+        "ℹ️ Maaf Banget..Foto asli diturunkan sementara ke resolusi lebih kecil sebelum"
         " diproses agar server tidak kehabisan memori."
     )
 
   col_orig, col_res = st.columns(2)
   with col_orig:
-    st.subheader("📷 Foto Asli")
+    st.subheader("🎆 Foto Asli")
     st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True)
 
   if process_btn or "processed_img" not in st.session_state:
+    user_credits = get_credits(current_user["id"])
+    if user_credits <= 0:
+      st.error(
+          "💳 MAAF YA...Kredit kamu sudah habis. Silakan top up dulu untuk lanjut"
+          " memakai Amper.AI."
+      )
+      st.stop()
     try:
-      with st.spinner("✨ Sedang merender mesin Lightroom & Upscaler AI..."):
+      with st.spinner("✨ Sedang merender mesin AI PRO & Upscaler AI..."):
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
@@ -240,8 +262,8 @@ if uploaded_file is not None:
           adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
           scale_factor = max(1.0, adjusted_scale)
           st.warning(
-              "⚠️ Resolusi hasil upscaling terlalu besar dan berisiko"
-              f" membuat server kehabisan memori. Skala diturunkan otomatis"
+              "⚠️ WADUH...Resolusi hasil upscaling terlalu besar dan berisiko"
+              f" membuat server kehabisan memori. Skala diturunkan otomatis ya.."
               f" menjadi {scale_factor:.2f}x agar tetap aman."
           )
 
@@ -396,6 +418,8 @@ if uploaded_file is not None:
         )
         del final_bgr
         gc.collect()
+
+        deduct_credit(current_user["id"])
     except Exception as e:
       st.error(
           "❌ Terjadi kesalahan saat memproses gambar (kemungkinan foto"
@@ -408,7 +432,7 @@ if uploaded_file is not None:
       st.session_state.pop("processed_img", None)
 
   with col_res:
-    st.subheader("✨ Hasil Lightroom Pro & Upscaled")
+    st.subheader("🎇 Hasil AI Pro & Upscaled")
     if "processed_img" in st.session_state:
       st.image(st.session_state["processed_img"], use_container_width=True)
 
@@ -427,5 +451,5 @@ if uploaded_file is not None:
 else:
   st.info(
       "👆 Silakan unggah foto terlebih dahulu melalui tombol di atas untuk"
-      " mulai menggunakan suite lengkap Lightroom & Upscaler."
+      " mulai menggunakan suite lengkap Ampera-Ai PRO & Upscaler."
   )
