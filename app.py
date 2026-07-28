@@ -171,6 +171,19 @@ with st.sidebar:
       help="Memberikan bayangan artistik di tepi foto",
   )
 
+  st.markdown("### 4. Quality Boost (Non-AI Berat)")
+  denoise_strength = st.slider(
+      "Noise Reduction (sebelum upscale)", 0, 30, 0, 1,
+      help="Mengurangi noise/grain sebelum di-upscale, supaya noise tidak"
+      " ikut diperbesar. Semakin tinggi, semakin halus tapi detail bisa"
+      " sedikit berkurang.",
+  )
+  smart_enhance = st.slider(
+      "Smart Detail Enhance (setelah upscale)", 0, 100, 0, 1,
+      help="Filter edge-aware yang menguatkan detail & tekstur supaya hasil"
+      " upscaling terlihat lebih 'pop', tanpa memakai model AI berat.",
+  )
+
   st.markdown("---")
   upscale_choice = st.selectbox(
       "Resolution Upscaling", ["2x (HD Standard)", "4x (Ultra HD 4K)"], index=0
@@ -230,6 +243,15 @@ if uploaded_file is not None:
               "⚠️ Resolusi hasil upscaling terlalu besar dan berisiko"
               f" membuat server kehabisan memori. Skala diturunkan otomatis"
               f" menjadi {scale_factor:.2f}x agar tetap aman."
+          )
+
+        # =========================================================
+        # TAHAP 0 — noise reduction (opsional) di resolusi ASLI,
+        # sebelum di-upscale, supaya noise tidak ikut diperbesar
+        # =========================================================
+        if denoise_strength > 0:
+          img = cv2.fastNlMeansDenoisingColored(
+              img, None, float(denoise_strength), float(denoise_strength), 7, 21
           )
 
         # =========================================================
@@ -356,6 +378,18 @@ if uploaded_file is not None:
         final_bgr = (sat_adj * 255).astype("uint8")
         del sat_adj
         gc.collect()
+
+        # =========================================================
+        # TAHAP 4 — Smart Detail Enhance (opsional): filter edge-aware
+        # bawaan OpenCV, memberi kesan "AI upscaler" tanpa model berat
+        # =========================================================
+        if smart_enhance > 0:
+          sigma_s = 10 + (smart_enhance / 100.0) * 40  # ~10–50
+          sigma_r = 0.15 + (smart_enhance / 100.0) * 0.35  # ~0.15–0.5
+          final_bgr = cv2.detailEnhance(
+              final_bgr, sigma_s=sigma_s, sigma_r=sigma_r
+          )
+          gc.collect()
 
         st.session_state["processed_img"] = cv2.cvtColor(
             final_bgr, cv2.COLOR_BGR2RGB
