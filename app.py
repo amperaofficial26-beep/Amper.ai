@@ -1,4 +1,5 @@
 import base64
+import gc
 import io
 import cv2
 import numpy as np
@@ -16,9 +17,12 @@ st.set_page_config(
 LOGO_PATH = "logo_amper.png"
 BG_PATH = "bg_amper.jpg"
 
-# Batas aman jumlah pixel hasil akhir agar server tidak kehabisan memori
-# (30 megapixel kira-kira setara foto 6000x5000 — cukup besar tapi masih aman)
-MAX_OUTPUT_MEGAPIXELS = 30_000_000
+# Sisi terpanjang foto ASLI akan diturunkan ke ukuran ini dulu
+# sebelum diedit, supaya tidak membebani server sejak awal
+MAX_INPUT_DIM = 3000
+
+# Batas aman total pixel HASIL AKHIR (setelah upscaling)
+MAX_OUTPUT_MEGAPIXELS = 20_000_000
 
 
 def get_base64_of_bin_file(path):
@@ -48,7 +52,6 @@ def set_background(image_path):
 
 
 def set_custom_theme():
-  # Palet baru: teal gelap + gold-rose, lebih premium dan tidak generik
   css = """
     <style>
     .stApp {
@@ -62,7 +65,6 @@ def set_custom_theme():
         letter-spacing: 0.3px;
     }
 
-    /* Panel/sidebar */
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0c2226 0%, #133c3f 100%);
         border-right: 1px solid rgba(227, 179, 74, 0.25);
@@ -76,7 +78,6 @@ def set_custom_theme():
         color: #cfe8e1 !important;
     }
 
-    /* Tombol */
     .stButton>button {
         background: linear-gradient(90deg, #1f6f5c, #e3b34a);
         color: #06120f;
@@ -91,14 +92,12 @@ def set_custom_theme():
         box-shadow: 0 6px 16px rgba(227, 179, 74, 0.35);
     }
 
-    /* Kotak info/alert */
     .stAlert {
         background-color: rgba(15, 43, 48, 0.85);
         color: #f3cf83;
         border: 1px solid rgba(227, 179, 74, 0.4);
     }
 
-    /* Slider */
     div[data-baseweb="slider"] div[role="slider"] {
         background-color: #e3b34a !important;
     }
@@ -184,8 +183,6 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-  # Reset hasil sebelumnya jika ada file baru yang diupload,
-  # supaya tidak nyangkut/mismatch dengan foto lama
   file_signature = f"{uploaded_file.name}_{uploaded_file.size}"
   if st.session_state.get("last_file_signature") != file_signature:
     st.session_state["last_file_signature"] = file_signature
@@ -198,8 +195,22 @@ if uploaded_file is not None:
     st.error("❌ Gagal membaca file gambar. Coba unggah file JPG/PNG yang lain.")
     st.stop()
 
-  col_orig, col_res = st.columns(2)
+  # Turunkan foto asli dulu kalau memang sangat besar (mis. hasil kamera HP),
+  # supaya proses edit di resolusi asli tetap ringan
+  h0, w0 = img.shape[:2]
+  if max(h0, w0) > MAX_INPUT_DIM:
+    input_scale = MAX_INPUT_DIM / max(h0, w0)
+    img = cv2.resize(
+        img,
+        (int(w0 * input_scale), int(h0 * input_scale)),
+        interpolation=cv2.INTER_AREA,
+    )
+    st.info(
+        "ℹ️ Foto asli diturunkan sementara ke resolusi lebih kecil sebelum"
+        " diproses agar server tidak kehabisan memori."
+    )
 
+  col_orig, col_res = st.columns(2)
   with col_orig:
     st.subheader("📷 Foto Asli")
     st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True)
@@ -210,37 +221,35 @@ if uploaded_file is not None:
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
-        # --- Guard anti-crash: batasi resolusi hasil akhir ---
+        # Guard anti-crash tambahan untuk hasil akhir
         out_pixels = (w * scale_factor) * (h * scale_factor)
         if out_pixels > MAX_OUTPUT_MEGAPIXELS:
           adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
           scale_factor = max(1.0, adjusted_scale)
           st.warning(
-              "⚠️ Resolusi hasil upscaling terlalu besar untuk foto ini dan "
-              f"berisiko membuat server kehabisan memori (seperti error "
-              f"sebelumnya). Skala otomatis diturunkan menjadi "
-              f"{scale_factor:.2f}x agar proses tetap aman."
+              "⚠️ Resolusi hasil upscaling terlalu besar dan berisiko"
+              f" membuat server kehabisan memori. Skala diturunkan otomatis"
+              f" menjadi {scale_factor:.2f}x agar tetap aman."
           )
 
-        new_w = max(1, int(w * scale_factor))
-        new_h = max(1, int(h * scale_factor))
-        upscaled = cv2.resize(
-            img, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4
-        )
-
-        img_f = upscaled.astype("float32") / 255.0
+        # =========================================================
+        # TAHAP 1 — semua koreksi tone & warna dilakukan di resolusi
+        # ASLI (kecil) dulu. Ini jauh lebih hemat memori daripada
+        # meng-upscale dulu baru mengedit.
+        # =========================================================
+        img_f = img.astype("float32") / 255.0
 
         if exposure != 0.0:
           img_f = img_f * (2.0**exposure)
         if contrast != 0:
           f_contrast = (259 * (contrast + 255)) / (255 * (259 - contrast))
           img_f = f_contrast * (img_f - 0.5) + 0.5
-
         img_f = np.clip(img_f, 0, 1)
 
         lab = cv2.cvtColor(
             (img_f * 255).astype("uint8"), cv2.COLOR_BGR2LAB
         ).astype("float32")
+        del img_f
         l_ch, a_ch, b_ch = cv2.split(lab)
         l_norm = l_ch / 255.0
 
@@ -259,39 +268,59 @@ if uploaded_file is not None:
 
         l_ch = np.clip(l_ch, 0, 255)
         lab = cv2.merge([l_ch, a_ch, b_ch])
+        del l_ch, a_ch, b_ch, l_norm
         adjusted_bgr = (
             cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR).astype(
                 "float32"
             )
             / 255.0
         )
+        del lab
 
         if temp != 0:
           adjusted_bgr[:, :, 0] -= temp * 0.002
           adjusted_bgr[:, :, 2] += temp * 0.002
         if tint != 0:
           adjusted_bgr[:, :, 1] += tint * 0.002
-
         adjusted_bgr = np.clip(adjusted_bgr, 0, 1)
 
         hsv = cv2.cvtColor(
             (adjusted_bgr * 255).astype("uint8"), cv2.COLOR_BGR2HSV
         ).astype("float32")
+        del adjusted_bgr
         if saturation != 0:
           sat_mult = 1.0 + (saturation / 100.0)
           hsv[:, :, 1] *= sat_mult
         if vibrance != 0:
           v_mask = 1.0 - (hsv[:, :, 1] / 255.0)
           hsv[:, :, 1] += vibrance * 0.5 * v_mask
-
         hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
-        sat_adj = (
-            cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR).astype(
-                "float32"
-            )
-            / 255.0
-        )
 
+        sat_adj_small = (
+            cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
+        )
+        del hsv
+        gc.collect()
+
+        # =========================================================
+        # TAHAP 2 — upscaling dilakukan SETELAH koreksi warna,
+        # jadi cuma satu kali proses resize di gambar besar.
+        # =========================================================
+        new_w = max(1, int(w * scale_factor))
+        new_h = max(1, int(h * scale_factor))
+        upscaled = cv2.resize(
+            sat_adj_small, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4
+        )
+        del sat_adj_small
+        gc.collect()
+
+        sat_adj = upscaled.astype("float32") / 255.0
+        del upscaled
+
+        # =========================================================
+        # TAHAP 3 — clarity, dehaze, sharpen, vignette di resolusi
+        # akhir (besar). Hanya sedikit array besar yang aktif.
+        # =========================================================
         if clarity != 0 or dehaze != 0 or sharpen > 0:
           if dehaze != 0:
             dark_channel = cv2.min(
@@ -301,6 +330,7 @@ if uploaded_file is not None:
             sat_adj = sat_adj * np.dstack(
                 [dehaze_mask, dehaze_mask, dehaze_mask]
             )
+            del dark_channel, dehaze_mask
 
           blur_radius = max(1, int(sat_adj.shape[0] / 200)) * 2 + 1
           gaussian = cv2.GaussianBlur(sat_adj, (blur_radius, blur_radius), 0)
@@ -308,6 +338,7 @@ if uploaded_file is not None:
           sat_adj = cv2.addWeighted(
               sat_adj, 1.0 + sharp_weight, gaussian, -sharp_weight, 0
           )
+          del gaussian
           sat_adj = np.clip(sat_adj, 0, 1)
 
         if vignette > 0:
@@ -320,11 +351,17 @@ if uploaded_file is not None:
           mask = np.power(mask, 1.0 - v_factor * 0.4)
           mask = np.dstack([mask, mask, mask])
           sat_adj = np.clip(sat_adj * mask, 0, 1)
+          del kernel_x, kernel_y, kernel, mask
 
         final_bgr = (sat_adj * 255).astype("uint8")
+        del sat_adj
+        gc.collect()
+
         st.session_state["processed_img"] = cv2.cvtColor(
             final_bgr, cv2.COLOR_BGR2RGB
         )
+        del final_bgr
+        gc.collect()
     except Exception as e:
       st.error(
           "❌ Terjadi kesalahan saat memproses gambar (kemungkinan foto"
