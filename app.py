@@ -7,7 +7,7 @@ from PIL import Image
 import streamlit as st
 
 st.set_page_config(
-    page_title="AMPER.AI - Lightroom Pro Suite", page_icon="⚡", layout="wide"
+    page_title="AMPER.AI - Pro Suite", page_icon="⚡", layout="wide"
 )
 
 # ==========================================================
@@ -118,11 +118,11 @@ with header_col1:
     st.markdown("<h1 style='margin:0;'>⚡</h1>", unsafe_allow_html=True)
 
 with header_col2:
-  st.title("AMPER.AI — Professional Lightroom & 4K Upscaler Suite")
+  st.title("AMPER.AI — Professional Editing & 4K Upscaler Suite")
   st.markdown(
       "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
-      " foto pintar berstandar industri dengan kontrol parameter lengkap ala"
-      " Lightroom & AI Upscaling.</p>",
+      " foto pintar berstandar industri dengan kontrol parameter lengkap "
+      " & AI Upscaling.</p>",
       unsafe_allow_html=True,
   )
 
@@ -186,13 +186,13 @@ with st.sidebar:
 
   st.markdown("---")
   upscale_choice = st.selectbox(
-      "Resolution Upscaling", ["2x (HD Standard)", "4x (Ultra HD 4K)"], index=0
+      "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0
   )
   process_btn = st.button("🚀 Terapkan & Render Instan")
 
 # ---------------- Upload foto ----------------
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Anda (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
+    "📂 Unggah File Foto Kamu (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
@@ -420,7 +420,7 @@ if uploaded_file is not None:
       st.download_button(
           label="📥 Unduh Foto HD Pro (JPEG)",
           data=byte_im,
-          file_name="amper_ai_lightroom_pro.jpg",
+          file_name="amper_ai_pro.jpg",
           mime="image/jpeg",
           use_container_width=True,
       )
