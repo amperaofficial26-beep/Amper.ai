@@ -16,7 +16,7 @@ if REQUIRE_LOGIN:
   from auth import render_auth_sidebar, get_credits, deduct_credit
 
 st.set_page_config(
-    page_title="AMPER.AI - Pro Suite", page_icon="😈", layout="wide"
+    page_title="AMPER.AI -  Pro Suite", page_icon="😈", layout="wide"
 )
 
 # ==========================================================
@@ -32,10 +32,6 @@ MAX_INPUT_DIM = 3000
 
 # Batas aman total pixel HASIL AKHIR (setelah upscaling)
 MAX_OUTPUT_MEGAPIXELS = 20_000_000
-
-# Untuk uji coba pertama: sistem login & kredit dimatikan dulu.
-# Kalau sudah siap ditawarkan/dijual, ganti jadi True lagi.
-REQUIRE_LOGIN = False
 
 
 def get_base64_of_bin_file(path):
@@ -162,183 +158,6 @@ def compute_auto_suggestions(img_bgr):
   }
 
 
-# =====================================================================
-# ======================  FITUR AI PHOTO TOOLS  ======================
-# Semua fungsi di bawah ini SENGAJA dibuat tanpa model AI berat
-# (tidak ada download GFPGAN/Stable Diffusion dkk). Alasannya: server
-# gratis Streamlit Cloud biasanya cuma punya RAM terbatas & tanpa GPU,
-# jadi model besar begitu sering bikin app crash / OOM saat deploy.
-# Semua fungsi ini pakai algoritma bawaan OpenCV (photo module) yang
-# ringan tapi hasilnya tetap terlihat "AI-ish" & profesional.
-# =====================================================================
-
-
-def apply_ai_photo_enhancer(img_bgr):
-  """'AI Photo Enhancer' 1-klik: gabungan auto white balance (gray-world),
-  auto tone dari compute_auto_suggestions, dan sedikit local contrast,
-  supaya foto langsung terlihat lebih hidup tanpa perlu atur slider."""
-  # Auto white balance sederhana (gray-world assumption)
-  result = img_bgr.astype("float32")
-  avg_b, avg_g, avg_r = [result[:, :, i].mean() for i in range(3)]
-  avg_gray = (avg_b + avg_g + avg_r) / 3.0
-  avg_b, avg_g, avg_r = max(avg_b, 1e-3), max(avg_g, 1e-3), max(avg_r, 1e-3)
-  result[:, :, 0] *= avg_gray / avg_b
-  result[:, :, 1] *= avg_gray / avg_g
-  result[:, :, 2] *= avg_gray / avg_r
-  result = np.clip(result, 0, 255).astype("uint8")
-
-  # Local contrast (CLAHE) di channel L supaya detail midtone lebih pop
-  lab = cv2.cvtColor(result, cv2.COLOR_BGR2LAB)
-  l_ch, a_ch, b_ch = cv2.split(lab)
-  clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-  l_ch = clahe.apply(l_ch)
-  result = cv2.cvtColor(cv2.merge([l_ch, a_ch, b_ch]), cv2.COLOR_LAB2BGR)
-
-  # Sedikit sharpening akhir supaya terlihat "diproses AI"
-  gaussian = cv2.GaussianBlur(result, (0, 0), 2)
-  result = cv2.addWeighted(result, 1.25, gaussian, -0.25, 0)
-  return result
-
-
-def apply_face_enhancer(img_bgr):
-  """Deteksi wajah (Haar Cascade bawaan OpenCV), lalu perhalus kulit
-  dengan bilateral filter (menjaga tepi mata/hidung/bibir) dan
-  pertajam detail wajah dengan unsharp mask lokal."""
-  face_cascade = cv2.CascadeClassifier(
-      cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-  )
-  gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-  faces = face_cascade.detectMultiScale(
-      gray, scaleFactor=1.1, minNeighbors=6, minSize=(50, 50)
-  )
-
-  result = img_bgr.copy()
-  for (x, y, w, h) in faces:
-    pad = int(0.2 * w)
-    x1, y1 = max(0, x - pad), max(0, y - pad)
-    x2, y2 = min(img_bgr.shape[1], x + w + pad), min(img_bgr.shape[0], y + h + pad)
-    face_roi = result[y1:y2, x1:x2]
-
-    # Perhalus kulit (menjaga tepi tajam mata/bibir)
-    smooth = cv2.bilateralFilter(face_roi, d=9, sigmaColor=55, sigmaSpace=55)
-    # Pertajam detail halus (mata, alis, bibir) via unsharp mask
-    blur = cv2.GaussianBlur(smooth, (0, 0), 3)
-    sharp = cv2.addWeighted(smooth, 1.4, blur, -0.4, 0)
-    # Blend lembut supaya transisi ke area luar wajah tidak terlihat kotak
-    mask = np.zeros(face_roi.shape[:2], dtype="float32")
-    cv2.ellipse(
-        mask,
-        (mask.shape[1] // 2, mask.shape[0] // 2),
-        (mask.shape[1] // 2, mask.shape[0] // 2),
-        0, 0, 360, 1.0, -1,
-    )
-    mask = cv2.GaussianBlur(mask, (31, 31), 0)
-    mask_3 = np.dstack([mask, mask, mask])
-    blended = (sharp.astype("float32") * mask_3 + face_roi.astype("float32") * (1 - mask_3))
-    result[y1:y2, x1:x2] = np.clip(blended, 0, 255).astype("uint8")
-
-  return result, len(faces)
-
-
-def apply_old_photo_restoration(img_bgr):
-  """Restorasi foto lama: denoise kuat, hilangkan goresan/scratch halus
-  lewat deteksi+inpainting, koreksi warna pudar (gray-world white
-  balance), lalu naikkan kontras & ketajaman."""
-  # 1. Denoise kuat (foto lama biasanya banyak grain/film noise)
-  restored = cv2.fastNlMeansDenoisingColored(img_bgr, None, 12, 12, 7, 21)
-
-  # 2. Deteksi goresan/scratch tipis lalu tambal dengan inpainting
-  gray = cv2.cvtColor(restored, cv2.COLOR_BGR2GRAY)
-  diff = cv2.absdiff(gray, cv2.medianBlur(gray, 7))
-  _, scratch_mask = cv2.threshold(diff, 18, 255, cv2.THRESH_BINARY)
-  scratch_mask = cv2.dilate(scratch_mask, np.ones((3, 3), np.uint8), iterations=1)
-  restored = cv2.inpaint(restored, scratch_mask, 3, cv2.INPAINT_TELEA)
-
-  # 3. Koreksi warna pudar/menguning (gray-world auto white balance)
-  result_f = restored.astype("float32")
-  avg_b, avg_g, avg_r = [result_f[:, :, i].mean() for i in range(3)]
-  avg_gray = (avg_b + avg_g + avg_r) / 3.0
-  avg_b, avg_g, avg_r = max(avg_b, 1e-3), max(avg_g, 1e-3), max(avg_r, 1e-3)
-  result_f[:, :, 0] *= avg_gray / avg_b
-  result_f[:, :, 1] *= avg_gray / avg_g
-  result_f[:, :, 2] *= avg_gray / avg_r
-  restored = np.clip(result_f, 0, 255).astype("uint8")
-
-  # 4. Naikkan sedikit kontras & ketajaman supaya detail muncul kembali
-  restored = cv2.convertScaleAbs(restored, alpha=1.12, beta=8)
-  blur = cv2.GaussianBlur(restored, (0, 0), 3)
-  restored = cv2.addWeighted(restored, 1.3, blur, -0.3, 0)
-  return restored
-
-
-def compute_foreground_mask(img_bgr):
-  """Segmentasi objek utama vs background pakai GrabCut (bawaan OpenCV,
-  tanpa model AI eksternal). Dijalankan di resolusi kecil supaya cepat,
-  hasil mask di-resize belakangan ke resolusi final."""
-  small = img_bgr
-  max_dim = 500
-  h, w = small.shape[:2]
-  if max(h, w) > max_dim:
-    scale = max_dim / max(h, w)
-    small = cv2.resize(small, (int(w * scale), int(h * scale)))
-
-  mask = np.zeros(small.shape[:2], np.uint8)
-  bgd_model = np.zeros((1, 65), np.float64)
-  fgd_model = np.zeros((1, 65), np.float64)
-  sh, sw = small.shape[:2]
-  rect = (int(sw * 0.04), int(sh * 0.04), int(sw * 0.92), int(sh * 0.92))
-  try:
-    cv2.grabCut(small, mask, rect, bgd_model, fgd_model, 4, cv2.GC_INIT_WITH_RECT)
-    fg_mask = np.where((mask == 2) | (mask == 0), 0, 1).astype("float32")
-  except cv2.error:
-    # Kalau GrabCut gagal (foto polos/kontras rendah), anggap semua foreground
-    fg_mask = np.ones(small.shape[:2], dtype="float32")
-
-  fg_mask = cv2.GaussianBlur(fg_mask, (9, 9), 0)  # tepi lebih halus
-  return fg_mask  # nilai 0..1, 1 = objek utama
-
-
-def apply_background_enhancer(img_bgr, fg_mask_small, mode):
-  """Terapkan efek ke area BACKGROUND saja (objek utama tetap tajam),
-  berdasarkan mask hasil compute_foreground_mask."""
-  h, w = img_bgr.shape[:2]
-  fg_mask = cv2.resize(fg_mask_small, (w, h))
-  fg_mask_3 = np.dstack([fg_mask, fg_mask, fg_mask])
-
-  if mode == "Blur Background":
-    bg_version = cv2.GaussianBlur(img_bgr, (0, 0), 15)
-  elif mode == "Cerahkan Background":
-    bg_version = cv2.convertScaleAbs(img_bgr, alpha=1.15, beta=25)
-  elif mode == "Studio Gelap (Ganti Warna)":
-    bg_version = np.full_like(img_bgr, (35, 32, 30))  # abu gelap ala studio
-  else:
-    return img_bgr
-
-  blended = img_bgr.astype("float32") * fg_mask_3 + bg_version.astype("float32") * (1 - fg_mask_3)
-  return np.clip(blended, 0, 255).astype("uint8")
-
-
-def apply_ai_avatar_style(img_bgr, style):
-  """Filter stylization ala 'avatar/kartun' pakai modul photo bawaan
-  OpenCV (stylization & pencilSketch) — tanpa model generative AI."""
-  if style == "Kartun (Cartoon)":
-    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-    gray_blur = cv2.medianBlur(gray, 5)
-    edges = cv2.adaptiveThreshold(
-        gray_blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9
-    )
-    color = cv2.bilateralFilter(img_bgr, 9, 250, 250)
-    return cv2.bitwise_and(color, color, mask=edges)
-  elif style == "Sketsa Pensil":
-    _, color_sketch = cv2.pencilSketch(
-        img_bgr, sigma_s=60, sigma_r=0.07, shade_factor=0.05
-    )
-    return color_sketch
-  elif style == "Lukisan Cat (Oil Paint)":
-    return cv2.stylization(img_bgr, sigma_s=60, sigma_r=0.45)
-  return img_bgr
-
-
 set_custom_theme()
 set_background(BG_PATH)
 
@@ -349,8 +168,8 @@ if REQUIRE_LOGIN:
   if not is_logged_in:
     st.title("😈 AMPER.AI — Professional Editing & 4K Upscaler Suite")
     st.info(
-        "Silakan **Masuk** atau **Daftar** dulu lewat panel di sebelah kiri ya.."
-        " untuk mulai memakai Amper-AI PRO Setiap akun baru otomatis dapat"
+        "Silakan **Masuk** atau **Daftar** dulu lewat panel di sebelah kiri"
+        " untuk mulai memakai Amper.AI. Setiap akun baru otomatis dapat"
         " kredit gratis untuk dicoba."
     )
     st.stop()
@@ -368,15 +187,15 @@ with header_col2:
   st.title("AMPER.AI — Professional Editing & 4K Upscaler Suite")
   st.markdown(
       "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
-      " foto pintar berstandar industri dengan kontrol parameter lengkap "
-      " & AI Upscaling.</p>",
+      " foto pintar berstandar industri dengan kontrol parameter lengkap ala"
+      " Lightroom & AI Upscaling.</p>",
       unsafe_allow_html=True,
   )
 
 # ---------------- Upload foto (dipindah ke atas supaya bisa dianalisis
 # dulu sebelum sidebar dibuat, untuk fitur Auto Enhance) ----------------
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Keren Kamu Kesini..(JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
+    "📂 Unggah File Foto Keren Kamu Disini... (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
 )
 
 img = None
@@ -407,7 +226,7 @@ if uploaded_file is not None:
         interpolation=cv2.INTER_AREA,
     )
     st.info(
-        "ℹ️ Maaf ya..Foto asli diturunkan sementara ke resolusi lebih kecil sebelum"
+        "ℹ️ Foto asli Kamu diturunkan sementara ke resolusi lebih kecil sebelum"
         " diproses agar server tidak kehabisan memori."
     )
 
@@ -499,51 +318,17 @@ with st.sidebar:
       " upscaling terlihat lebih 'pop', tanpa memakai model AI berat.",
   )
 
-  st.markdown("### 5. 🤖 AI Photo Tools")
-  ai_enhancer_on = st.checkbox(
-      "🪄 AI Photo Enhancer (Auto Enhance Pro)",
-      value=False,
-      help="Auto white balance + local contrast (CLAHE) + sharpen, 1 klik langsung nendang.",
-  )
-  face_enhancer_on = st.checkbox(
-      "🧑 Face Enhancer (Halus & Tajamkan Wajah)",
-      value=False,
-      help="Deteksi wajah otomatis lalu perhalus kulit & pertajam detail mata/bibir.",
-  )
-  old_restore_on = st.checkbox(
-      "🕰️ Restorasi Foto Lama",
-      value=False,
-      help="Untuk foto jadul: hilangkan noise & goresan, perbaiki warna pudar/menguning.",
-  )
-  bg_enhancer_mode = st.selectbox(
-      "🖼️ Background Enhancer",
-      ["Tidak Aktif", "Blur Background", "Cerahkan Background", "Studio Gelap (Ganti Warna)"],
-      index=0,
-      help="Objek utama dideteksi otomatis (GrabCut) & tetap tajam, hanya background yang diubah.",
-  )
-  avatar_style = st.selectbox(
-      "🎭 AI Avatar / Style Filter",
-      ["Tidak Aktif", "Kartun (Cartoon)", "Sketsa Pensil", "Lukisan Cat (Oil Paint)"],
-      index=0,
-      help="Filter stylization untuk bikin avatar/PP unik. Ini override tampilan akhir foto.",
-  )
-  st.caption(
-      "ℹ️ Fitur di atas pakai algoritma computer-vision ringan bawaan OpenCV"
-      " (bukan model generative-AI berat), supaya tetap stabil & cepat di"
-      " Streamlit Cloud gratis."
-  )
-
   st.markdown("---")
   upscale_choice = st.selectbox(
-      "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0
+      "Resolution Upscaling", ["2x (HD Standard)", "4x (Ultra HD 4K)"], index=0
   )
-  process_btn = st.button("⚒️ Terapkan & Render Instan")
+  process_btn = st.button("⬆️ Terapkan & Render Instan")
 
 # ---------------- Tampilkan foto & proses ----------------
 if uploaded_file is not None and img is not None:
   col_orig, col_res = st.columns(2)
   with col_orig:
-    st.subheader("🎆 Foto Asli")
+    st.subheader("🎆  Foto Asli")
     st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True)
 
   if process_btn or "processed_img" not in st.session_state:
@@ -551,12 +336,12 @@ if uploaded_file is not None and img is not None:
       user_credits = get_credits(current_user["id"])
       if user_credits <= 0:
         st.error(
-            "💳 Kredit kamu sudah habis. Silakan top up dulu untuk lanjut"
+            "💳 Waduh,,,Kredit kamu sudah habis. Silakan top up dulu untuk lanjut"
             " memakai Amper.AI."
         )
         st.stop()
     try:
-      with st.spinner("✨ Sedang merender mesin AI-PRO & Upscaler AI..."):
+      with st.spinner("🛠️  Sedang merender mesin Ai Pro & Upscaler AI..."):
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
@@ -566,17 +351,10 @@ if uploaded_file is not None and img is not None:
           adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
           scale_factor = max(1.0, adjusted_scale)
           st.warning(
-              "⚠️ MAAF YA..Resolusi hasil upscaling terlalu besar dan berisiko"
+              "⚠️ Maaf ya..Resolusi hasil upscaling terlalu besar dan berisiko"
               f" membuat server kehabisan memori. Skala diturunkan otomatis"
               f" menjadi {scale_factor:.2f}x agar tetap aman."
           )
-
-        # =========================================================
-        # TAHAP -1 — Restorasi foto lama (opsional), dijalankan
-        # paling awal di resolusi asli, sebelum efek lain menumpuk
-        # =========================================================
-        if old_restore_on:
-          img = apply_old_photo_restoration(img)
 
         # =========================================================
         # TAHAP 0 — noise reduction (opsional) di resolusi ASLI,
@@ -658,20 +436,6 @@ if uploaded_file is not None and img is not None:
         gc.collect()
 
         # =========================================================
-        # TAHAP 1.5 — Face Enhancer & persiapan mask Background
-        # Enhancer, dijalankan di resolusi KECIL (sebelum upscale)
-        # supaya deteksi wajah/objek lebih cepat & hemat memori.
-        # =========================================================
-        if face_enhancer_on:
-          sat_adj_small, n_faces = apply_face_enhancer(sat_adj_small)
-          if n_faces == 0:
-            st.info("ℹ️ Face Enhancer aktif, tapi tidak ada wajah yang terdeteksi di foto ini.")
-
-        bg_fg_mask_small = None
-        if bg_enhancer_mode != "Tidak Aktif":
-          bg_fg_mask_small = compute_foreground_mask(sat_adj_small)
-
-        # =========================================================
         # TAHAP 2 — upscaling dilakukan SETELAH koreksi warna,
         # jadi cuma satu kali proses resize di gambar besar.
         # =========================================================
@@ -738,35 +502,6 @@ if uploaded_file is not None and img is not None:
           )
           gc.collect()
 
-        # =========================================================
-        # TAHAP 5 — AI Photo Enhancer 1-klik (opsional), diterapkan
-        # di resolusi akhir supaya white balance & CLAHE ikut sinkron
-        # dengan hasil upscaling & sharpening di atas.
-        # =========================================================
-        if ai_enhancer_on:
-          final_bgr = apply_ai_photo_enhancer(final_bgr)
-          gc.collect()
-
-        # =========================================================
-        # TAHAP 6 — Background Enhancer: mask dari resolusi kecil
-        # di-resize ke resolusi final, lalu efek diterapkan HANYA
-        # ke area background (objek utama tetap tajam & natural).
-        # =========================================================
-        if bg_enhancer_mode != "Tidak Aktif" and bg_fg_mask_small is not None:
-          final_bgr = apply_background_enhancer(
-              final_bgr, bg_fg_mask_small, bg_enhancer_mode
-          )
-          gc.collect()
-
-        # =========================================================
-        # TAHAP 7 — AI Avatar / Style Filter (opsional). Filter ini
-        # bersifat "final look" jadi sengaja diterapkan PALING akhir,
-        # menimpa hasil editing tone/detail di atasnya.
-        # =========================================================
-        if avatar_style != "Tidak Aktif":
-          final_bgr = apply_ai_avatar_style(final_bgr, avatar_style)
-          gc.collect()
-
         st.session_state["processed_img"] = cv2.cvtColor(
             final_bgr, cv2.COLOR_BGR2RGB
         )
@@ -777,18 +512,17 @@ if uploaded_file is not None and img is not None:
           deduct_credit(current_user["id"])
     except Exception as e:
       st.error(
-          "❌ Oppss..Terjadi kesalahan saat memproses gambar (kemungkinan foto"
-          " terlalu besar untuk skala upscaling yang dipilih, atau kombinasi"
-          " fitur AI Photo Tools terlalu berat). Coba unggah foto dengan"
-          " resolusi lebih kecil, nonaktifkan salah satu fitur AI Photo"
-          " Tools, atau pilih 2x HD Standard dulu."
+          "❌ Terjadi kesalahan saat memproses gambar (kemungkinan foto"
+          " terlalu besar untuk skala upscaling yang dipilih). Coba unggah"
+          " foto dengan resolusi lebih kecil, atau pilih 2x HD Standard"
+          " dulu."
       )
       with st.expander("Detail teknis error"):
         st.exception(e)
       st.session_state.pop("processed_img", None)
 
   with col_res:
-    st.subheader("🎇 Hasil AI Pro & Upscaled")
+    st.subheader("🎇 Hasil Ai Pro & Upscaled")
     if "processed_img" in st.session_state:
       st.image(st.session_state["processed_img"], use_container_width=True)
 
@@ -807,5 +541,5 @@ if uploaded_file is not None and img is not None:
 else:
   st.info(
       "👆 Silakan unggah foto terlebih dahulu melalui tombol di atas untuk"
-      " mulai menggunakan suite lengkap Ampera-Ai & Upscaler."
+      " mulai menggunakan suite lengkap & Upscaler."
   )
