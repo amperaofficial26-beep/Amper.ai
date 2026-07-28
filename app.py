@@ -16,7 +16,7 @@ if REQUIRE_LOGIN:
   from auth import render_auth_sidebar, get_credits, deduct_credit
 
 st.set_page_config(
-    page_title="AMPER.AI -  Pro Suite", page_icon="😈", layout="wide"
+    page_title="AMPER.AI - Lightroom Pro Suite", page_icon="⚡", layout="wide"
 )
 
 # ==========================================================
@@ -166,7 +166,7 @@ current_user = None
 if REQUIRE_LOGIN:
   is_logged_in = render_auth_sidebar()
   if not is_logged_in:
-    st.title("😈 AMPER.AI — Professional Editing & 4K Upscaler Suite")
+    st.title("⚡ AMPER.AI — Professional Lightroom & 4K Upscaler Suite")
     st.info(
         "Silakan **Masuk** atau **Daftar** dulu lewat panel di sebelah kiri"
         " untuk mulai memakai Amper.AI. Setiap akun baru otomatis dapat"
@@ -181,10 +181,10 @@ with header_col1:
   try:
     st.image(LOGO_PATH, use_container_width=True)
   except Exception:
-    st.markdown("<h1 style='margin:0;'>😈</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin:0;'>⚡</h1>", unsafe_allow_html=True)
 
 with header_col2:
-  st.title("AMPER.AI — Professional Editing & 4K Upscaler Suite")
+  st.title("AMPER.AI — Professional Lightroom & 4K Upscaler Suite")
   st.markdown(
       "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
       " foto pintar berstandar industri dengan kontrol parameter lengkap ala"
@@ -195,7 +195,7 @@ with header_col2:
 # ---------------- Upload foto (dipindah ke atas supaya bisa dianalisis
 # dulu sebelum sidebar dibuat, untuk fitur Auto Enhance) ----------------
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Keren Kamu Disini... (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
+    "📂 Unggah File Foto Anda (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
 )
 
 img = None
@@ -212,7 +212,7 @@ if uploaded_file is not None:
   img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
   if img is None:
-    st.error("❌ Oopss..Gagal membaca file gambar. Coba unggah file JPG/PNG yang lain.")
+    st.error("❌ Gagal membaca file gambar. Coba unggah file JPG/PNG yang lain.")
     st.stop()
 
   # Turunkan foto asli dulu kalau memang sangat besar (mis. hasil kamera HP),
@@ -226,7 +226,7 @@ if uploaded_file is not None:
         interpolation=cv2.INTER_AREA,
     )
     st.info(
-        "ℹ️ Foto asli Kamu diturunkan sementara ke resolusi lebih kecil sebelum"
+        "ℹ️ Foto asli diturunkan sementara ke resolusi lebih kecil sebelum"
         " diproses agar server tidak kehabisan memori."
     )
 
@@ -322,13 +322,13 @@ with st.sidebar:
   upscale_choice = st.selectbox(
       "Resolution Upscaling", ["2x (HD Standard)", "4x (Ultra HD 4K)"], index=0
   )
-  process_btn = st.button("⬆️ Terapkan & Render Instan")
+  process_btn = st.button("🚀 Terapkan & Render Instan")
 
 # ---------------- Tampilkan foto & proses ----------------
 if uploaded_file is not None and img is not None:
   col_orig, col_res = st.columns(2)
   with col_orig:
-    st.subheader("🎆  Foto Asli")
+    st.subheader("📷 Foto Asli")
     st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True)
 
   if process_btn or "processed_img" not in st.session_state:
@@ -336,12 +336,12 @@ if uploaded_file is not None and img is not None:
       user_credits = get_credits(current_user["id"])
       if user_credits <= 0:
         st.error(
-            "💳 Waduh,,,Kredit kamu sudah habis. Silakan top up dulu untuk lanjut"
+            "💳 Kredit kamu sudah habis. Silakan top up dulu untuk lanjut"
             " memakai Amper.AI."
         )
         st.stop()
     try:
-      with st.spinner("🛠️  Sedang merender mesin Ai Pro & Upscaler AI..."):
+      with st.spinner("✨ Sedang merender mesin Lightroom & Upscaler AI..."):
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
@@ -351,7 +351,7 @@ if uploaded_file is not None and img is not None:
           adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
           scale_factor = max(1.0, adjusted_scale)
           st.warning(
-              "⚠️ Maaf ya..Resolusi hasil upscaling terlalu besar dan berisiko"
+              "⚠️ Resolusi hasil upscaling terlalu besar dan berisiko"
               f" membuat server kehabisan memori. Skala diturunkan otomatis"
               f" menjadi {scale_factor:.2f}x agar tetap aman."
           )
@@ -522,7 +522,7 @@ if uploaded_file is not None and img is not None:
       st.session_state.pop("processed_img", None)
 
   with col_res:
-    st.subheader("🎇 Hasil Ai Pro & Upscaled")
+    st.subheader("✨ Hasil Lightroom Pro & Upscaled")
     if "processed_img" in st.session_state:
       st.image(st.session_state["processed_img"], use_container_width=True)
 
@@ -534,12 +534,12 @@ if uploaded_file is not None and img is not None:
       st.download_button(
           label="📥 Unduh Foto HD Pro (JPEG)",
           data=byte_im,
-          file_name="amper_ai_pro.jpg",
+          file_name="amper_ai_lightroom_pro.jpg",
           mime="image/jpeg",
           use_container_width=True,
       )
 else:
   st.info(
       "👆 Silakan unggah foto terlebih dahulu melalui tombol di atas untuk"
-      " mulai menggunakan suite lengkap & Upscaler."
+      " mulai menggunakan suite lengkap Lightroom & Upscaler."
   )
