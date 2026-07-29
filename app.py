@@ -788,104 +788,104 @@ with st.sidebar:
   st.markdown("---")
   st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
- with st.sidebar:
+with st.sidebar:
     # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.V1.HTML) ---
   st.markdown("---")
   st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
   yuki_html = """<!DOCTYPE html>
-   <html lang="id">
-   <head>
-   <meta charset="UTF-8">
-   <style>
-  :root{
-    --bg-deep:#120c1e;
-    --bg-panel:#251a3d;
-    --bg-bubble-ai:#2a1f45;
-    --bg-bubble-user:#3a2361;
-    --accent-pink:#ff7aa8;
-    --accent-pink-soft:#ff9dc0;
-    --accent-gold:#ffca6b;
-    --accent-cyan:#7fe9dc;
-    --text-main:#f6f1ff;
-    --text-muted:#a396c4;
-    --text-faint:#6f6394;
-    --border-glow:rgba(255,122,168,0.25);
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{
-    background:transparent;
-    color:var(--text-main);
-    font-family:'Inter', sans-serif;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-  }
-  .app{
-    width:100%;
-    height:480px;
-    display:flex;
-    flex-direction:column;
-    background:rgba(18,12,30,0.92);
-    border:1px solid rgba(255,122,168,0.25);
-    border-radius:12px;
-    overflow:hidden;
-  }
-  header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 12px;
-    background:rgba(37,26,61,0.85);
-    border-bottom:1px solid var(--border-glow);
-  }
-  .avatar{
-    width:36px; height:36px; border-radius:50%; flex-shrink:0;
-    background:radial-gradient(circle at 35% 30%, #ffe3ee 0%, #ff9dc0 45%, #7a4fa8 100%);
-    position:relative; overflow:hidden;
-  }
-  .avatar svg{ width:100%; height:100%; display:block; }
-  .id-name{ font-weight:700; font-size:0.9rem; color:var(--accent-pink-soft); }
-  .id-role{ font-size:0.65rem; color:var(--text-muted); }
+    <html lang="id">
+    <head>
+    <meta charset="UTF-8">
+    <style>
+    :root{
+      --bg-deep:#120c1e;
+      --bg-panel:#251a3d;
+      --bg-bubble-ai:#2a1f45;
+      --bg-bubble-user:#3a2361;
+      --accent-pink:#ff7aa8;
+      --accent-pink-soft:#ff9dc0;
+      --accent-gold:#ffca6b;
+      --accent-cyan:#7fe9dc;
+      --text-main:#f6f1ff;
+      --text-muted:#a396c4;
+      --text-faint:#6f6394;
+      --border-glow:rgba(255,122,168,0.25);
+    }
+      *{box-sizing:border-box; margin:0; padding:0;}
+     body{
+      background:transparent;
+      color:var(--text-main);
+      font-family:'Inter', sans-serif;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+     .app{
+       width:100%;
+       height:480px;
+       display:flex;
+       flex-direction:column;
+       background:rgba(18,12,30,0.92);
+       border:1px solid rgba(255,122,168,0.25);
+       border-radius:12px;
+       overflow:hidden;
+    }
+     header{
+       display:flex;
+       align-items:center;
+       gap:10px;
+       padding:10px 12px;
+       background:rgba(37,26,61,0.85);
+       border-bottom:1px solid var(--border-glow);
+    } 
+     .avatar{
+       width:36px; height:36px; border-radius:50%; flex-shrink:0;
+       background:radial-gradient(circle at 35% 30%, #ffe3ee 0%, #ff9dc0 45%, #7a4fa8 100%);
+       position:relative; overflow:hidden;
+    }
+     .avatar svg{ width:100%; height:100%; display:block; }
+     .id-name{ font-weight:700; font-size:0.9rem; color:var(--accent-pink-soft); }
+     .id-role{ font-size:0.65rem; color:var(--text-muted); }
 
-  main{
-    flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px;
-  }
-  main::-webkit-scrollbar{ width:4px; }
-  main::-webkit-scrollbar-thumb{ background:rgba(255,122,168,0.3); border-radius:4px; }
+     main{
+      flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px;
+    }
+     main::-webkit-scrollbar{ width:4px; }
+     main::-webkit-scrollbar-thumb{ background:rgba(255,122,168,0.3); border-radius:4px; }
 
-  .row{ display:flex; gap:8px; max-width:100%; align-items:flex-end; }
-  .row.user{ flex-direction:row-reverse; }
-  .bubble{
-    max-width:82%; padding:8px 12px; border-radius:12px; font-size:0.82rem; line-height:1.4;
-    word-wrap:break-word; white-space:pre-wrap;
-  }
-  .row.ai .bubble{
-    background:var(--bg-bubble-ai); border:1px solid rgba(255,202,107,0.18); border-bottom-left-radius:2px;
-  }
-  .row.user .bubble{
-    background:var(--bg-bubble-user); border:1px solid rgba(127,233,220,0.2); border-bottom-right-radius:2px; color:#f3ecff;
-  }
-  .tag{ display:block; font-size:0.6rem; color:var(--accent-pink-soft); margin-bottom:2px; }
+     .row{ display:flex; gap:8px; max-width:100%; align-items:flex-end; }
+     .row.user{ flex-direction:row-reverse; }
+     .bubble{
+     max-width:82%; padding:8px 12px; border-radius:12px; font-size:0.82rem; line-height:1.4;
+     word-wrap:break-word; white-space:pre-wrap;
+    }
+     .row.ai .bubble{
+     background:var(--bg-bubble-ai); border:1px solid rgba(255,202,107,0.18); border-bottom-left-radius:2px;
+    }
+     .row.user .bubble{
+      background:var(--bg-bubble-user); border:1px solid rgba(127,233,220,0.2); border-bottom-right-radius:2px; color:#f3ecff;
+    }
+     .tag{ display:block; font-size:0.6rem; color:var(--accent-pink-soft); margin-bottom:2px; }
 
-  .dialogue-wrap{ padding:8px; background:rgba(28,19,48,0.9); border-top:1px solid var(--border-glow); }
-  .dialogue-box{ display:flex; align-items:flex-end; gap:6px; background:rgba(37,26,61,0.9); border:1px solid var(--border-glow); border-radius:8px; padding:6px 8px; }
-  #userInput{
-    flex:1; resize:none; background:transparent; border:none; outline:none; color:var(--text-main); font-size:0.82rem; max-height:60px;
-  }
-  #userInput::placeholder{ color:var(--text-faint); }
-  #sendBtn{
-    width:32px; height:32px; border-radius:50%; border:none; cursor:pointer;
-    background:linear-gradient(135deg, var(--accent-pink), #c85f92); color:#fff;
-    display:flex; align-items:center; justify-content:center;
-  }
-  #sendBtn svg{ width:14px; height:14px; }
-  .typing{ font-size:0.75rem; color:var(--text-faint); font-style:italic; padding:0 4px; }
-</style>
-</head>
-<body>
-<div class="app">
-  <header>
+     .dialogue-wrap{ padding:8px; background:rgba(28,19,48,0.9); border-top:1px solid var(--border-glow); }
+     .dialogue-box{ display:flex; align-items:flex-end; gap:6px; background:rgba(37,26,61,0.9); border:1px solid var(--border-glow); border-radius:8px; padding:6px 8px; }
+    #userInput{
+     flex:1; resize:none; background:transparent; border:none; outline:none; color:var(--text-main); font-size:0.82rem; max-height:60px;
+    }
+    #userInput::placeholder{ color:var(--text-faint); }
+    #sendBtn{
+     width:32px; height:32px; border-radius:50%; border:none; cursor:pointer;
+     background:linear-gradient(135deg, var(--accent-pink), #c85f92); color:#fff;
+     display:flex; align-items:center; justify-content:center;
+    }
+    #sendBtn svg{ width:14px; height:14px; }
+     .typing{ font-size:0.75rem; color:var(--text-faint); font-style:italic; padding:0 4px; }
+   </style>
+   </head>
+   <body>
+   <div class="app">
+   <header>
     <div class="avatar">
       <svg viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="50" fill="#4a2f7a"/>
@@ -935,7 +935,7 @@ with st.sidebar:
     row.appendChild(bubble);
     chatArea.appendChild(row);
     chatArea.scrollTop = chatArea.scrollHeight;
-  }
+    }
 
   const knowledgeBase = [
     {
