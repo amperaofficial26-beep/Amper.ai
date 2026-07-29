@@ -14,7 +14,7 @@ if REQUIRE_LOGIN:
   from auth import render_auth_sidebar, get_credits, deduct_credit
 
 st.set_page_config(
-    page_title="AMPER.AI - Pro Suite, & Am-Chan (Ai)",
+    page_title="AMPER.AI - Pro Suite, & Yuki-Chan (Ai)",
     page_icon="👾",
     layout="wide",
 )
@@ -159,7 +159,7 @@ current_user = None
 if REQUIRE_LOGIN:
   is_logged_in = render_auth_sidebar()
   if not is_logged_in:
-    st.title("👾 AMPER.AI — Pro Suite & Am-Chan")
+    st.title("👾 AMPER.AI — Pro Suite & Yuki-Chan")
     st.info("Silakan Masuk atau Daftar lewat panel kiri untuk mulai.")
     st.stop()
   current_user = st.session_state["user"]
@@ -172,7 +172,7 @@ with header_col1:
     st.markdown("<h1 style='margin:0;'>👾</h1>", unsafe_allow_html=True)
 
 with header_col2:
-  st.title("AMPER.AI — Professional Editing, & Am-Chan Suite")
+  st.title("AMPER.AI — Professional Editing, & Yuki-Chan Suite")
   st.markdown(
       "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
       " foto pro lengkap dengan efek perjelas wajah, latar belakang bokeh,"
@@ -391,7 +391,7 @@ with st.sidebar:
 
   # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.HTML) ---
   st.markdown("---")
-  st.markdown("### 🌸 Asisten AI Am-Chan")
+  st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
   yuki_html = """
     <!DOCTYPE html>
@@ -547,7 +547,7 @@ with st.sidebar:
         } else if(q.includes('latar') || q.includes('background') || q.includes('bokeh') || q.includes('blur')){
           reply = "Efek latar belakang dapat diatur lewat slider 'Efek Latar Belakang' untuk mendapatkan efek bokeh DSLR yang estetik! 📸";
         } else if(q.includes('halo') || q.includes('hai') || q.includes('pagi')){
-          reply = "Konnichiwa~! 🌸 Aku Am-Chan, siap membantumu mengedit foto terbaik hari ini.";
+          reply = "Konnichiwa~! 🌸 Aku Yuki, siap membantumu mengedit foto terbaik hari ini.";
         }
         setTimeout(() => { addBubble('ai', reply); }, 400);
       }
@@ -570,7 +570,7 @@ with st.sidebar:
       });
 
       window.addEventListener('load', () => {
-        addBubble('ai', 'Konnichiwa~ 🌸 Aku Am-Chan. Silakan tanyakan apa saja seputar pengeditan foto!');
+        addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan tanyakan apa saja seputar pengeditan foto!');
       });
     </script>
     </body>
