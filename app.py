@@ -788,7 +788,7 @@ with st.sidebar:
   st.markdown("---")
   st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
- yuki_html = """
+  yuki_html = """
    <!DOCTYPE html>
    <html lang="id">
    <head>
@@ -877,9 +877,9 @@ with st.sidebar:
   }
   #sendBtn svg{ width:14px; height:14px; }
   .typing{ font-size:0.75rem; color:var(--text-faint); font-style:italic; padding:0 4px; }
-</style>
-</head>
-<body>
+   </style>
+   </head>
+   <body>
 <div class="app">
   <header>
     <div class="avatar">
