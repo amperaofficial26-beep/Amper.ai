@@ -1,6 +1,7 @@
 import base64
 import gc
 import io
+import random
 import cv2
 import numpy as np
 from PIL import Image
@@ -13,7 +14,9 @@ if REQUIRE_LOGIN:
   from auth import render_auth_sidebar, get_credits, deduct_credit
 
 st.set_page_config(
-    page_title="AMPER.AI - Pro Suite & Tone Curves", page_icon="✨", layout="wide"
+    page_title="AMPER.AI - Pro Suite & Smart AI Assistant",
+    page_icon="👾",
+    layout="wide",
 )
 
 LOGO_PATH = "logo_amper.png"
@@ -72,6 +75,21 @@ def set_custom_theme():
     }
     section[data-testid="stSidebar"] label {
         color: #cfe8e1 !important;
+    }
+
+    /* Kustomisasi warna teks Chatbot Amper-chan supaya sangat kontras & jelas */
+    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] {
+        background-color: rgba(10, 30, 35, 0.95) !important;
+        border: 1px solid #00ffcc !important;
+        border-radius: 12px;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] p,
+    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] span,
+    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] div {
+        color: #ffffff !important;
+        font-weight: 500;
     }
 
     .stButton>button {
@@ -138,18 +156,106 @@ def compute_auto_suggestions(img_bgr):
 
 
 def apply_tone_curve(img_f, curve_preset):
-  """Menerapkan kurva warna (Tone Curve) sederhana menggunakan LUT/Formula."""
   if curve_preset == "Linear (Standard)":
     return img_f
   elif curve_preset == "S-Curve (Kontras Tinggi & Sinematik)":
-    # Rumus S-curve menggunakan fungsi sinus bernilai halus
     return np.sin(img_f * np.pi - np.pi / 2) * 0.5 + 0.5
   elif curve_preset == "Matte / Fade (Gaya Film Indie)":
-    # Mengangkat warna hitam (shadow) dan menurunkan putih
     return img_f * 0.8 + 0.1
   elif curve_preset == "Bright Pop (Terang & Segar)":
     return np.power(img_f, 0.85)
   return img_f
+
+
+def get_smart_bot_response(query):
+  q = query.lower()
+
+  # Deteksi topik Remini / Wajah
+  if any(w in q for w in ["remini", "wajah", "kulit", "halus", "glowing"]):
+    responses = [
+        (
+            "Untuk hasil wajah ala Remini, kamu bisa menaikkan slider *Perjelas"
+            " Wajah & Kulit* di bagian atas sidebar. Fitur ini memadukan"
+            " bilateral filter dan detail enhancement agar tekstur mata dan"
+            " kulit terlihat tajam tapi tetap natural! ✨"
+        ),
+        (
+            "Mau bikin foto portrait makin kinclong? Geser slider Remini ke"
+            " angka 50-80. Dijamin detail wajah langsung pop-out dengan"
+            " mulus! (💎_💎)"
+        ),
+    ]
+    return random.choice(responses)
+
+  # Deteksi topik Latar Belakang / Bokeh
+  if any(w in q for w in ["latar", "background", "bokeh", "blur", "belakang"]):
+    responses = [
+        (
+            "Efek latar belakang dirancang untuk memberikan efek kedalaman"
+            " ruang (bokeh) ala kamera DSLR. Cukup geser slider *Efek Latar"
+            " Belakang* di sidebar sesuai tingkat blur yang kamu inginkan! 📸"
+        ),
+        (
+            "Supaya subjek utama foto kamu lebih menonjol, aktifkan efek blur"
+            " latar belakang. Efeknya otomatis memisahkan fokus utama dengan"
+            " background di sekitarnya lho!"
+        ),
+    ]
+    return random.choice(responses)
+
+  # Deteksi topik Kurva Warna / Preset
+  if any(w in q for w in ["kurva", "curve", "preset", "filter", "capcut"]):
+    responses = [
+        (
+            "Pilihan kurva warna sangat menentukan mood foto! Coba *S-Curve*"
+            " untuk kontras sinematik yang dramatis, atau *Matte/Fade* untuk"
+            " gaya indie aesthetic. Jangan lupa kombinasikan dengan preset"
+            " CapCut di bawahnya ya! 🎨"
+        ),
+        (
+            "Mau cepat tanpa ribet? Pilih template di menu *Effect & Pro Filter"
+            " Presets*, lalu klik tombol 'Terapkan Preset Pilihan'. Semua"
+            " slider otomatis menyesuaikan gaya profesional!"
+        ),
+    ]
+    return random.choice(responses)
+
+  # Deteksi Sapaan / Tanya Kabar
+  if any(
+      w in q for w in ["halo", "hai", "pagi", "siang", "malam", "terima kasih"]
+  ):
+    responses = [
+        (
+            "Halo juga! Ada foto keren yang mau kita edit hari ini? Jangan"
+            " ragu tanya-tanya soal fitur editing ya! (｡♥‿♥｡)"
+        ),
+        (
+            "Hai! Amper-chan siap sedia membantumu menghasilkan editan foto"
+            " terbaik. Mau coba filter atau efek apa nih sekarang?"
+        ),
+    ]
+    return random.choice(responses)
+
+  # Jawaban umum yang dinamis & profesional
+  general_responses = [
+      (
+          f"Pertanyaan yang menarik tentang '{query}'! Untuk hasil optimal,"
+          " pastikan kamu mengunggah foto beresolusi bagus lalu sesuaikan slider"
+          " pencahayaan dan detail di panel sebelah kiri ya. Ada lagi yang"
+          " bisa kubantu?"
+      ),
+      (
+          f"Aku mencatat poin tentang '{query}'. Kamu bisa bereksperimen"
+          " langsung dengan menggeser slider Exposure atau ketik 'remini' /"
+          " 'kurva' jika butuh panduan fitur spesifik! 🚀"
+      ),
+      (
+          "Wah, ide bagus! Sebagai asisten pro suite, aku sarankan kamu"
+          " mencoba kombinasi Kurva S-Curve dan Upscaling 4x agar hasil"
+          " akhirnya tajam dan sinematik."
+      ),
+  ]
+  return random.choice(general_responses)
 
 
 set_custom_theme()
@@ -159,7 +265,7 @@ current_user = None
 if REQUIRE_LOGIN:
   is_logged_in = render_auth_sidebar()
   if not is_logged_in:
-    st.title("😈 AMPER.AI — Professional Suite & Tone Curves")
+    st.title("👾 AMPER.AI — Pro Suite & Smart AI Assistant")
     st.info("Silakan Masuk atau Daftar lewat panel kiri untuk mulai.")
     st.stop()
   current_user = st.session_state["user"]
@@ -169,14 +275,14 @@ with header_col1:
   try:
     st.image(LOGO_PATH, use_container_width=True)
   except Exception:
-    st.markdown("<h1 style='margin:0;'>😈</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin:0;'>👾</h1>", unsafe_allow_html=True)
 
 with header_col2:
-  st.title("AMPER.AI — Professional Editing & Tone Curves Suite")
+  st.title("AMPER.AI — Professional Editing, Effect & Smart AI Suite")
   st.markdown(
       "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
-      " foto pintar dengan kontrol kurva warna presisi, preset pro, dan"
-      " asisten anime!</p>",
+      " foto pro lengkap dengan efek perjelas wajah, latar belakang bokeh,"
+      " dan AI assistant interaktif!</p>",
       unsafe_allow_html=True,
   )
 
@@ -198,7 +304,7 @@ if uploaded_file is not None:
   img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
   if img is None:
-    st.error("❌ Gagal membaca file gambar. Coba unggah file lain.")
+    st.error("❌ Oppss..Gagal membaca file gambar. Coba unggah file lain.")
     st.stop()
 
   h0, w0 = img.shape[:2]
@@ -209,7 +315,7 @@ if uploaded_file is not None:
         (int(w0 * input_scale), int(h0 * input_scale)),
         interpolation=cv2.INTER_AREA,
     )
-    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
+    st.info("ℹ️ Maaf Ya... Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
   auto_suggestions = compute_auto_suggestions(img)
 
@@ -219,12 +325,19 @@ if uploaded_file is not None:
     st.session_state["auto_applied_for"] = file_signature
 
 # ==========================================================
-# SIDEBAR KONTROL + TONE CURVE + PRESET PRO + ANIME CHAT
+# SIDEBAR KONTROL
 # ==========================================================
 with st.sidebar:
-  st.markdown("## ⚡ Pro Tone Curves & Filters")
+  st.markdown("## 👾 Pro Suite & Remini AI")
 
-  # --- FITUR BARU: TONE CURVE ---
+  st.markdown("### 🎭 Face Enhancer & Portrait")
+  remini_boost = st.slider(
+      "Perjelas Wajah & Kulit (Remini Effect)", 0, 100, 0, 1
+  )
+  bg_blur = st.slider(
+      "Efek Latar Belakang (Bokeh / Blur Halus)", 0, 100, 0, 2
+  )
+
   st.markdown("### 📈 RGB Tone Curve")
   curve_preset = st.selectbox(
       "Pilih Kurva Pencahayaan",
@@ -236,7 +349,7 @@ with st.sidebar:
       ],
   )
 
-  st.markdown("### 🎬 CapCut & Pro Filter Presets")
+  st.markdown("### 🎬 Pro Filter Presets")
   capcut_preset = st.selectbox(
       "Pilih Filter / Template Gaya",
       [
@@ -250,7 +363,7 @@ with st.sidebar:
       ],
   )
 
-  if st.button("🚀 Terapkan Preset Pilihan"):
+  if st.button("🪄 Terapkan Preset Pilihan"):
     if capcut_preset.startswith("✨ Cyberpunk"):
       st.session_state.update(
           {
@@ -382,12 +495,12 @@ with st.sidebar:
   )
   process_btn = st.button("⬆️ Terapkan & Render Instan")
 
-  # --- ANIME CHATBOT DI SIDEBAR BAWAH ---
+  # --- ANIME CHATBOT DI SIDEBAR BAWAH (DENGAN LOGIKA CERDAS) ---
   st.markdown("---")
-  st.markdown("### 🌸 Amper.Ai-chan (Anime AI Assistant)")
+  st.markdown("### 🌸 Amper-chan (Smart AI Assistant)")
   st.markdown(
-      "<p style='font-size:0.85em; color: #a9d6c9;'>*Kon'nichiwa!* Mau coba"
-      " kurva warna S-Curve atau filter pro hari ini, Onii-chan? (≧◡≦)</p>",
+      "<p style='font-size:0.85em; color: #a9d6c9;'>*Kon'nichiwa!* Tanyakan"
+      " apa saja soal foto, kurva warna, atau efek Remini padaku ya! (≧◡≦)</p>",
       unsafe_allow_html=True,
   )
 
@@ -395,8 +508,9 @@ with st.sidebar:
     st.session_state["anime_chat_messages"] = [{
         "role": "assistant",
         "content": (
-            "Yoo-hoo! Aku Amper-chan! Kurva warna dan preset baru sudah siap"
-            " dipakai lho! (๑˃ᴗ˂)ﻭ"
+            "Halo! Aku Amper-chan. Sekarang aku sudah lebih pintar dan bisa"
+            " menjawab berbagai pertanyaanmu seputar fitur foto lho! ✨ Ada yang"
+            " ingin didiskusikan?"
         ),
     }]
 
@@ -415,25 +529,7 @@ with st.sidebar:
     st.session_state["anime_chat_messages"].append(
         {"role": "user", "content": user_query}
     )
-    q_lower = user_query.lower()
-
-    if any(word in q_lower for word in ["kurva", "curve", "tone"]):
-      bot_reply = (
-          "Ah, soal Kurva Warna! 📈 Pilih *S-Curve* kalau mau efek kontras"
-          " sinematik yang dramatis, atau *Matte/Fade* buat gaya foto indie"
-          " kekinian! (｡♥‿♥｡)"
-      )
-    elif any(word in q_lower for word in ["halo", "hai", "pagi", "siang"]):
-      bot_reply = (
-          "Kon'nichiwa! Semangat mengeditnya ya! Jangan lupa coba preset Warm"
-          " Portrait atau Cyberpunk kita! (o^▽^o)"
-      )
-    else:
-      bot_reply = (
-          f"Hmm... '{user_query}' ya? Mantap sekali! (・ω<) Silakan atur slider"
-          " atau kurvanya sesuai selera senimanmu ya, Onii-chan! 🎨✨"
-      )
-
+    bot_reply = get_smart_bot_response(user_query)
     st.session_state["anime_chat_messages"].append(
         {"role": "assistant", "content": bot_reply}
     )
@@ -450,10 +546,10 @@ if uploaded_file is not None and img is not None:
     if REQUIRE_LOGIN:
       user_credits = get_credits(current_user["id"])
       if user_credits <= 0:
-        st.error("💳 Kredit habis. Silakan top up.")
+        st.error("💳 Kredit Kamu habis. Silakan top up.")
         st.stop()
     try:
-      with st.spinner("🛠️ Amper-chan sedang merender kurva warna & Upscaler..."):
+      with st.spinner("🛠️ Amper-chan sedang merender AI & Upscaler..."):
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
@@ -462,9 +558,35 @@ if uploaded_file is not None and img is not None:
           adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
           scale_factor = max(1.0, adjusted_scale)
           st.warning(
-              f"⚠️ Skala disesuaikan otomatis menjadi {scale_factor:.2f}x"
+              f"⚠️ Maaf ya...Skala disesuaikan otomatis menjadi {scale_factor:.2f}x"
               " demi keamanan memori server."
           )
+
+        # --- APLIKASI EFEK REMINI (Perjelas Wajah & Kulit) ---
+        if remini_boost > 0:
+          skin_smooth = cv2.bilateralFilter(
+              img, int(remini_boost / 5) * 2 + 5, 75, 75
+          )
+          sigma_val = 10 + (remini_boost / 100.0) * 20
+          img = cv2.detailEnhance(skin_smooth, sigma_s=sigma_val, sigma_r=0.15)
+          del skin_smooth
+          gc.collect()
+
+        # --- APLIKASI EFEK LATAR BELAKANG (Bokeh / Blur) ---
+        if bg_blur > 0:
+          blur_kernel = int(bg_blur / 5) * 2 + 1
+          bg_blurred = cv2.GaussianBlur(
+              img, (blur_kernel, blur_kernel), bg_blur / 2.0
+          )
+          rows, cols = img.shape[:2]
+          kernel_x = cv2.getGaussianKernel(cols, cols / 2.5)
+          kernel_y = cv2.getGaussianKernel(rows, rows / 2.5)
+          mask = kernel_y * kernel_x.T
+          mask = mask / mask.max()
+          mask = np.dstack([mask, mask, mask])
+          img = (img * mask + bg_blurred * (1.0 - mask)).astype("uint8")
+          del bg_blurred, kernel_x, kernel_y, kernel, mask
+          gc.collect()
 
         if denoise_strength > 0:
           img = cv2.fastNlMeansDenoisingColored(
@@ -473,7 +595,7 @@ if uploaded_file is not None and img is not None:
 
         img_f = img.astype("float32") / 255.0
 
-        # Terapkan Tone Curve pilihan pengguna
+        # Terapkan Tone Curve
         img_f = apply_tone_curve(img_f, curve_preset)
 
         if exposure != 0.0:
@@ -603,13 +725,13 @@ if uploaded_file is not None and img is not None:
         if REQUIRE_LOGIN:
           deduct_credit(current_user["id"])
     except Exception as e:
-      st.error("❌ Terjadi kesalahan saat memproses gambar.")
+      st.error("❌ Oppss...Terjadi kesalahan saat memproses gambar.")
       with st.expander("Detail teknis error"):
         st.exception(e)
       st.session_state.pop("processed_img", None)
 
   with col_res:
-    st.subheader("🎇 Hasil Tone Curve & Upscaled")
+    st.subheader("🎇 Hasil Remini & Pro Suite")
     if "processed_img" in st.session_state:
       st.image(st.session_state["processed_img"], use_container_width=True)
 
@@ -619,9 +741,9 @@ if uploaded_file is not None and img is not None:
       byte_im = buf.getvalue()
 
       st.download_button(
-          label="📥 Unduh Foto Hasil Pro Suite (JPEG)",
+          label="📥 Unduh Foto Hasil Amper.AI (JPEG)",
           data=byte_im,
-          file_name="amper_tone_curve.jpg",
+          file_name="amper_AI_pro_style.jpg",
           mime="image/jpeg",
           use_container_width=True,
       )
