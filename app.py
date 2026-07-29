@@ -790,14 +790,14 @@ with st.sidebar:
 
  with st.sidebar:
     # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.V1.HTML) ---
-    st.markdown("---")
-    st.markdown("### 🌸 Asisten AI Yuki-Chan")
+  st.markdown("---")
+  st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
-    yuki_html = """<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<style>
+  yuki_html = """<!DOCTYPE html>
+   <html lang="id">
+   <head>
+   <meta charset="UTF-8">
+   <style>
   :root{
     --bg-deep:#120c1e;
     --bg-panel:#251a3d;
