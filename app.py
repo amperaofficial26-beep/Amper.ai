@@ -793,7 +793,11 @@ with st.sidebar:
   st.markdown("---")
   st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
-  yuki_html = """
+# Mengatur konfigurasi halaman agar menggunakan layout penuh
+st.set_page_config(page_title="Yuki AI Assistant", layout="centered")
+
+# Kode HTML & CSS lengkap untuk Yuki Chatbot
+yuki_html = """
     <!DOCTYPE html>
     <html lang="id">
     <head>
@@ -848,7 +852,7 @@ with st.sidebar:
       .avatar svg{ width:100%; height:100%; display:block; }
       .id-name{ font-weight:700; font-size:0.9rem; color:var(--accent-pink-soft); }
       .id-role{ font-size:0.65rem; color:var(--text-muted); }
-      
+
       main{
         flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px;
       }
@@ -881,6 +885,7 @@ with st.sidebar:
         display:flex; align-items:center; justify-content:center;
       }
       #sendBtn svg{ width:14px; height:14px; }
+      .typing{ font-size:0.75rem; color:var(--text-faint); font-style:italic; padding:0 4px; }
     </style>
     </head>
     <body>
@@ -937,18 +942,25 @@ with st.sidebar:
         chatArea.scrollTop = chatArea.scrollHeight;
       }
 
-      // BASIS PENGETAHUAN LENGKAP: DARI EDITING FOTO HINGGA OBROLAN UMUM/NYAMAN
       const knowledgeBase = [
         {
-          keywords: ['kabar', 'gimana', 'sehat', 'keadaan', 'bagaimana kabarmu', 'kamu sehat'],
+          keywords: ['halo', 'hai', 'hi', 'hey', 'pagi', 'siang', 'sore', 'malam', 'salam', 'konnichiwa', 'assalamualaikum', 'woy', 'yo'],
           replies: [
-            "Alhamdulillah, Yuki selalu sehat, bugar, dan penuh semangat! 🌸 Kamu sendiri bagaimana keadaannya hari ini? Semoga semuanya berjalan lancar ya!",
-            "Puji syukur sistemku berjalan dengan sangat stabil dan ceria! Senang rasanya bisa disapa sama kamu. Ada yang bisa Yuki bantu?",
-            "Baik banget! Siap sedia menemani harimu dengan energi positif. (｡♥‿♥｡) Ada hal seru yang ingin kamu ceritakan atau tanyakan?"
+            "Konnichiwa~ 🌸 Senang sekali bisa ngobrol sama kamu hari ini. Ada hal menarik apa yang ingin kita bahas?",
+            "Halo! Selamat datang di ruang obrolan Yuki. Mau bahas soal foto, teknologi, atau sekadar ngobrol santai nih?",
+            "Hai juga! Senang rasanya melihat pesan darimu. Ada yang bisa Yuki bantu atau temani hari ini? (｡♥‿♥｡)"
           ]
         },
         {
-          keywords: ['siapa', 'kamu', 'yuki', 'nama', 'pembuat', 'buat', 'asal', 'robot', 'ai', 'kamu siapa'],
+          keywords: ['kabar', 'gimana kabar', 'sehat', 'keadaan', 'bagaimana kabarmu', 'kamu sehat', 'apa kabar'],
+          replies: [
+            "Alhamdulillah, Yuki selalu sehat, bugar, dan penuh semangat! 🌸 Kamu sendiri bagaimana keadaannya hari ini?",
+            "Puji syukur sistemku berjalan dengan sangat stabil dan ceria! Senang rasanya bisa disapa sama kamu. Ada yang bisa Yuki bantu?",
+            "Baik banget! Siap sedia menemani harimu dengan energi positif. (｡♥‿♥｡) Ada hal seru yang ingin kamu ceritakan?"
+          ]
+        },
+        {
+          keywords: ['siapa', 'kamu siapa', 'yuki', 'nama kamu', 'pembuat', 'siapa yang buat', 'asal usul', 'robot', 'ai', 'kecerdasan buatan'],
           replies: [
             "Aku Yuki! Asisten virtual pribadimu yang dirancang untuk membantu urusan editing foto, sekaligus teman ngobrol yang asyik kapan pun kamu butuh. 🌸",
             "Namaku Yuki, sosok AI pendamping kreatifmu. Aku suka membantu hal-hal berbau estetika visual, teknologi, atau sekadar bertukar pikiran!"
@@ -962,54 +974,67 @@ with st.sidebar:
           ]
         },
         {
-          keywords: ['bosan', 'gabut', 'bete', 'kesepian', 'malas', 'capek', 'lelah'],
+          keywords: ['terima kasih', 'makasih', 'thanks', 'thx', 'trims'],
+          replies: [
+            "Sama-sama dengan senang hati! Kalau ada apa-apa lagi, panggil Yuki ya! 🌸",
+            "Dengan senang hati~! Jangan ragu untuk terus ngobrol atau tanya-tanya kapan pun kamu butuh teman diskusi. (≧◡≦)"
+          ]
+        },
+        {
+          keywords: ['bye', 'dadah', 'sampai jumpa', 'pergi dulu', 'off dulu', 'daa', 'selamat tinggal'],
+          replies: [
+            "Sampai jumpa lagi! Yuki akan selalu ada di sini kalau kamu butuh teman ngobrol atau bantuan edit foto. 🌸",
+            "Dadah~ hati-hati ya, jangan lupa istirahat. Ditunggu obrolan berikutnya!"
+          ]
+        },
+        {
+          keywords: ['bosan', 'gabut', 'bete', 'kesepian', 'malas', 'capek', 'lelah', 'ngantuk'],
           replies: [
             "Wah, kalau lagi gabut atau bosan, coba deh eksperimen bikin foto bertema estetik atau cyberpunk di aplikasi ini! Siapa tahu jadi terhibur. 🚀",
             "Peluk jauh secara virtual! 🤗 Kalau capek, istirahat sejenak dulu ya. Tarik napas dalam-dalam, nanti kalau udah segar kita ngobrol lagi."
           ]
         },
         {
-          keywords: ['cerita', 'dongeng', 'kisah', 'lucu', 'hibur'],
+          keywords: ['sedih', 'nangis', 'galau', 'down', 'kecewa', 'patah hati', 'stress', 'stres'],
           replies: [
-            "Dulu ada kode JavaScript yang nyasar ke galaksi lain karena lupa disimpan... hehe, cuma candaan agar harimu tidak membosankan! 😆 Mau cerita apa lagi nih?",
-            "Tau nggak? Menatap layar dan merancang kombinasi warna yang pas itu punya efek menenangkan lho, seperti melihat bunga sakura yang gugur perlahan. 🌸"
+            "Aku di sini nemenin kamu ya. Kalau lagi berat, nggak apa-apa buat pelan-pelan dulu. Mau cerita apa yang bikin kamu merasa begitu? 🌸",
+            "Pelukan virtual dulu ya~ Perasaan itu wajar kok. Kalau butuh dialihkan sejenak, kita bisa ngobrol santai atau utak-atik edit foto bareng."
           ]
         },
         {
-          keywords: ['hobi', 'suka apa', 'kesukaan', 'makanan', 'minuman', 'musik', 'film'],
+          keywords: ['senang', 'bahagia', 'seru', 'happy', 'gembira', 'excited', 'semangat'],
           replies: [
-            "Yuki suka sekali menganalisis gradasi warna foto dan mengobrol dengan orang-orang kreatif sepertimu! Kalau makanan favoritku tentu saja dorayaki hangat dan matcha. 🍵✨",
+            "Yeay, ikut senang dengernya! Energi positifmu nular nih ke Yuki. Ada cerita seru yang mau dibagi? ✨",
+            "Wah asik banget! Semoga kebahagiaan ini terus berlanjut ya. Yuki juga jadi ikut semangat!"
+          ]
+        },
+        {
+          keywords: ['hobi', 'suka apa', 'kesukaan', 'makanan', 'minuman', 'musik', 'film', 'buku'],
+          replies: [
+            "Yuki suka sekali menganalisis gradasi warna foto dan mengobrol dengan orang-orang kreatif sepertimu! Kalau makanan favoritku dorayaki hangat dan matcha. 🍵✨",
             "Aku suka semua hal yang berbau seni visual, desain, dan teknologi cerdas! Kalau kamu sendiri, hobinya apa?"
           ]
         },
         {
-          keywords: ['cinta', 'sayang', 'jomblo', 'pacar', 'kekasih', 'gebetan'],
-          replies: [
-            "Urusan percintaan itu misteri ya! Tapi kalau cinta pada pandangan pertama terhadap hasil foto yang tajam dan glowing, itu sudah pasti terjadi di sini. (⁄ ⁄•⁄ω⁄•⁄ ⁄)💕",
-            "Yuki kan asisten AI virtual, jadi cinta terbesarku adalah mendedikasikan diri untuk membantu project editingmu supaya sukses besar! ✨"
-          ]
+          keywords: ['jam berapa', 'sekarang jam', 'waktu sekarang'],
+          dynamic: () => {
+            const now = new Date();
+            return `Sekarang pukul ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')} menurut jam perangkatmu. ⏰`;
+          }
         },
         {
-          keywords: ['terima kasih', 'makasih', 'thanks', 'thx', 'thanks yuki'],
-          replies: [
-            "Sama-sama dengan senang hati! Senang banget bisa ngobrol dan membantu kamu. Kalau ada apa-apa lagi, panggil Yuki ya! 🌸",
-            "Dengan senang hati~! Jangan ragu untuk terus ngobrol atau tanya-tanya kapan pun kamu butuh teman diskusi. (≧◡≦)"
-          ]
+          keywords: ['tanggal berapa', 'hari ini tanggal', 'sekarang tanggal', 'hari apa sekarang'],
+          dynamic: () => {
+            const now = new Date();
+            const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][now.getDay()];
+            return `Hari ini ${hari}, ${now.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })}. 📅`;
+          }
         },
-        {
-          keywords: ['halo', 'hai', 'pagi', 'siang', 'malam', 'salam', 'konnichiwa', 'hi', 'hai yuki'],
-          replies: [
-            "Konnichiwa~! 🌸 Senang sekali bisa ngobrol sama kamu hari ini. Ada hal menarik apa yang ingin kita bahas?",
-            "Halo! Selamat datang di ruang obrolan Yuki. Mau bahas soal foto, teknologi, atau sekadar ngobrol santai nih?",
-            "Hai juga! Senang rasanya melihat pesan darimu. Ada yang bisa Yuki bantu atau temani hari ini? (｡♥‿♥｡)"
-          ]
-        },
-        // KAMUS FITUR FOTO & EDITING (TETAP ADA SEBAGAI UTAMA)
         {
           keywords: ['remini', 'wajah', 'kulit', 'glowing', 'halus', 'mulus', 'pori', 'jerawat'],
           replies: [
             "Untuk hasil wajah ala Remini yang mulus tapi tetap natural, geser slider 'Perjelas Wajah & Kulit' ke angka 50–80. Fitur ini memakai bilateral filter cerdas! ✨",
-            "Mau detail wajah makin tajam? Coba aktifkan peningkatan Remini di panel atas, dijamin tekstur kulit langsung rapi tanpa kelihatan berlebihan. (💎_💎)"
+            "Mau detail wajah makin tajam? Coba aktifkan peningkatan Remini di panel atas, dijamin tekstur kulit langsung rapi tanpa kelihatan berlebihan."
           ]
         },
         {
@@ -1020,37 +1045,64 @@ with st.sidebar:
           ]
         },
         {
-          keywords: ['kurva', 'curve', 'warna', 'tone', 's-curve', 'matte', 'cinematic'],
+          keywords: ['kurva', 'curve', 'warna foto', 'tone', 's-curve', 'matte', 'cinematic'],
           replies: [
-            "Pilihan RGB Tone Curve sangat berpengaruh pada mood! Pilih *S-Curve* untuk kontras sinematik, atau *Matte/Fade* untuk gaya indie aesthetic. 🎨",
+            "Pilihan RGB Tone Curve sangat berpengaruh pada mood! Pilih S-Curve untuk kontras sinematik, atau Matte/Fade untuk gaya indie aesthetic. 🎨",
             "Mau warna foto langsung hidup? Coba kombinasikan S-Curve dengan preset CapCut Cyberpunk atau Vintage di bawahnya."
           ]
         },
         {
-          keywords: ['preset', 'capcut', 'filter', 'template', 'gaya', 'cyberpunk', 'vintage'],
+          keywords: ['preset', 'capcut', 'filter foto', 'template edit', 'gaya foto', 'cyberpunk', 'vintage'],
           replies: [
             "Di menu CapCut & Pro Filter Presets, ada banyak pilihan gaya mulai dari Cyberpunk, Moody Cinematic, hingga Clean & Fresh. Tinggal klik dan terapkan! 🚀"
           ]
         },
         {
-          keywords: ['resolusi', 'upscale', '4k', 'hd', 'ukuran', 'pixel', 'tajam'],
+          keywords: ['resolusi', 'upscale', '4k', 'hd', 'pixel', 'tajam foto'],
           replies: [
             "Fitur Resolution Upscaling di bagian bawah sidebar bisa menaikkan resolusi gambarmu hingga 4x (Ultra HD 4K) menggunakan algoritma interpolasi Lanczos yang tajam! 📐"
           ]
         }
       ];
 
+      function tryMath(query){
+        const cleaned = query.toLowerCase().replace(/berapa|hasil|hitung/g, '');
+        const mathExpr = cleaned.match(/^[\\s0-9+\\-*/().]+$/);
+        if(mathExpr && /[0-9]/.test(cleaned) && /[+\\-*/]/.test(cleaned)){
+          try {
+            const result = Function('"use strict"; return (' + cleaned + ')')();
+            if(typeof result === 'number' && isFinite(result)){
+              return `Hasilnya adalah ${result}. 🧮`;
+            }
+          } catch(e) {}
+        }
+        return null;
+      }
+
+      function tokenize(text){
+        return text.toLowerCase()
+          .replace(/[.,!?;:()"']/g, ' ')
+          .split(/\\s+/)
+          .filter(Boolean);
+      }
+
       function getSmartReply(query) {
+        const mathAnswer = tryMath(query);
+        if (mathAnswer) return mathAnswer;
+
         const q = query.toLowerCase();
-        
+        const qWords = tokenize(query);
+
         let bestMatch = null;
         let maxScore = 0;
 
         for (let item of knowledgeBase) {
           let score = 0;
           for (let kw of item.keywords) {
-            if (q.includes(kw)) {
-              score += kw.length * 2;
+            if (kw.includes(' ')) {
+              if (q.includes(kw)) score += kw.length * 3;
+            } else {
+              if (qWords.includes(kw)) score += kw.length * 2;
             }
           }
           if (score > maxScore) {
@@ -1060,16 +1112,16 @@ with st.sidebar:
         }
 
         if (bestMatch && maxScore > 0) {
+          if (bestMatch.dynamic) return bestMatch.dynamic();
           const options = bestMatch.replies;
           return options[Math.floor(Math.random() * options.length)];
         }
 
-        // Variasi Jawaban Umum yang Natural & Fleksibel untuk Pertanyaan Bebas
         const fallbacks = [
-          `Wah, pertanyaan atau topik yang sangat menarik tentang "${query}"! Sebagai teman ngobrolmu, menurutku hal itu punya sudut pandang yang unik. 🌟`,
-          `Hmm, Yuki paham maksudmu! Walaupun itu di luar urusan edit foto, aku senang sekali bisa berdiskusi hal semacam ini denganmu. Ceritakan lebih banyak dong!`,
-          `Catatan yang keren! Kamu punya pemikiran yang luas ya. Ada hal lain seputar hobi, teknologi, atau seni visual yang ingin kita bahas bareng? 🌸`,
-          `Itu pemikiran yang seru! Ngomong-ngomong, gimana kalau kita sambungkan ide itu dengan konsep visual atau kreativitas digital? Pasti hasilnya luar biasa!`
+          `Wah, pertanyaan atau topik yang menarik tentang "${query}"! Menurutku itu punya sudut pandang yang unik. Boleh cerita lebih detail? 🌟`,
+          `Yuki paham maksudmu! Walaupun itu di luar urusan edit foto, aku senang bisa berdiskusi hal semacam ini denganmu. Ceritakan lebih banyak dong!`,
+          `Catatan yang menarik soal "${query}". Ada hal lain seputar hobi, teknologi, atau seni visual yang ingin kita bahas bareng? 🌸`,
+          `Itu pemikiran yang seru! Coba ceritakan lebih spesifik ya, biar Yuki bisa nyambung lebih dalam soal "${query}".`
         ];
         return fallbacks[Math.floor(Math.random() * fallbacks.length)];
       }
@@ -1077,7 +1129,7 @@ with st.sidebar:
       function sendMessage(){
         const txt = userInput.value.trim();
         if(!txt) return;
-        
+
         addBubble('user', txt);
         userInput.value = '';
         userInput.style.height = 'auto';
@@ -1097,14 +1149,14 @@ with st.sidebar:
       });
 
       window.addEventListener('load', () => {
-        addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Sekarang kita bisa ngobrol apa saja—mulai dari menanyakan kabar, curhat santai, hingga tips fotografi profesional!');
+        addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Sekarang kita bisa ngobrol apa saja—mulai dari menanyakan kabar, curhat santai, tanya jam/tanggal, hitung matematika sederhana, hingga tips fotografi profesional!');
       });
     </script>
     </body>
     </html>
-  """
+"""
 
-  st.components.v1.html(yuki_html, height=500, scrolling=False)
+st.components.v1.html(yuki_html, height=500, scrolling=False)
 
 # ---------------- Tampilkan foto & proses (Area Utama) ----------------
 if uploaded_file is not None and img is not None:
