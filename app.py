@@ -1,11 +1,11 @@
 import base64
 import gc
 import io
-import random
 import cv2
 import numpy as np
 from PIL import Image
 import streamlit as st
+import streamlit.components.v1 as components
 
 # Untuk uji coba pertama: sistem login & kredit dimatikan dulu.
 REQUIRE_LOGIN = False
@@ -14,7 +14,7 @@ if REQUIRE_LOGIN:
   from auth import render_auth_sidebar, get_credits, deduct_credit
 
 st.set_page_config(
-    page_title="AMPER.AI - Pro Suite & Smart AI Assistant",
+    page_title="AMPER.AI - Pro Suite, & Am-Chan (Ai)",
     page_icon="👾",
     layout="wide",
 )
@@ -75,21 +75,6 @@ def set_custom_theme():
     }
     section[data-testid="stSidebar"] label {
         color: #cfe8e1 !important;
-    }
-
-    /* Kustomisasi warna teks Chatbot Amper-chan supaya sangat kontras & jelas */
-    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] {
-        background-color: rgba(10, 30, 35, 0.95) !important;
-        border: 1px solid #00ffcc !important;
-        border-radius: 12px;
-        padding: 8px;
-        margin-bottom: 8px;
-    }
-    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] p,
-    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] span,
-    section[data-testid="stSidebar"] div[data-testid="stChatMessage"] div {
-        color: #ffffff !important;
-        font-weight: 500;
     }
 
     .stButton>button {
@@ -167,97 +152,6 @@ def apply_tone_curve(img_f, curve_preset):
   return img_f
 
 
-def get_smart_bot_response(query):
-  q = query.lower()
-
-  # Deteksi topik Remini / Wajah
-  if any(w in q for w in ["remini", "wajah", "kulit", "halus", "glowing"]):
-    responses = [
-        (
-            "Untuk hasil wajah ala Remini, kamu bisa menaikkan slider *Perjelas"
-            " Wajah & Kulit* di bagian atas sidebar. Fitur ini memadukan"
-            " bilateral filter dan detail enhancement agar tekstur mata dan"
-            " kulit terlihat tajam tapi tetap natural! ✨"
-        ),
-        (
-            "Mau bikin foto portrait makin kinclong? Geser slider Remini ke"
-            " angka 50-80. Dijamin detail wajah langsung pop-out dengan"
-            " mulus! (💎_💎)"
-        ),
-    ]
-    return random.choice(responses)
-
-  # Deteksi topik Latar Belakang / Bokeh
-  if any(w in q for w in ["latar", "background", "bokeh", "blur", "belakang"]):
-    responses = [
-        (
-            "Efek latar belakang dirancang untuk memberikan efek kedalaman"
-            " ruang (bokeh) ala kamera DSLR. Cukup geser slider *Efek Latar"
-            " Belakang* di sidebar sesuai tingkat blur yang kamu inginkan! 📸"
-        ),
-        (
-            "Supaya subjek utama foto kamu lebih menonjol, aktifkan efek blur"
-            " latar belakang. Efeknya otomatis memisahkan fokus utama dengan"
-            " background di sekitarnya lho!"
-        ),
-    ]
-    return random.choice(responses)
-
-  # Deteksi topik Kurva Warna / Preset
-  if any(w in q for w in ["kurva", "curve", "preset", "filter", "capcut"]):
-    responses = [
-        (
-            "Pilihan kurva warna sangat menentukan mood foto! Coba *S-Curve*"
-            " untuk kontras sinematik yang dramatis, atau *Matte/Fade* untuk"
-            " gaya indie aesthetic. Jangan lupa kombinasikan dengan preset"
-            " CapCut di bawahnya ya! 🎨"
-        ),
-        (
-            "Mau cepat tanpa ribet? Pilih template di menu *Effect & Pro Filter"
-            " Presets*, lalu klik tombol 'Terapkan Preset Pilihan'. Semua"
-            " slider otomatis menyesuaikan gaya profesional!"
-        ),
-    ]
-    return random.choice(responses)
-
-  # Deteksi Sapaan / Tanya Kabar
-  if any(
-      w in q for w in ["halo", "hai", "pagi", "siang", "malam", "terima kasih"]
-  ):
-    responses = [
-        (
-            "Halo juga! Ada foto keren yang mau kita edit hari ini? Jangan"
-            " ragu tanya-tanya soal fitur editing ya! (｡♥‿♥｡)"
-        ),
-        (
-            "Hai! Amper-chan siap sedia membantumu menghasilkan editan foto"
-            " terbaik. Mau coba filter atau efek apa nih sekarang?"
-        ),
-    ]
-    return random.choice(responses)
-
-  # Jawaban umum yang dinamis & profesional
-  general_responses = [
-      (
-          f"Pertanyaan yang menarik tentang '{query}'! Untuk hasil optimal,"
-          " pastikan kamu mengunggah foto beresolusi bagus lalu sesuaikan slider"
-          " pencahayaan dan detail di panel sebelah kiri ya. Ada lagi yang"
-          " bisa kubantu?"
-      ),
-      (
-          f"Aku mencatat poin tentang '{query}'. Kamu bisa bereksperimen"
-          " langsung dengan menggeser slider Exposure atau ketik 'remini' /"
-          " 'kurva' jika butuh panduan fitur spesifik! 🚀"
-      ),
-      (
-          "Wah, ide bagus! Sebagai asisten pro suite, aku sarankan kamu"
-          " mencoba kombinasi Kurva S-Curve dan Upscaling 4x agar hasil"
-          " akhirnya tajam dan sinematik."
-      ),
-  ]
-  return random.choice(general_responses)
-
-
 set_custom_theme()
 set_background(BG_PATH)
 
@@ -265,7 +159,7 @@ current_user = None
 if REQUIRE_LOGIN:
   is_logged_in = render_auth_sidebar()
   if not is_logged_in:
-    st.title("👾 AMPER.AI — Pro Suite & Smart AI Assistant")
+    st.title("👾 AMPER.AI — Pro Suite & Am-Chan")
     st.info("Silakan Masuk atau Daftar lewat panel kiri untuk mulai.")
     st.stop()
   current_user = st.session_state["user"]
@@ -278,11 +172,11 @@ with header_col1:
     st.markdown("<h1 style='margin:0;'>👾</h1>", unsafe_allow_html=True)
 
 with header_col2:
-  st.title("AMPER.AI — Professional Editing, Effect & Smart AI Suite")
+  st.title("AMPER.AI — Professional Editing, & Am-Chan Suite")
   st.markdown(
       "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
       " foto pro lengkap dengan efek perjelas wajah, latar belakang bokeh,"
-      " dan AI assistant interaktif!</p>",
+      " dan Yuki Asisten AI!</p>",
       unsafe_allow_html=True,
   )
 
@@ -315,7 +209,7 @@ if uploaded_file is not None:
         (int(w0 * input_scale), int(h0 * input_scale)),
         interpolation=cv2.INTER_AREA,
     )
-    st.info("ℹ️ Maaf Ya... Foto asli diturunkan sementara ke resolusi aman untuk server.")
+    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
   auto_suggestions = compute_auto_suggestions(img)
 
@@ -328,9 +222,9 @@ if uploaded_file is not None:
 # SIDEBAR KONTROL
 # ==========================================================
 with st.sidebar:
-  st.markdown("## 👾 Pro Suite & Remini AI")
+  st.markdown("## 👾 Pro Suite & Ampera AI")
 
-  st.markdown("### 🎭 Face Enhancer & Portrait")
+  st.markdown("### 🎭 Ampera.ai Face Enhancer & Portrait")
   remini_boost = st.slider(
       "Perjelas Wajah & Kulit (Remini Effect)", 0, 100, 0, 1
   )
@@ -349,7 +243,7 @@ with st.sidebar:
       ],
   )
 
-  st.markdown("### 🎬 Pro Filter Presets")
+  st.markdown("### 🎬 CapCut & Pro Filter Presets")
   capcut_preset = st.selectbox(
       "Pilih Filter / Template Gaya",
       [
@@ -495,45 +389,194 @@ with st.sidebar:
   )
   process_btn = st.button("⬆️ Terapkan & Render Instan")
 
-  # --- ANIME CHATBOT DI SIDEBAR BAWAH (DENGAN LOGIKA CERDAS) ---
+  # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.HTML) ---
   st.markdown("---")
-  st.markdown("### 🌸 Amper-chan (Smart AI Assistant)")
-  st.markdown(
-      "<p style='font-size:0.85em; color: #a9d6c9;'>*Kon'nichiwa!* Tanyakan"
-      " apa saja soal foto, kurva warna, atau efek Remini padaku ya! (≧◡≦)</p>",
-      unsafe_allow_html=True,
-  )
+  st.markdown("### 🌸 Asisten AI Am-Chan")
 
-  if "anime_chat_messages" not in st.session_state:
-    st.session_state["anime_chat_messages"] = [{
-        "role": "assistant",
-        "content": (
-            "Halo! Aku Amper-chan. Sekarang aku sudah lebih pintar dan bisa"
-            " menjawab berbagai pertanyaanmu seputar fitur foto lho! ✨ Ada yang"
-            " ingin didiskusikan?"
-        ),
-    }]
+  yuki_html = """
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+    <meta charset="UTF-8">
+    <style>
+      :root{
+        --bg-deep:#120c1e;
+        --bg-deep2:#1c1330;
+        --bg-panel:#251a3d;
+        --bg-panel2:#2e2049;
+        --bg-bubble-ai:#2a1f45;
+        --bg-bubble-user:#3a2361;
+        --accent-pink:#ff7aa8;
+        --accent-pink-soft:#ff9dc0;
+        --accent-gold:#ffca6b;
+        --accent-cyan:#7fe9dc;
+        --text-main:#f6f1ff;
+        --text-muted:#a396c4;
+        --text-faint:#6f6394;
+        --border-glow:rgba(255,122,168,0.25);
+      }
+      *{box-sizing:border-box; margin:0; padding:0;}
+      body{
+        background:transparent;
+        color:var(--text-main);
+        font-family:'Inter', sans-serif;
+        height:100%;
+        display:flex;
+        flex-direction:column;
+      }
+      .app{
+        width:100%;
+        height:450px;
+        display:flex;
+        flex-direction:column;
+        background:rgba(18,12,30,0.85);
+        border:1px solid rgba(255,122,168,0.2);
+        border-radius:12px;
+        overflow:hidden;
+      }
+      header{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:10px 12px;
+        background:rgba(37,26,61,0.85);
+        border-bottom:1px solid var(--border-glow);
+      }
+      .avatar{
+        width:36px; height:36px; border-radius:50%; flex-shrink:0;
+        background:radial-gradient(circle at 35% 30%, #ffe3ee 0%, #ff9dc0 45%, #7a4fa8 100%);
+        position:relative; overflow:hidden;
+      }
+      .avatar svg{ width:100%; height:100%; display:block; }
+      .id-name{ font-weight:700; font-size:0.9rem; color:var(--accent-pink-soft); }
+      .id-role{ font-size:0.65rem; color:var(--text-muted); }
+      
+      main{
+        flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px;
+      }
+      main::-webkit-scrollbar{ width:4px; }
+      main::-webkit-scrollbar-thumb{ background:rgba(255,122,168,0.3); border-radius:4px; }
 
-  chat_container = st.container(height=280)
-  with chat_container:
-    for message in st.session_state["anime_chat_messages"]:
-      avatar_icon = "🌸" if message["role"] == "assistant" else "👤"
-      with st.chat_message(message["role"], avatar=avatar_icon):
-        st.markdown(message["content"])
+      .row{ display:flex; gap:8px; max-width:100%; align-items:flex-end; }
+      .row.user{ flex-direction:row-reverse; }
+      .bubble{
+        max-width:82%; padding:8px 12px; border-radius:12px; font-size:0.82rem; line-height:1.4;
+        word-wrap:break-word; white-space:pre-wrap;
+      }
+      .row.ai .bubble{
+        background:var(--bg-bubble-ai); border:1px solid rgba(255,202,107,0.18); border-bottom-left-radius:2px;
+      }
+      .row.user .bubble{
+        background:var(--bg-bubble-user); border:1px solid rgba(127,233,220,0.2); border-bottom-right-radius:2px; color:#f3ecff;
+      }
+      .tag{ display:block; font-size:0.6rem; color:var(--accent-pink-soft); margin-bottom:2px; }
 
-  user_query = st.chat_input(
-      "Ketik pesan ke Amper-chan...", key="sidebar_chat_input"
-  )
+      .dialogue-wrap{ padding:8px; background:rgba(28,19,48,0.9); border-top:1px solid var(--border-glow); }
+      .dialogue-box{ display:flex; align-items:flex-end; gap:6px; background:rgba(37,26,61,0.9); border:1px solid var(--border-glow); border-radius:8px; padding:6px 8px; }
+      #userInput{
+        flex:1; resize:none; background:transparent; border:none; outline:none; color:var(--text-main); font-size:0.82rem; max-height:60px;
+      }
+      #userInput::placeholder{ color:var(--text-faint); }
+      #sendBtn{
+        width:32px; height:32px; border-radius:50%; border:none; cursor:pointer;
+        background:linear-gradient(135deg, var(--accent-pink), #c85f92); color:#fff;
+        display:flex; align-items:center; justify-content:center;
+      }
+      #sendBtn svg{ width:14px; height:14px; }
+    </style>
+    </head>
+    <body>
+    <div class="app">
+      <header>
+        <div class="avatar">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="50" fill="#4a2f7a"/>
+            <circle cx="50" cy="55" r="30" fill="#ffe3ee"/>
+            <ellipse cx="38" cy="57" rx="4.5" ry="6" fill="#2b1a45"/>
+            <ellipse cx="62" cy="57" rx="4.5" ry="6" fill="#2b1a45"/>
+            <path d="M45 68 Q50 72 55 68" stroke="#c9758f" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="id-name">Yuki</div>
+          <div class="id-role">Asisten AI Profesional</div>
+        </div>
+      </header>
 
-  if user_query:
-    st.session_state["anime_chat_messages"].append(
-        {"role": "user", "content": user_query}
-    )
-    bot_reply = get_smart_bot_response(user_query)
-    st.session_state["anime_chat_messages"].append(
-        {"role": "assistant", "content": bot_reply}
-    )
-    st.rerun()
+      <main id="chatArea"></main>
+
+      <div class="dialogue-wrap">
+        <div class="dialogue-box">
+          <textarea id="userInput" rows="1" placeholder="Tanya Yuki..."></textarea>
+          <button id="sendBtn" aria-label="Kirim">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 12L21 3L13 21L11 13L3 12Z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const chatArea = document.getElementById('chatArea');
+      const userInput = document.getElementById('userInput');
+      const sendBtn = document.getElementById('sendBtn');
+
+      function addBubble(role, text){
+        const row = document.createElement('div');
+        row.className = 'row ' + (role === 'user' ? 'user' : 'ai');
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        if(role !== 'user'){
+          const tag = document.createElement('span');
+          tag.className = 'tag';
+          tag.textContent = 'Amper.Ai-Chan';
+          bubble.appendChild(tag);
+        }
+        const textNode = document.createElement('span');
+        textNode.textContent = text;
+        bubble.appendChild(textNode);
+        row.appendChild(bubble);
+        chatArea.appendChild(row);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }
+
+      function handleReply(q){
+        q = q.toLowerCase();
+        let reply = "Pertanyaan yang sangat menarik! Ada hal lain seputar fitur foto atau editing yang bisa Yuki bantu? 🌸";
+        if(q.includes('remini') || q.includes('wajah') || q.includes('kulit')){
+          reply = "Untuk memperjelas wajah dan menghaluskan kulit, gunakan slider 'Perjelas Wajah & Kulit' di bagian atas sidebar ya! ✨";
+        } else if(q.includes('latar') || q.includes('background') || q.includes('bokeh') || q.includes('blur')){
+          reply = "Efek latar belakang dapat diatur lewat slider 'Efek Latar Belakang' untuk mendapatkan efek bokeh DSLR yang estetik! 📸";
+        } else if(q.includes('halo') || q.includes('hai') || q.includes('pagi')){
+          reply = "Konnichiwa~! 🌸 Aku Am-Chan, siap membantumu mengedit foto terbaik hari ini.";
+        }
+        setTimeout(() => { addBubble('ai', reply); }, 400);
+      }
+
+      function sendMessage(){
+        const txt = userInput.value.trim();
+        if(!txt) return;
+        addBubble('user', txt);
+        userInput.value = '';
+        userInput.style.height = 'auto';
+        handleReply(txt);
+      }
+
+      sendBtn.addEventListener('click', sendMessage);
+      userInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey){
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      window.addEventListener('load', () => {
+        addBubble('ai', 'Konnichiwa~ 🌸 Aku Am-Chan. Silakan tanyakan apa saja seputar pengeditan foto!');
+      });
+    </script>
+    </body>
+    </html>
+  """
+  components.html(yuki_html, height=470)
 
 # ---------------- Tampilkan foto & proses (Area Utama) ----------------
 if uploaded_file is not None and img is not None:
@@ -549,7 +592,7 @@ if uploaded_file is not None and img is not None:
         st.error("💳 Kredit Kamu habis. Silakan top up.")
         st.stop()
     try:
-      with st.spinner("🛠️ Amper-chan sedang merender AI & Upscaler..."):
+      with st.spinner("🛠️ Yuki & sistem sedang merender Remini & Upscaler..."):
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
@@ -558,7 +601,7 @@ if uploaded_file is not None and img is not None:
           adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
           scale_factor = max(1.0, adjusted_scale)
           st.warning(
-              f"⚠️ Maaf ya...Skala disesuaikan otomatis menjadi {scale_factor:.2f}x"
+              f"⚠️ Maaf Ya.. Skala disesuaikan otomatis menjadi {scale_factor:.2f}x"
               " demi keamanan memori server."
           )
 
@@ -585,7 +628,7 @@ if uploaded_file is not None and img is not None:
           mask = mask / mask.max()
           mask = np.dstack([mask, mask, mask])
           img = (img * mask + bg_blurred * (1.0 - mask)).astype("uint8")
-          del bg_blurred, kernel_x, kernel_y, kernel, mask
+          del bg_blurred, kernel_x, kernel_y, mask
           gc.collect()
 
         if denoise_strength > 0:
@@ -725,13 +768,13 @@ if uploaded_file is not None and img is not None:
         if REQUIRE_LOGIN:
           deduct_credit(current_user["id"])
     except Exception as e:
-      st.error("❌ Oppss...Terjadi kesalahan saat memproses gambar.")
+      st.error("❌ Opss..Terjadi kesalahan saat memproses gambar.")
       with st.expander("Detail teknis error"):
         st.exception(e)
       st.session_state.pop("processed_img", None)
 
   with col_res:
-    st.subheader("🎇 Hasil Remini & Pro Suite")
+    st.subheader("🎇 Hasil Ai-Upscaller & Pro Suite")
     if "processed_img" in st.session_state:
       st.image(st.session_state["processed_img"], use_container_width=True)
 
@@ -741,9 +784,9 @@ if uploaded_file is not None and img is not None:
       byte_im = buf.getvalue()
 
       st.download_button(
-          label="📥 Unduh Foto Hasil Amper.AI (JPEG)",
+          label="📥 Unduh Foto Hasil Amper.Ai Style (JPEG)",
           data=byte_im,
-          file_name="amper_AI_pro_style.jpg",
+          file_name="amper_ai_pro_style.jpg",
           mime="image/jpeg",
           use_container_width=True,
       )
