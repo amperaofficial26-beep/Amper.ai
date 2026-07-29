@@ -1150,7 +1150,7 @@ with st.sidebar:
 </body>
 </html>"""
 
-    st.components.v1.html(yuki_html, height=500, scrolling=False)
+  st.components.v1.html(yuki_html, height=500, scrolling=False)
 
 # ---------------- Tampilkan foto & proses (Area Utama) ----------------
 if uploaded_file is not None and img is not None:
