@@ -7,31 +7,20 @@ from PIL import Image
 import streamlit as st
 
 # Untuk uji coba pertama: sistem login & kredit dimatikan dulu.
-# Kalau sudah siap ditawarkan/dijual, ganti jadi True lagi — dan pastikan
-# auth.py sudah diupload ke repo + requirements.txt sudah berisi
-# supabase & bcrypt, baru redeploy.
 REQUIRE_LOGIN = False
 
 if REQUIRE_LOGIN:
   from auth import render_auth_sidebar, get_credits, deduct_credit
 
 st.set_page_config(
-    page_title="AMPER.AI -  Pro Suite", page_icon="😈", layout="wide"
+    page_title="AMPER.AI - Pro Suite & Tone Curves", page_icon="✨", layout="wide"
 )
 
-# ==========================================================
-# Nama file aset — letakkan logo_amper.png & bg_amper.jpg
-# di folder yang SAMA dengan app.py di repo GitHub kamu
-# ==========================================================
 LOGO_PATH = "logo_amper.png"
 BG_PATH = "bg_amper.jpg"
 
-# Sisi terpanjang foto ASLI akan diturunkan ke ukuran ini dulu
-# sebelum diedit, supaya tidak membebani server sejak awal
 MAX_INPUT_DIM = 3000
-
-# Batas aman total pixel HASIL AKHIR (setelah upscaling)
-MAX_OUTPUT_MEGAPIXELS = 20_000_000
+MAX_OUTPUT_MEGAPIXELS = 35_000_000
 
 
 def get_base64_of_bin_file(path):
@@ -40,14 +29,12 @@ def get_base64_of_bin_file(path):
 
 
 def set_background(image_path):
-  """Pasang bg_amper.jpg sebagai background. Jika file belum ada,
-  aplikasi tetap jalan normal dengan gradient default (tidak crash)."""
   try:
     bin_str = get_base64_of_bin_file(image_path)
     css = f"""
       <style>
       .stApp {{
-          background-image: linear-gradient(160deg, rgba(6,17,20,0.93), rgba(6,17,20,0.93)),
+          background-image: linear-gradient(160deg, rgba(6,17,20,0.55), rgba(6,17,20,0.55)),
               url("data:image/jpeg;base64,{bin_str}");
           background-size: cover;
           background-position: center center;
@@ -116,23 +103,16 @@ def set_custom_theme():
 
 
 def compute_auto_suggestions(img_bgr):
-  """Analisis histogram sederhana untuk menyarankan nilai awal slider
-  pencahayaan & ketajaman, supaya foto kurang terang/kurang jelas bisa
-  otomatis dikoreksi tanpa perlu diatur manual dulu."""
   gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
   mean_brightness = float(np.mean(gray))
   contrast_std = float(np.std(gray))
   laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
 
-  # --- Exposure: target kecerahan rata-rata sekitar 125 dari 255 ---
   target_brightness = 125.0
   diff = target_brightness - mean_brightness
   suggested_exposure = float(np.clip(diff / 90.0, -1.2, 1.2))
-
-  # --- Contrast: kalau std rendah (foto flat/berkabut), naikkan contrast ---
   suggested_contrast = int(np.clip((45 - contrast_std) * 1.1, 0, 40))
 
-  # --- Highlights/Shadows: deteksi area yang ke-clip gelap/terang ---
   hist = cv2.calcHist([gray], [0], None, [256], [0, 256]).flatten()
   total_px = gray.size
   shadow_clip_ratio = hist[:15].sum() / total_px
@@ -140,7 +120,6 @@ def compute_auto_suggestions(img_bgr):
   suggested_shadows = int(np.clip(shadow_clip_ratio * 400, 0, 60))
   suggested_highlights = int(np.clip(-highlight_clip_ratio * 400, -60, 0))
 
-  # --- Clarity/Sharpen: laplacian variance rendah = foto kurang tajam ---
   if laplacian_var < 60:
     suggested_sharpen, suggested_clarity = 55, 30
   elif laplacian_var < 150:
@@ -158,24 +137,33 @@ def compute_auto_suggestions(img_bgr):
   }
 
 
+def apply_tone_curve(img_f, curve_preset):
+  """Menerapkan kurva warna (Tone Curve) sederhana menggunakan LUT/Formula."""
+  if curve_preset == "Linear (Standard)":
+    return img_f
+  elif curve_preset == "S-Curve (Kontras Tinggi & Sinematik)":
+    # Rumus S-curve menggunakan fungsi sinus bernilai halus
+    return np.sin(img_f * np.pi - np.pi / 2) * 0.5 + 0.5
+  elif curve_preset == "Matte / Fade (Gaya Film Indie)":
+    # Mengangkat warna hitam (shadow) dan menurunkan putih
+    return img_f * 0.8 + 0.1
+  elif curve_preset == "Bright Pop (Terang & Segar)":
+    return np.power(img_f, 0.85)
+  return img_f
+
+
 set_custom_theme()
 set_background(BG_PATH)
 
-# ---------------- Gerbang login (opsional, lihat REQUIRE_LOGIN) ----------------
 current_user = None
 if REQUIRE_LOGIN:
   is_logged_in = render_auth_sidebar()
   if not is_logged_in:
-    st.title("😈 AMPER.AI — Professional Editing & 4K Upscaler Suite")
-    st.info(
-        "Silakan **Masuk** atau **Daftar** dulu lewat panel di sebelah kiri"
-        " untuk mulai memakai Amper.AI. Setiap akun baru otomatis dapat"
-        " kredit gratis untuk dicoba."
-    )
+    st.title("😈 AMPER.AI — Professional Suite & Tone Curves")
+    st.info("Silakan Masuk atau Daftar lewat panel kiri untuk mulai.")
     st.stop()
   current_user = st.session_state["user"]
 
-# ---------------- Header dengan logo ----------------
 header_col1, header_col2 = st.columns([1, 6])
 with header_col1:
   try:
@@ -184,16 +172,14 @@ with header_col1:
     st.markdown("<h1 style='margin:0;'>😈</h1>", unsafe_allow_html=True)
 
 with header_col2:
-  st.title("AMPER.AI — Professional Editing & 4K Upscaler Suite")
+  st.title("AMPER.AI — Professional Editing & Tone Curves Suite")
   st.markdown(
       "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
-      " foto pintar berstandar industri dengan kontrol parameter lengkap ala"
-      " Lightroom & AI Upscaling.</p>",
+      " foto pintar dengan kontrol kurva warna presisi, preset pro, dan"
+      " asisten anime!</p>",
       unsafe_allow_html=True,
   )
 
-# ---------------- Upload foto (dipindah ke atas supaya bisa dianalisis
-# dulu sebelum sidebar dibuat, untuk fitur Auto Enhance) ----------------
 uploaded_file = st.file_uploader(
     "📂 Unggah File Foto Keren Kamu Disini... (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
 )
@@ -212,11 +198,9 @@ if uploaded_file is not None:
   img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
   if img is None:
-    st.error("❌ Oopss..Gagal membaca file gambar. Coba unggah file JPG/PNG yang lain.")
+    st.error("❌ Gagal membaca file gambar. Coba unggah file lain.")
     st.stop()
 
-  # Turunkan foto asli dulu kalau memang sangat besar (mis. hasil kamera HP),
-  # supaya proses edit di resolusi asli tetap ringan
   h0, w0 = img.shape[:2]
   if max(h0, w0) > MAX_INPUT_DIM:
     input_scale = MAX_INPUT_DIM / max(h0, w0)
@@ -225,152 +209,272 @@ if uploaded_file is not None:
         (int(w0 * input_scale), int(h0 * input_scale)),
         interpolation=cv2.INTER_AREA,
     )
-    st.info(
-        "ℹ️ Foto asli Kamu diturunkan sementara ke resolusi lebih kecil sebelum"
-        " diproses agar server tidak kehabisan memori."
-    )
+    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
   auto_suggestions = compute_auto_suggestions(img)
 
-  # Otomatis terapkan saran sekali setiap ada foto baru diupload,
-  # tapi slider tetap bisa digeser manual sesudahnya
   if st.session_state.get("auto_applied_for") != file_signature:
     for slider_key, val in auto_suggestions.items():
       st.session_state[slider_key] = val
     st.session_state["auto_applied_for"] = file_signature
 
-# ---------------- Sidebar kontrol ----------------
+# ==========================================================
+# SIDEBAR KONTROL + TONE CURVE + PRESET PRO + ANIME CHAT
+# ==========================================================
 with st.sidebar:
-  st.markdown("## 🎛️ Ampera-AI PRO Control Panel")
+  st.markdown("## ⚡ Pro Tone Curves & Filters")
 
-  if auto_suggestions is not None:
-    st.success(
-        "🪄 Pencahayaan & ketajaman foto ini sudah disesuaikan otomatis"
-        " berdasarkan analisis foto. Geser slider di bawah kalau mau"
-        " diubah manual."
-    )
-    if st.button("🪄 Sesuaikan Ulang Otomatis", key="auto_enhance_btn"):
+  # --- FITUR BARU: TONE CURVE ---
+  st.markdown("### 📈 RGB Tone Curve")
+  curve_preset = st.selectbox(
+      "Pilih Kurva Pencahayaan",
+      [
+          "Linear (Standard)",
+          "S-Curve (Kontras Tinggi & Sinematik)",
+          "Matte / Fade (Gaya Film Indie)",
+          "Bright Pop (Terang & Segar)",
+      ],
+  )
+
+  st.markdown("### 🎬 CapCut & Pro Filter Presets")
+  capcut_preset = st.selectbox(
+      "Pilih Filter / Template Gaya",
+      [
+          "Normal / Manual",
+          "✨ Cyberpunk Neon (Pop & Vibrant)",
+          "🎞️ Vintage Retro Film (Warm & Faded)",
+          "🎬 Moody Cinematic (Dark & Deep)",
+          "🌟 Clean & Fresh (Bright & Clear)",
+          "☕ Warm Portrait (Skin Tone Enhancer)",
+          "🖤 Dramatic B&W (Monochrome Pro)",
+      ],
+  )
+
+  if st.button("🚀 Terapkan Preset Pilihan"):
+    if capcut_preset.startswith("✨ Cyberpunk"):
+      st.session_state.update(
+          {
+              "exposure": 0.2,
+              "contrast": 25,
+              "highlights": -10,
+              "shadows": 15,
+              "temp": -15,
+              "tint": 15,
+              "vibrance": 35,
+              "saturation": 20,
+              "clarity": 25,
+              "vignette": 40,
+          }
+      )
+    elif capcut_preset.startswith("🎞️ Vintage"):
+      st.session_state.update(
+          {
+              "exposure": 0.1,
+              "contrast": 10,
+              "highlights": -20,
+              "shadows": 30,
+              "temp": 25,
+              "tint": -5,
+              "vibrance": -10,
+              "saturation": -5,
+              "clarity": 10,
+              "vignette": 50,
+          }
+      )
+    elif capcut_preset.startswith("🎬 Moody"):
+      st.session_state.update(
+          {
+              "exposure": -0.3,
+              "contrast": 35,
+              "highlights": -40,
+              "shadows": -20,
+              "temp": -10,
+              "tint": 5,
+              "vibrance": 10,
+              "saturation": 5,
+              "clarity": 30,
+              "vignette": 65,
+          }
+      )
+    elif capcut_preset.startswith("🌟 Clean"):
+      st.session_state.update(
+          {
+              "exposure": 0.3,
+              "contrast": 15,
+              "highlights": 10,
+              "shadows": 25,
+              "temp": 0,
+              "tint": 0,
+              "vibrance": 20,
+              "saturation": 15,
+              "clarity": 15,
+              "vignette": 10,
+          }
+      )
+    elif capcut_preset.startswith("☕ Warm Portrait"):
+      st.session_state.update(
+          {
+              "exposure": 0.1,
+              "contrast": 5,
+              "highlights": 10,
+              "shadows": 20,
+              "temp": 15,
+              "tint": 5,
+              "vibrance": 15,
+              "saturation": 5,
+              "clarity": 5,
+              "vignette": 15,
+          }
+      )
+    elif capcut_preset.startswith("🖤 Dramatic"):
+      st.session_state.update(
+          {
+              "exposure": 0.0,
+              "contrast": 40,
+              "highlights": -30,
+              "shadows": -30,
+              "temp": 0,
+              "tint": 0,
+              "vibrance": -50,
+              "saturation": -50,
+              "clarity": 35,
+              "vignette": 50,
+          }
+      )
+    st.rerun()
+
+  st.markdown("---")
+
+  if auto_suggestions is not None and capcut_preset == "Normal / Manual":
+    if st.button("🪄 Auto Enhance Standar"):
       for slider_key, val in auto_suggestions.items():
         st.session_state[slider_key] = val
       st.rerun()
     st.markdown("---")
 
   st.markdown("### 1. Light & Exposure")
-  exposure = st.slider(
-      "Exposure", -2.0, 2.0, 0.0, 0.1,
-      help="Menyesuaikan keseluruhan pencahayaan (otomatis disarankan jika foto diunggah)",
-      key="exposure",
-  )
-  contrast = st.slider(
-      "Contrast", -50, 50, 10, 1, help="Mempertajam perbedaan terang dan gelap",
-      key="contrast",
-  )
-  highlights = st.slider(
-      "Highlights", -100, 100, -20, 1, help="Mengatur area paling terang",
-      key="highlights",
-  )
-  shadows = st.slider(
-      "Shadows", -100, 100, 25, 1, help="Mengangkat detail pada area gelap",
-      key="shadows",
-  )
-  whites = st.slider("Whites", -50, 50, 0, 1)
-  blacks = st.slider("Blacks", -50, 50, 0, 1)
+  exposure = st.slider("Exposure", -2.0, 2.0, 0.0, 0.1, key="exposure")
+  contrast = st.slider("Contrast", -50, 50, 10, 1, key="contrast")
+  highlights = st.slider("Highlights", -100, 100, -20, 1, key="highlights")
+  shadows = st.slider("Shadows", -100, 100, 25, 1, key="shadows")
+  whites = st.slider("Whites", -50, 50, 0, 1, key="whites")
+  blacks = st.slider("Blacks", -50, 50, 0, 1, key="blacks")
 
   st.markdown("### 2. Color & White Balance")
-  temp = st.slider(
-      "Temperature (Kelvin/Tint)",
-      -50, 50, -5, 1,
-      help="Nuansa warna Hangat (Kuning) ke Dingin (Biru)",
-  )
-  tint = st.slider("Tint", -50, 50, 0, 1, help="Nuansa Hijau ke Magenta")
-  vibrance = st.slider(
-      "Vibrance", -50, 50, 15, 1, help="Menaikkan warna yang belum jenuh"
-  )
-  saturation = st.slider("Saturation", -50, 50, 10, 1, help="Kepadatan warna")
+  temp = st.slider("Temperature (Kelvin/Tint)", -50, 50, -5, 1, key="temp")
+  tint = st.slider("Tint", -50, 50, 0, 1, key="tint")
+  vibrance = st.slider("Vibrance", -50, 50, 15, 1, key="vibrance")
+  saturation = st.slider("Saturation", -50, 50, 10, 1, key="saturation")
 
   st.markdown("### 3. Detail, Clarity & Effects")
-  clarity = st.slider(
-      "Clarity / Texture", -50, 50, 20, 1,
-      help="Mempertegas kontras midtone/tekstur (otomatis disarankan jika foto diunggah)",
-      key="clarity",
-  )
-  dehaze = st.slider("Dehaze", -50, 50, 10, 1, help="Menghilangkan kabut/asap tipis")
-  sharpen = st.slider(
-      "Sharpening HD", 0, 100, 30, 1,
-      help="Mempertajam detail tepi objek (otomatis disarankan jika foto diunggah)",
-      key="sharpen",
-  )
-  vignette = st.slider(
-      "Vignette (Cinematic Edge)", 0, 100, 25, 1,
-      help="Memberikan bayangan artistik di tepi foto",
-  )
+  clarity = st.slider("Clarity / Texture", -50, 50, 20, 1, key="clarity")
+  dehaze = st.slider("Dehaze", -50, 50, 10, 1, key="dehaze")
+  sharpen = st.slider("Sharpening HD", 0, 100, 30, 1, key="sharpen")
+  vignette = st.slider("Vignette (Cinematic Edge)", 0, 100, 25, 1, key="vignette")
 
-  st.markdown("### 4. Quality Boost (Non-AI Berat)")
-  denoise_strength = st.slider(
-      "Noise Reduction (sebelum upscale)", 0, 30, 0, 1,
-      help="Mengurangi noise/grain sebelum di-upscale, supaya noise tidak"
-      " ikut diperbesar. Semakin tinggi, semakin halus tapi detail bisa"
-      " sedikit berkurang.",
-  )
-  smart_enhance = st.slider(
-      "Smart Detail Enhance (setelah upscale)", 0, 100, 0, 1,
-      help="Filter edge-aware yang menguatkan detail & tekstur supaya hasil"
-      " upscaling terlihat lebih 'pop', tanpa memakai model AI berat.",
-  )
+  st.markdown("### 4. Quality Boost")
+  denoise_strength = st.slider("Noise Reduction", 0, 30, 0, 1)
+  smart_enhance = st.slider("Smart Detail Enhance", 0, 100, 0, 1)
 
   st.markdown("---")
   upscale_choice = st.selectbox(
-      "Resolution Upscaling", ["2x (HD Standard)", "4x (Ultra HD 4K)"], index=0
+      "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0
   )
   process_btn = st.button("⬆️ Terapkan & Render Instan")
 
-# ---------------- Tampilkan foto & proses ----------------
+  # --- ANIME CHATBOT DI SIDEBAR BAWAH ---
+  st.markdown("---")
+  st.markdown("### 🌸 Amper.Ai-chan (Anime AI Assistant)")
+  st.markdown(
+      "<p style='font-size:0.85em; color: #a9d6c9;'>*Kon'nichiwa!* Mau coba"
+      " kurva warna S-Curve atau filter pro hari ini, Onii-chan? (≧◡≦)</p>",
+      unsafe_allow_html=True,
+  )
+
+  if "anime_chat_messages" not in st.session_state:
+    st.session_state["anime_chat_messages"] = [{
+        "role": "assistant",
+        "content": (
+            "Yoo-hoo! Aku Amper-chan! Kurva warna dan preset baru sudah siap"
+            " dipakai lho! (๑˃ᴗ˂)ﻭ"
+        ),
+    }]
+
+  chat_container = st.container(height=280)
+  with chat_container:
+    for message in st.session_state["anime_chat_messages"]:
+      avatar_icon = "🌸" if message["role"] == "assistant" else "👤"
+      with st.chat_message(message["role"], avatar=avatar_icon):
+        st.markdown(message["content"])
+
+  user_query = st.chat_input(
+      "Ketik pesan ke Amper-chan...", key="sidebar_chat_input"
+  )
+
+  if user_query:
+    st.session_state["anime_chat_messages"].append(
+        {"role": "user", "content": user_query}
+    )
+    q_lower = user_query.lower()
+
+    if any(word in q_lower for word in ["kurva", "curve", "tone"]):
+      bot_reply = (
+          "Ah, soal Kurva Warna! 📈 Pilih *S-Curve* kalau mau efek kontras"
+          " sinematik yang dramatis, atau *Matte/Fade* buat gaya foto indie"
+          " kekinian! (｡♥‿♥｡)"
+      )
+    elif any(word in q_lower for word in ["halo", "hai", "pagi", "siang"]):
+      bot_reply = (
+          "Kon'nichiwa! Semangat mengeditnya ya! Jangan lupa coba preset Warm"
+          " Portrait atau Cyberpunk kita! (o^▽^o)"
+      )
+    else:
+      bot_reply = (
+          f"Hmm... '{user_query}' ya? Mantap sekali! (・ω<) Silakan atur slider"
+          " atau kurvanya sesuai selera senimanmu ya, Onii-chan! 🎨✨"
+      )
+
+    st.session_state["anime_chat_messages"].append(
+        {"role": "assistant", "content": bot_reply}
+    )
+    st.rerun()
+
+# ---------------- Tampilkan foto & proses (Area Utama) ----------------
 if uploaded_file is not None and img is not None:
   col_orig, col_res = st.columns(2)
   with col_orig:
-    st.subheader("🎆  Foto Asli")
+    st.subheader("🎆 Foto Asli")
     st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True)
 
   if process_btn or "processed_img" not in st.session_state:
     if REQUIRE_LOGIN:
       user_credits = get_credits(current_user["id"])
       if user_credits <= 0:
-        st.error(
-            "💳 Waduh,,,Kredit kamu sudah habis. Silakan top up dulu untuk lanjut"
-            " memakai Amper.AI."
-        )
+        st.error("💳 Kredit habis. Silakan top up.")
         st.stop()
     try:
-      with st.spinner("🛠️  Sedang merender mesin Ai Pro & Upscaler AI..."):
+      with st.spinner("🛠️ Amper-chan sedang merender kurva warna & Upscaler..."):
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
-        # Guard anti-crash tambahan untuk hasil akhir
         out_pixels = (w * scale_factor) * (h * scale_factor)
         if out_pixels > MAX_OUTPUT_MEGAPIXELS:
           adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
           scale_factor = max(1.0, adjusted_scale)
           st.warning(
-              "⚠️ Maaf ya..Resolusi hasil upscaling terlalu besar dan berisiko"
-              f" membuat server kehabisan memori. Skala diturunkan otomatis"
-              f" menjadi {scale_factor:.2f}x agar tetap aman."
+              f"⚠️ Skala disesuaikan otomatis menjadi {scale_factor:.2f}x"
+              " demi keamanan memori server."
           )
 
-        # =========================================================
-        # TAHAP 0 — noise reduction (opsional) di resolusi ASLI,
-        # sebelum di-upscale, supaya noise tidak ikut diperbesar
-        # =========================================================
         if denoise_strength > 0:
           img = cv2.fastNlMeansDenoisingColored(
               img, None, float(denoise_strength), float(denoise_strength), 7, 21
           )
 
-        # =========================================================
-        # TAHAP 1 — semua koreksi tone & warna dilakukan di resolusi
-        # ASLI (kecil) dulu. Ini jauh lebih hemat memori daripada
-        # meng-upscale dulu baru mengedit.
-        # =========================================================
         img_f = img.astype("float32") / 255.0
+
+        # Terapkan Tone Curve pilihan pengguna
+        img_f = apply_tone_curve(img_f, curve_preset)
 
         if exposure != 0.0:
           img_f = img_f * (2.0**exposure)
@@ -429,16 +533,12 @@ if uploaded_file is not None and img is not None:
           hsv[:, :, 1] += vibrance * 0.5 * v_mask
         hsv[:, :, 1] = np.clip(hsv[:, :, 1], 0, 255)
 
-        sat_adj_small = (
-            cv2.cvtColor(hsv.astype("uint8"), cv2.COLOR_HSV2BGR)
+        sat_adj_small = cv2.cvtColor(
+            hsv.astype("uint8"), cv2.COLOR_HSV2BGR
         )
         del hsv
         gc.collect()
 
-        # =========================================================
-        # TAHAP 2 — upscaling dilakukan SETELAH koreksi warna,
-        # jadi cuma satu kali proses resize di gambar besar.
-        # =========================================================
         new_w = max(1, int(w * scale_factor))
         new_h = max(1, int(h * scale_factor))
         upscaled = cv2.resize(
@@ -450,10 +550,6 @@ if uploaded_file is not None and img is not None:
         sat_adj = upscaled.astype("float32") / 255.0
         del upscaled
 
-        # =========================================================
-        # TAHAP 3 — clarity, dehaze, sharpen, vignette di resolusi
-        # akhir (besar). Hanya sedikit array besar yang aktif.
-        # =========================================================
         if clarity != 0 or dehaze != 0 or sharpen > 0:
           if dehaze != 0:
             dark_channel = cv2.min(
@@ -490,13 +586,9 @@ if uploaded_file is not None and img is not None:
         del sat_adj
         gc.collect()
 
-        # =========================================================
-        # TAHAP 4 — Smart Detail Enhance (opsional): filter edge-aware
-        # bawaan OpenCV, memberi kesan "AI upscaler" tanpa model berat
-        # =========================================================
         if smart_enhance > 0:
-          sigma_s = 10 + (smart_enhance / 100.0) * 40  # ~10–50
-          sigma_r = 0.15 + (smart_enhance / 100.0) * 0.35  # ~0.15–0.5
+          sigma_s = 10 + (smart_enhance / 100.0) * 40
+          sigma_r = 0.15 + (smart_enhance / 100.0) * 0.35
           final_bgr = cv2.detailEnhance(
               final_bgr, sigma_s=sigma_s, sigma_r=sigma_r
           )
@@ -511,18 +603,13 @@ if uploaded_file is not None and img is not None:
         if REQUIRE_LOGIN:
           deduct_credit(current_user["id"])
     except Exception as e:
-      st.error(
-          "❌ Terjadi kesalahan saat memproses gambar (kemungkinan foto"
-          " terlalu besar untuk skala upscaling yang dipilih). Coba unggah"
-          " foto dengan resolusi lebih kecil, atau pilih 2x HD Standard"
-          " dulu."
-      )
+      st.error("❌ Terjadi kesalahan saat memproses gambar.")
       with st.expander("Detail teknis error"):
         st.exception(e)
       st.session_state.pop("processed_img", None)
 
   with col_res:
-    st.subheader("🎇 Hasil Ai Pro & Upscaled")
+    st.subheader("🎇 Hasil Tone Curve & Upscaled")
     if "processed_img" in st.session_state:
       st.image(st.session_state["processed_img"], use_container_width=True)
 
@@ -532,14 +619,11 @@ if uploaded_file is not None and img is not None:
       byte_im = buf.getvalue()
 
       st.download_button(
-          label="📥 Unduh Foto HD Pro (JPEG)",
+          label="📥 Unduh Foto Hasil Pro Suite (JPEG)",
           data=byte_im,
-          file_name="amper_ai_pro.jpg",
+          file_name="amper_tone_curve.jpg",
           mime="image/jpeg",
           use_container_width=True,
       )
 else:
-  st.info(
-      "👆 Silakan unggah foto terlebih dahulu melalui tombol di atas untuk"
-      " mulai menggunakan suite lengkap & Upscaler."
-  )
+  st.info("👆 Silakan unggah foto terlebih dahulu di atas.")
