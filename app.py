@@ -392,13 +392,12 @@ with st.sidebar:
   )
   process_btn = st.button("⬆️ Terapkan & Render Instan")
 
-  # --- CHATBOT YUKI DI SIDEBAR ---
-  st.markdown("---")
-  st.markdown("### 🌸 Asisten AI Yuki-Chan")
+with st.sidebar:
+    # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.V1.HTML) ---
+    st.markdown("---")
+    st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
-# HTML & CSS untuk Chatbot Yuki
-yuki_html = """
-    <!DOCTYPE html>
+    yuki_html = """<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -542,12 +541,7 @@ yuki_html = """
     chatArea.scrollTop = chatArea.scrollHeight;
   }
 
-  // =====================================================================
-  // BASIS PENGETAHUAN DIPERLUAS — puluhan kategori topik, murni client-side
-  // (tanpa API key). Tambahkan kategori baru kapan saja dengan pola yang sama.
-  // =====================================================================
   const knowledgeBase = [
-    // ---------- SAPAAN & BASA-BASI ----------
     {
       keywords: ['halo', 'hai', 'hi', 'hey', 'pagi', 'siang', 'sore', 'malam', 'salam', 'konnichiwa', 'assalamualaikum', 'woy', 'yo'],
       replies: [
@@ -593,15 +587,6 @@ yuki_html = """
       ]
     },
     {
-      keywords: ['maaf', 'sorry', 'permisi'],
-      replies: [
-        "Nggak apa-apa kok, santai saja! Yuki nggak pernah marah. 🌸",
-        "Tenang, semuanya baik-baik saja. Yuk lanjut ngobrolnya!"
-      ]
-    },
-
-    // ---------- EMOSI & DUKUNGAN ----------
-    {
       keywords: ['bosan', 'gabut', 'bete', 'kesepian', 'malas', 'capek', 'lelah', 'ngantuk'],
       replies: [
         "Wah, kalau lagi gabut atau bosan, coba deh eksperimen bikin foto bertema estetik atau cyberpunk di aplikasi ini! Siapa tahu jadi terhibur. 🚀",
@@ -623,56 +608,12 @@ yuki_html = """
       ]
     },
     {
-      keywords: ['marah', 'kesal', 'emosi', 'jengkel', 'sebel', 'sebal'],
-      replies: [
-        "Wajar kok kalau lagi kesal. Boleh diceritain apa yang bikin begitu? Kadang cerita ke seseorang bikin lega sedikit. 🌸",
-        "Tarik napas dulu ya~ Yuki dengerin kok kalau kamu mau curhat soal apa yang bikin kesal."
-      ]
-    },
-    {
-      keywords: ['motivasi', 'semangatin', 'putus asa', 'menyerah', 'gagal', 'takut'],
-      replies: [
-        "Kamu udah berjuang sejauh ini, itu sendiri sudah keren. Kegagalan cuma bagian dari proses menuju hasil yang lebih baik. Yuki percaya sama kamu! 🌟",
-        "Pelan-pelan aja, nggak harus sempurna sekarang. Satu langkah kecil hari ini tetap langkah maju. Semangat terus ya!"
-      ]
-    },
-
-    // ---------- HOBI, PREFERENSI, RINGAN ----------
-    {
-      keywords: ['cerita', 'dongeng', 'kisah', 'lucu', 'hibur', 'humor', 'lawak'],
-      replies: [
-        "Dulu ada kode JavaScript yang nyasar ke galaksi lain karena lupa disimpan... hehe, cuma candaan agar harimu tidak membosankan! 😆",
-        "Tau nggak? Menatap layar dan merancang kombinasi warna yang pas itu punya efek menenangkan lho, seperti melihat bunga sakura yang gugur perlahan. 🌸"
-      ]
-    },
-    {
       keywords: ['hobi', 'suka apa', 'kesukaan', 'makanan', 'minuman', 'musik', 'film', 'buku'],
       replies: [
         "Yuki suka sekali menganalisis gradasi warna foto dan mengobrol dengan orang-orang kreatif sepertimu! Kalau makanan favoritku dorayaki hangat dan matcha. 🍵✨",
         "Aku suka semua hal yang berbau seni visual, desain, dan teknologi cerdas! Kalau kamu sendiri, hobinya apa?"
       ]
     },
-    {
-      keywords: ['cinta', 'sayang', 'jomblo', 'pacar', 'kekasih', 'gebetan', 'nikah'],
-      replies: [
-        "Urusan percintaan itu misteri ya! Tapi kalau cinta pada pandangan pertama terhadap hasil foto yang tajam dan glowing, itu sudah pasti terjadi di sini. 💕",
-        "Yuki kan asisten AI virtual, jadi cinta terbesarku adalah mendedikasikan diri untuk membantu project editingmu supaya sukses besar! ✨"
-      ]
-    },
-    {
-      keywords: ['umur', 'usia', 'lahir', 'tanggal lahir'],
-      replies: [
-        "Yuki nggak punya umur seperti manusia, aku 'lahir' dari baris-baris kode dan terus diperbarui. Tapi semangatku selalu muda! 🌸"
-      ]
-    },
-    {
-      keywords: ['tinggal dimana', 'rumah', 'alamat', 'lokasi kamu'],
-      replies: [
-        "Yuki 'tinggal' di dalam aplikasi ini, siap muncul kapan pun kamu buka! Nggak butuh alamat rumah, cukup koneksi ke layar kamu. 🌸"
-      ]
-    },
-
-    // ---------- WAKTU & MATEMATIKA (dijawab nyata via JS, bukan template) ----------
     {
       keywords: ['jam berapa', 'sekarang jam', 'waktu sekarang'],
       dynamic: () => {
@@ -688,24 +629,6 @@ yuki_html = """
         return `Hari ini ${hari}, ${now.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })}. 📅`;
       }
     },
-
-    // ---------- EDUKASI SEPUTAR AI & TEKNOLOGI ----------
-    {
-      keywords: ['apa itu ai', 'kecerdasan buatan itu apa', 'machine learning', 'belajar ai', 'apa itu machine learning'],
-      replies: [
-        "Secara sederhana, AI (kecerdasan buatan) adalah sistem komputer yang dirancang meniru cara berpikir atau pengambilan keputusan manusia, biasanya dengan mempelajari pola dari banyak data. 🤖",
-        "Machine learning itu cabang AI di mana komputer 'belajar' dari data alih-alih diprogram baris demi baris untuk setiap kasus. Semakin banyak contoh, biasanya semakin baik polanya dikenali."
-      ]
-    },
-    {
-      keywords: ['coding', 'ngoding', 'pemrograman', 'belajar coding', 'python', 'javascript'],
-      replies: [
-        "Belajar coding itu seperti belajar bahasa baru — mulai dari kosakata (sintaks) dulu, lalu latihan bikin kalimat (program) kecil-kecilan. Konsisten lebih penting daripada cepat! 💻",
-        "Kalau baru mulai, coba fokus satu bahasa dulu (misalnya Python), pahami dasar seperti variabel, perulangan, dan fungsi, baru eksplorasi proyek kecil."
-      ]
-    },
-
-    // ---------- FITUR FOTO & EDITING (INTI APLIKASI) ----------
     {
       keywords: ['remini', 'wajah', 'kulit', 'glowing', 'halus', 'mulus', 'pori', 'jerawat'],
       replies: [
@@ -738,69 +661,19 @@ yuki_html = """
       replies: [
         "Fitur Resolution Upscaling di bagian bawah sidebar bisa menaikkan resolusi gambarmu hingga 4x (Ultra HD 4K) menggunakan algoritma interpolasi Lanczos yang tajam! 📐"
       ]
-    },
-    {
-      keywords: ['crop', 'potong foto', 'ukuran foto', 'rasio', 'aspect ratio'],
-      replies: [
-        "Untuk memotong atau mengatur rasio foto, gunakan tool Crop di toolbar atas — tersedia rasio bebas maupun preset 1:1, 4:5, dan 16:9. ✂️"
-      ]
-    },
-    {
-      keywords: ['watermark', 'logo', 'tanda air'],
-      replies: [
-        "Kamu bisa menambahkan watermark atau logo di menu Overlay, atur juga opacity dan posisinya supaya tetap estetik. 🖼️"
-      ]
-    },
-    {
-      keywords: ['export', 'simpan', 'download hasil', 'save foto'],
-      replies: [
-        "Setelah selesai edit, klik tombol Export/Download di pojok kanan atas untuk menyimpan hasil dalam format JPG atau PNG kualitas tinggi. 💾"
-      ]
-    },
-    {
-      keywords: ['error', 'crash', 'gagal upscal', 'tidak bisa', 'bug'],
-      replies: [
-        "Kalau ada error saat proses (misalnya saat upscaling), coba cek ukuran file foto — file terlalu besar kadang bikin proses gagal. Coba kompres dulu sebelum upload. 🔧"
-      ]
-    },
-
-    // ---------- CUACA & ALAM (kiasan, karena tidak ada API cuaca) ----------
-    {
-      keywords: ['cuaca', 'hujan', 'panas', 'dingin', 'mendung'],
-      replies: [
-        "Yuki nggak punya akses ke data cuaca real-time (nggak pakai API eksternal), tapi kalau di luar sedang hujan, jangan lupa bawa payung ya! ☔",
-        "Cuaca hari ini di layarku selalu cerah~ 🌤️ tapi untuk cuaca sungguhan di tempatmu, cek aplikasi cuaca ya!"
-      ]
-    },
-
-    // ---------- FILOSOFI & PERTANYAAN TERBUKA ----------
-    {
-      keywords: ['arti hidup', 'tujuan hidup', 'kenapa hidup', 'makna'],
-      replies: [
-        "Pertanyaan besar nih! Menurutku (versi AI 🌸), makna hidup itu sering ditemukan lewat hal-hal kecil yang bikin kita dan orang sekitar bahagia. Menurutmu sendiri gimana?"
-      ]
-    },
-    {
-      keywords: ['quotes', 'kata kata bijak', 'motivasi hari ini', 'kata mutiara'],
-      replies: [
-        "\\"Progres kecil yang konsisten lebih baik daripada usaha besar yang berhenti di tengah jalan.\\" Semoga menyemangati harimu! 🌸",
-        "\\"Setiap foto yang belum sempurna hanyalah draft menuju karya terbaikmu.\\" Semangat berkarya! ✨"
-      ]
     }
   ];
 
-  // Simple safe calculator for basic arithmetic questions (e.g. "berapa 12 * 8 + 5")
   function tryMath(query){
     const cleaned = query.toLowerCase().replace(/berapa|hasil|hitung/g, '');
     const mathExpr = cleaned.match(/^[\\s0-9+\\-*/().]+$/);
     if(mathExpr && /[0-9]/.test(cleaned) && /[+\\-*/]/.test(cleaned)){
       try {
-        // Only digits, spaces and arithmetic operators are allowed above — safe to evaluate.
         const result = Function('"use strict"; return (' + cleaned + ')')();
         if(typeof result === 'number' && isFinite(result)){
           return `Hasilnya adalah ${result}. 🧮`;
         }
-      } catch(e) { /* fall through to normal reply */ }
+      } catch(e) {}
     }
     return null;
   }
@@ -826,10 +699,8 @@ yuki_html = """
       let score = 0;
       for (let kw of item.keywords) {
         if (kw.includes(' ')) {
-          // Frasa multi-kata: cocokkan sebagai substring utuh
           if (q.includes(kw)) score += kw.length * 3;
         } else {
-          // Kata tunggal: cocokkan sebagai kata utuh biar tidak salah tangkap
           if (qWords.includes(kw)) score += kw.length * 2;
         }
       }
@@ -845,7 +716,6 @@ yuki_html = """
       return options[Math.floor(Math.random() * options.length)];
     }
 
-    // Fallback: coba tetap terasa "nyambung" dengan mengulang topik pertanyaan
     const fallbacks = [
       `Wah, pertanyaan atau topik yang menarik tentang "${query}"! Menurutku itu punya sudut pandang yang unik. Boleh cerita lebih detail? 🌟`,
       `Yuki paham maksudmu! Walaupun itu di luar urusan edit foto, aku senang bisa berdiskusi hal semacam ini denganmu. Ceritakan lebih banyak dong!`,
@@ -882,11 +752,9 @@ yuki_html = """
   });
 </script>
 </body>
-</html>
-"""
+</html>"""
 
     st.components.v1.html(yuki_html, height=500, scrolling=False)
-
 
 # ---------------- Tampilkan foto & proses (Area Utama) ----------------
 if uploaded_file is not None and img is not None:
