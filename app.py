@@ -789,11 +789,11 @@ with st.sidebar:
   st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
 with st.sidebar:
-    # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.V1.HTML) ---
+ # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.V1.HTML) ---
   st.markdown("---")
   st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
- yuki_html = """
+  yuki_html = """
     <!DOCTYPE html>
     <html lang="id">
     <head>
