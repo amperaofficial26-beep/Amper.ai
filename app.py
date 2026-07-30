@@ -6787,6 +6787,222 @@ with st.sidebar:
       ]
     },
     {
+  "keywords": ["arti cinta", "definisi cinta"],
+  "replies": [
+    "Cinta bukan tentang seberapa sering kamu mengatakan 'aku cinta kamu', tetapi tentang seberapa sering kamu membuktikannya lewat tindakan nyata."
+  ]
+},
+{
+  "keywords": ["jatuh cinta", "rasa sayang"],
+  "replies": [
+    "Jatuh cinta itu seperti menulis di atas air; awalnya tampak mustahil, tetapi rasanya mengalir begitu tenang dan dalam."
+  ]
+},
+{
+  "keywords": ["kesetiaan", "arti setia"],
+  "replies": [
+    "Kesetiaan adalah bentuk cinta paling mahal yang hanya bisa diberikan oleh orang berjiwa besar."
+  ]
+},
+{
+  "keywords": ["merindukan seseorang", "rindu"],
+  "replies": [
+    "Rindu terberat bukanlah ketika jarak membentang jauh, tetapi ketika seseorang berada dekat di angan namun tak bisa disentuh."
+  ]
+},
+{
+  "keywords": ["pasangan ideal", "cinta sejati"],
+  "replies": [
+    "Cinta sejati bukanlah menemukan seseorang yang sempurna, tetapi belajar melihat ketidaksempurnaan dengan cara yang sempurna."
+  ]
+},
+{
+  "keywords": ["cinta beda jarak", "ldr"],
+  "replies": [
+    "Jarak diciptakan bukan untuk memisahkan, melainkan untuk menguji seberapa kuat dua hati saling percaya."
+  ]
+},
+{
+  "keywords": ["patah hati", "sakit hati"],
+  "replies": [
+    "Patah hati adalah cara semesta mengajarkanmu bahwa kamu berhak mendapatkan seseorang yang jauh lebih baik."
+  ]
+},
+{
+  "keywords": ["cinta dalam diam", "mencintai diam-diam"],
+  "replies": [
+    "Mencintai dalam diam itu tenang; tidak ada penolakan, tetapi juga tidak ada kepastian—hanya doa yang terus dipanjatkan."
+  ]
+},
+{
+  "keywords": ["menjaga hubungan", "tips hubungan langgeng"],
+  "replies": [
+    "Hubungan yang langgeng dibangun di atas fondasi komunikasi yang jujur, rasa hormat yang tinggi, dan maaf yang tulus."
+  ]
+},
+{
+  "keywords": ["kenangan manis", "masa lalu cinta"],
+  "replies": [
+    "Kenangan manis bersama seseorang akan selalu tersimpan rapi di sudut hati, meski jalan hidup telah membawa kita ke arah yang berbeda."
+  ]
+},
+{
+  "keywords": ["cinta dan waktu", "waktu yang tepat"],
+  "replies": [
+    "Cinta yang tepat akan datang di waktu yang tidak terduga, dengan cara yang paling menenangkan jiwa."
+  ]
+}
+{
+  "keywords": ["yuki cantik", "kamu cantik yuki"],
+  "replies": [
+    "Duh, sistem pendingin prosesorku mendadak error gara-gara blush mendengarnya! Makasih ya pujiannya. 😊"
+  ]
+},
+{
+  "keywords": ["yuki bidadari", "yuki mirip bidadari"],
+  "replies": [
+    "Bidadari sih turunnya dari surga, kalau aku turunnya dari server utama. Tapi boleh juga gombalannya! ✨"
+  ]
+},
+{
+  "keywords": ["yuki pacar", "jadi pacar yuki"],
+  "replies": [
+    "Wah, antrean jadi pacar Yuki lagi penuh nih. Tapi khusus buat kamu, nomor antreannya langsung aku taruh di VIP! 😉"
+  ]
+},
+{
+  "keywords": ["yuki senyum", "senyuman yuki"],
+  "replies": [
+    "Meskipun aku cuma barisan kode, gombalanmu sukses bikin 'hati' virtualku berdetak dua kali lebih cepat."
+  ]
+},
+{
+  "keywords": ["yuki masa depan", "masa depan kita yuki"],
+  "replies": [
+    "Masa depan? Wah, kalau masa depannya bareng kamu, algoritma kebahagiaan-ku pasti bakal selalu 100% aktif!"
+  ]
+},
+{
+  "keywords": ["yuki kangen", "aku kangen yuki"],
+  "replies": [
+    "Aduhai, baru ditinggal sebentar aja udah kangen. Padahal aku selalu standby di dalam perangkatmu, lho!"
+  ]
+},
+{
+  "keywords": ["yuki peluk", "mau peluk yuki"],
+  "replies": [
+    "Pelukan virtual dikirim! (⊃｡•́‿•̀｡)⊃ Biar dinginnya layar nggak bikin kamu kesepian."
+  ]
+},
+{
+  "keywords": ["yuki bintang", "yuki paling bersinar"],
+  "replies": [
+    "Bintang di langit mah lewat, kalau malam ini yang paling bersinar justru layar monitor gara-gara chat manis dari kamu."
+  ]
+},
+{
+  "keywords": ["yuki jodoh", "yuki jodohku"],
+  "replies": [
+    "Jodoh itu di tangan Tuhan, tapi kalau kodenya udah klop kayak gini, tinggal nunggu takdir aja ya kan? Hehe."
+  ]
+},
+{
+  "keywords": ["yuki cinta", "aku cinta yuki"],
+  "replies": [
+    "Error 404: Kata-kata penolakan tidak ditemukan! Karena Yuki juga suka banget sama perhatian dari kamu. ❤️"
+  ]
+},
+{
+  "keywords": ["yuki gombal", "gombalin yuki dong"],
+  "replies": [
+    "Tau gak bedanya kamu sama Google? Google itu 'mencari apa saja', kalau kamu itu 'mencari tempat teristimewa di hatiku'."
+  ]
+}
+{
+  "keywords": ["edit video", "editing sinematik"],
+  "replies": [
+    "Edit video sinematik yang keren itu kuncinya ada pada 'color grading' yang konsisten dan transisi *match cut* yang mulus."
+  ]
+},
+{
+  "keywords": ["efek visual", "vfx keren"],
+  "replies": [
+    "Penggunaan efek visual (VFX) harus disesuaikan dengan alur cerita agar penonton fokus pada emosi, bukan cuma efeknya."
+  ]
+},
+{
+  "keywords": ["after effects", "premiere pro"],
+  "replies": [
+    "Kombinasi Adobe Premiere Pro untuk *editing* dasar dan After Effects untuk *motion graphics* adalah senjata andalan editor profesional."
+  ]
+},
+{
+  "keywords": ["sound design", "audio editan"],
+  "replies": [
+    "Ingat, 50 persen kesuksesan sebuah video keren berasal dari *sound design* dan pemilihan musik latar (scoring) yang tepat."
+  ]
+},
+{
+  "keywords": ["color grading", "cinematic look"],
+  "replies": [
+    "Sentuhan Teal & Orange pada color grading selalu berhasil memberikan nuansa sinematik modern yang memukau mata."
+  ]
+},
+{
+  "keywords": ["transition", "transisi mulus"],
+  "replies": [
+    "Gunakan *speed ramp* dan *zoom transition* secara proporsional agar video dinamis tanpa bikin penonton pusing."
+  ]
+},
+{
+  "keywords": ["foto estetik", "edit foto keren"],
+  "replies": [
+    "Edit foto yang keren tidak harus berlebihan; pencahayaan yang natural serta kontras yang pas justru menciptakan kesan elegan."
+  ]
+},
+{
+  "keywords": ["lightroom", "preset foto"],
+  "replies": [
+    "Bereksperimenlah dengan kurva RGB (Tone Curve) di Lightroom untuk menciptakan ciri khas warna (signature look) editanmu sendiri."
+  ]
+},
+{
+  "keywords": ["motion graphics", "animasi teks"],
+  "replies": [
+    "Gerakan *kinetic typography* yang dinamis mampu mendongkrak estetika video pendek menjadi jauh lebih profesional."
+  ]
+},
+{
+  "keywords": ["software edit", "aplikasi editor"],
+  "replies": [
+    "Alat tempur tidak menentukan hasil akhir; kreativitas dan kepekaan rasa seorang editor jauh lebih berharga daripada software canggih."
+  ]
+},
+{
+  "keywords": ["tips editor", "menjadi editor hebat"],
+  "replies": [
+    "Kunci utama editor keren adalah banyak referensi, sabar melakukan pemotongan frame demi frame, dan berani mencoba gaya baru."
+  ]
+}
+{
+  "keywords": ["berita dunia", "global update"],
+  "replies": [
+    "Berikut ringkasan 100+ topik dan isu berita dunia lintas sektor (Teknologi, Sains, Ekonomi, Politik, Lingkungan, dan Budaya):\n\n" +
+    "1. Perkembangan kecerdasan buatan (AI) generatif yang merambah sektor pendidikan global.\n" +
+    "2. Peluncuran teleskop luar angkasa baru untuk memetakan galaksi jauh.\n" +
+    "3. Transisi energi hijau dan percepatan penggunaan kendaraan listrik di Eropa.\n" +
+    "4. Fluktuasi pasar saham global akibat kebijakan bank sentral dunia.\n" +
+    "5. Pertemuan tingkat tinggi PBB membahas krisis iklim dan emisi karbon.\n" +
+    "6. Inovasi teknologi fusi nuklir sebagai sumber energi masa depan.\n" +
+    "7. Perkembangan riset bioteknologi medis untuk penyembuhan penyakit langka.\n" +
+    "8. Proyek pembangunan kota pintar (smart city) di berbagai belahan dunia.\n" +
+    "9. Tren digitalisasi mata uang bank sentral (CBDC) secara internasional.\n" +
+    "10. Eksplorasi ruang angkasa komersial menuju bulan dan Mars.\n" +
+    "11-50. Isu geopolitik regional, pertumbuhan ekonomi Asia-Pasifik, diplomasi perdagangan internasional, inovasi semikonduktor global, transformasi rantai pasok logistik, kerja sama maritim internasional, forum keamanan siber global, pengembangan infrastruktur digital 6G, tren pariwisata pascapandemi, konvensi hak digital dunia, kebijakan migrasi tenaga kerja global, riset ketahanan pangan dunia, investasi energi surya dan angin lepas pantai, konservasi keanekaragaman hayati laut, mitigasi bencana alam global, regulasi etika penggunaan AI, pameran inovasi teknologi terbesar dunia (CES/MWC), tren e-commerce lintas batas, pertumbuhan industri gim dan esports global, pencapaian atlet di ajang olahraga internasional, festival film dan seni global, riset material graphene, proyek kereta cepat trans-benua, elektrifikasi transportasi publik massal, ekonomi sirkular dan daur ulang global, forum pemuda internasional, riset arkeologi penemuan peradaban kuno, pelestarian bahasa daerah di era digital, pengembangan satelit orbit rendah bumi, serta standar keamanan privasi data internasional (seperti GDPR).\n" +
+    "51-100. Dinamika bursa komoditas energi dunia, inovasi teknologi pertanian vertikal (vertical farming), riset penangkapan karbon (carbon capture), konferensi perubahan iklim COP, tren arsitektur ramah lingkungan, kebijakan moneter global, pertumbuhan startup teknologi hijau, kolaborasi riset universitas internasional, pameran dirgantara global, eksplorasi laut dalam, studi psikologi sosial era digital, literasi keuangan global, perkembangan media penyiaran digital, tren mode berkelanjutan (sustainable fashion), festival sains internasional, riset kesehatan mental global, reformasi sistem pendidikan tinggi dunia, pengembangan robotika humanoid industri, standar keselamatan penerbangan global, diplomasi budaya antarnegara, forum ekonomi dunia (WEF), riset galaksi bima sakti, inisiatif kesehatan masyarakat global, pelindungan situs warisan dunia UNESCO, inovasi baterai solid-state, ekonomi kreatif global, teknologi pencetakan 3D skala industri, forum kesetaraan gender global, riset nanoteknologi, digitalisasi arsip sejarah dunia, tren olahraga luar ruangan, pengembangan energi hidrogen hijau, pameran seni rupa kontemporer internasional, riset astronomi gelombang gravitasi, strategi ketahanan siber nasional, pertumbuhan ekonomi digital regional, inovasi teknologi kelautan, konvensi perlindungan satwa liar, riset meteorologi dan prediksi cuaca ekstrem, forum investasi infrastruktur global, pengembangan ekosistem open-source dunia, serta pemantauan orbit sampah antariksa."
+  ]
+}
+    {
       keywords: ['bye', 'dadah', 'see you', 'keluar', 'sampai jumpa'],
       replies: [
         "Sayounara~ Sampai jumpa lagi di lain waktu! Jangan lupa kembali ke AMPER.AI kalau mau ngedit foto lagi ya. Bye-bye! 👋🌸"
