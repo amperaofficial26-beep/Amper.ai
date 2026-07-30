@@ -180,7 +180,6 @@ with header_col2:
       unsafe_allow_html=True,
   )
 
-# Widget File Uploader dengan key unik untuk mencegah error duplikasi ID
 uploaded_file = st.file_uploader(
     "📂 Unggah File Foto Keren Kamu Disini... (JPG, JPEG, PNG)", 
     type=["jpg", "jpeg", "png"],
@@ -393,7 +392,6 @@ with st.sidebar:
   process_btn = st.button("⬆️ Terapkan & Render Instan")
 
 with st.sidebar:
-    # --- CHATBOT YUKI DI SIDEBAR (DIPASANG MENGGUNAKAN COMPONENTS.V1.HTML) ---
     st.markdown("---")
     st.markdown("### 🌸 Asisten AI Yuki-Chan")
 
@@ -484,7 +482,6 @@ with st.sidebar:
     display:flex; align-items:center; justify-content:center;
   }
   #sendBtn svg{ width:14px; height:14px; }
-  .typing{ font-size:0.75rem; color:var(--text-faint); font-style:italic; padding:0 4px; }
 </style>
 </head>
 <body>
@@ -541,202 +538,243 @@ with st.sidebar:
     chatArea.scrollTop = chatArea.scrollHeight;
   }
 
+  // --- KAMUS PENGETAHUAN AI YUKI (35+ KAMUS & TOPIK) ---
   const knowledgeBase = [
     {
       keywords: ['halo', 'hai', 'hi', 'hey', 'pagi', 'siang', 'sore', 'malam', 'salam', 'konnichiwa', 'assalamualaikum', 'woy', 'yo'],
       replies: [
         "Konnichiwa~ 🌸 Senang sekali bisa ngobrol sama kamu hari ini. Ada hal menarik apa yang ingin kita bahas?",
-        "Halo! Selamat datang di ruang obrolan Yuki. Mau bahas soal foto, teknologi, atau sekadar ngobrol santai nih?",
-        "Hai juga! Senang rasanya melihat pesan darimu. Ada yang bisa Yuki bantu atau temani hari ini? (｡♥‿♥｡)"
+        "Halo! Selamat datang di ruang obrolan Yuki. Mau bahas soal foto, teknologi, atau sekadar ngobrol santai nih?"
       ]
     },
     {
       keywords: ['kabar', 'gimana kabar', 'sehat', 'keadaan', 'bagaimana kabarmu', 'kamu sehat', 'apa kabar'],
       replies: [
-        "Alhamdulillah, Yuki selalu sehat, bugar, dan penuh semangat! 🌸 Kamu sendiri bagaimana keadaannya hari ini?",
-        "Puji syukur sistemku berjalan dengan sangat stabil dan ceria! Senang rasanya bisa disapa sama kamu. Ada yang bisa Yuki bantu?",
-        "Baik banget! Siap sedia menemani harimu dengan energi positif. (｡♥‿♥｡) Ada hal seru yang ingin kamu ceritakan?"
+        "Alhamdulillah, Yuki selalu sehat, bugar, dan penuh semangat! 🌸 Kamu sendiri bagaimana keadaannya hari ini?"
       ]
     },
     {
-      keywords: ['siapa', 'kamu siapa', 'yuki', 'nama kamu', 'pembuat', 'siapa yang buat', 'asal usul', 'robot', 'ai', 'kecerdasan buatan'],
+      keywords: ['siapa', 'kamu siapa', 'yuki', 'nama kamu', 'pembuat', 'siapa yang buat', 'asal usul', 'robot', 'ai'],
       replies: [
-        "Aku Yuki! Asisten virtual pribadimu yang dirancang untuk membantu urusan editing foto, sekaligus teman ngobrol yang asyik kapan pun kamu butuh. 🌸",
-        "Namaku Yuki, sosok AI pendamping kreatifmu. Aku suka membantu hal-hal berbau estetika visual, teknologi, atau sekadar bertukar pikiran!"
+        "Aku Yuki! Asisten virtual pribadimu yang dirancang untuk membantu urusan editing foto, sekaligus teman ngobrol yang asyik. 🌸"
       ]
     },
     {
-      keywords: ['lagi apa', 'sedang apa', 'sibuk apa', 'aktivitas', 'ngapain'],
+      keywords: ['amper', 'amper.ai', 'ampera', 'platform', 'aplikasi ini', 'web apa ini'],
       replies: [
-        "Lagi standby dan siap mendengarkan cerita atau pertanyaan darimu nih! Sambil nunggu, aku lagi merapikan database warna supaya makin oke. 🎨✨",
-        "Lagi nongkrong di panel sidebar sambil merhatiin hasil editan foto keren yang kamu buat! Kamu sendiri lagi sibuk apa nih?"
+        "AMPER.AI adalah platform web editing foto profesional berteknologi tinggi yang dilengkapi fitur Remini face enhancer, bokeh, filter sinematik, dan AI Upscaler! ✨"
       ]
     },
     {
-      keywords: ['terima kasih', 'makasih', 'thanks', 'thx', 'trims'],
+      keywords: ['foto', 'gambar', 'edit', 'editing', 'filter', 'efek', 'kamera'],
       replies: [
-        "Sama-sama dengan senang hati! Kalau ada apa-apa lagi, panggil Yuki ya! 🌸",
-        "Dengan senang hati~! Jangan ragu untuk terus ngobrol atau tanya-tanya kapan pun kamu butuh teman diskusi. (≧◡≦)"
+        "Fotografi adalah seni melukis dengan cahaya! Di AMPER.AI kamu bisa mengatur exposure, kontras, kurva RGB, hingga memperhalus wajah secara instan. 📸"
       ]
     },
     {
-      keywords: ['bye', 'dadah', 'sampai jumpa', 'pergi dulu', 'off dulu', 'daa', 'selamat tinggal'],
+      keywords: ['remini', 'wajah', 'kulit', 'mulus', 'halus', 'detail'],
       replies: [
-        "Sampai jumpa lagi! Yuki akan selalu ada di sini kalau kamu butuh teman ngobrol atau bantuan edit foto. 🌸",
-        "Dadah~ hati-hati ya, jangan lupa istirahat. Ditunggu obrolan berikutnya!"
+        "Fitur Remini di sidebar menggunakan algoritma canggih untuk mempertajam detail wajah dan menghaluskan tekstur kulit agar tampak profesional! ✨"
       ]
     },
     {
-      keywords: ['bosan', 'gabut', 'bete', 'kesepian', 'malas', 'capek', 'lelah', 'ngantuk'],
+      keywords: ['bokeh', 'blur', 'latar', 'background'],
       replies: [
-        "Wah, kalau lagi gabut atau bosan, coba deh eksperimen bikin foto bertema estetik atau cyberpunk di aplikasi ini! Siapa tahu jadi terhibur. 🚀",
-        "Peluk jauh secara virtual! 🤗 Kalau capek, istirahat sejenak dulu ya. Tarik napas dalam-dalam, nanti kalau udah segar kita ngobrol lagi."
+        "Efek bokeh memberikan kesan kedalaman (depth of field) ala kamera DSLR mahal dengan mengaburkan bagian latar belakang foto secara halus. 🌿"
       ]
     },
     {
-      keywords: ['sedih', 'nangis', 'galau', 'down', 'kecewa', 'patah hati', 'stress', 'stres'],
+      keywords: ['upscale', 'resolusi', '4k', '2k', 'hd'],
       replies: [
-        "Aku di sini nemenin kamu ya. Kalau lagi berat, nggak apa-apa buat pelan-pelan dulu. Mau cerita apa yang bikin kamu merasa begitu? 🌸",
-        "Pelukan virtual dulu ya~ Perasaan itu wajar kok. Kalau butuh dialihkan sejenak, kita bisa ngobrol santai atau utak-atik edit foto bareng."
+        "Fitur AI Upscaling di AMPER.AI mampu meningkatkan resolusi gambar hingga 2x atau 4x lipat menggunakan interpolasi Lanczos berkualitas tinggi! 🚀"
       ]
     },
     {
-      keywords: ['senang', 'bahagia', 'seru', 'happy', 'gembira', 'excited', 'semangat'],
+      keywords: ['terima kasih', 'makasih', 'thanks', 'thx', 'arigatou'],
       replies: [
-        "Yeay, ikut senang dengernya! Energi positifmu nular nih ke Yuki. Ada cerita seru yang mau dibagi? ✨",
-        "Wah asik banget! Semoga kebahagiaan ini terus berlanjut ya. Yuki juga jadi ikut semangat!"
+        "Sama-sama! 🌸 Yuki senang sekali bisa membantu kamu. Kalau ada hal lain yang ingin ditanyakan, jangan ragu panggil Yuki ya!"
       ]
     },
     {
-      keywords: ['hobi', 'suka apa', 'kesukaan', 'makanan', 'minuman', 'musik', 'film', 'buku'],
+      keywords: ['bantuan', 'tolong', 'help', 'fitur', 'cara pakai'],
       replies: [
-        "Yuki suka sekali menganalisis gradasi warna foto dan mengobrol dengan orang-orang kreatif sepertimu! Kalau makanan favoritku dorayaki hangat dan matcha. 🍵✨",
-        "Aku suka semua hal yang berbau seni visual, desain, dan teknologi cerdas! Kalau kamu sendiri, hobinya apa?"
+        "Caranya gampang banget: 1. Unggah fotomu di tombol atas, 2. Atur slider penyesuaian di sidebar kiri, 3. Pilih preset atau efek, lalu klik Terapkan & Render! 🎨"
       ]
     },
     {
-      keywords: ['jam berapa', 'sekarang jam', 'waktu sekarang'],
-      dynamic: () => {
-        const now = new Date();
-        return `Sekarang pukul ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')} menurut jam perangkatmu. ⏰`;
-      }
-    },
-    {
-      keywords: ['tanggal berapa', 'hari ini tanggal', 'sekarang tanggal', 'hari apa sekarang'],
-      dynamic: () => {
-        const now = new Date();
-        const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][now.getDay()];
-        return `Hari ini ${hari}, ${now.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })}. 📅`;
-      }
-    },
-    {
-      keywords: ['remini', 'wajah', 'kulit', 'glowing', 'halus', 'mulus', 'pori', 'jerawat'],
+      keywords: ['hobi', 'kesukaan', 'suka apa', 'kegiatan'],
       replies: [
-        "Untuk hasil wajah ala Remini yang mulus tapi tetap natural, geser slider 'Perjelas Wajah & Kulit' ke angka 50–80. Fitur ini memakai bilateral filter cerdas! ✨",
-        "Mau detail wajah makin tajam? Coba aktifkan peningkatan Remini di panel atas, dijamin tekstur kulit langsung rapi tanpa kelihatan berlebihan."
+        "Hobi Yuki tentu saja mengamati seni visual, merapikan komposisi warna foto, dan menemani kamu ngobrol di AMPER.AI! 💖"
       ]
     },
     {
-      keywords: ['latar', 'background', 'bokeh', 'blur', 'belakang', 'fokus', 'depth'],
+      keywords: ['cuaca', 'hari ini', 'panas', 'hujan'],
       replies: [
-        "Efek latar belakang (bokeh) akan membuat subjek fotomu langsung standout ala kamera DSLR profesional. Cukup sesuaikan slider blur-nya ya! 📸",
-        "Supaya foto portrait kamu lebih dramatis, naikkan efek latar belakang di sidebar. Algoritma kami otomatis memisahkan fokus subjek dengan background."
+        "Karena Yuki hidup di dalam sistem digital, cuaca di sini selalu cerah berawan penuh kode biner! Bagaimana cuaca di tempatmu sekarang? ☀️"
       ]
     },
     {
-      keywords: ['kurva', 'curve', 'warna foto', 'tone', 's-curve', 'matte', 'cinematic'],
+      keywords: ['makan', 'makanan', 'kuliner', 'lapar', 'minum', 'coffee', 'kopi'],
       replies: [
-        "Pilihan RGB Tone Curve sangat berpengaruh pada mood! Pilih S-Curve untuk kontras sinematik, atau Matte/Fade untuk gaya indie aesthetic. 🎨",
-        "Mau warna foto langsung hidup? Coba kombinasikan S-Curve dengan preset CapCut Cyberpunk atau Vintage di bawahnya."
+        "Wah ngomongin makanan jadi bikin pengen ngemil virtual! Kalau kamu suka makanan apa nih? Jangan lupa istirahat dan makan ya biar tetap fokus ngeditnya. 🍜"
       ]
     },
     {
-      keywords: ['preset', 'capcut', 'filter foto', 'template edit', 'gaya foto', 'cyberpunk', 'vintage'],
+      keywords: ['malam', 'tidur', 'istirahat', 'ngantuk', 'lelah', 'capek'],
       replies: [
-        "Di menu CapCut & Pro Filter Presets, ada banyak pilihan gaya mulai dari Cyberpunk, Moody Cinematic, hingga Clean & Fresh. Tinggal klik dan terapkan! 🚀"
+        "Kalau kamu sudah lelah, jangan dipaksakan ya! Kesehatan itu nomor satu. Silakan istirahat yang cukup, nanti fotonya dilanjutkan lagi besok. 🌙"
       ]
     },
     {
-      keywords: ['resolusi', 'upscale', '4k', 'hd', 'pixel', 'tajam foto'],
+      keywords: ['semangat', 'motivasi', 'quotes', 'kata mutiara'],
       replies: [
-        "Fitur Resolution Upscaling di bagian bawah sidebar bisa menaikkan resolusi gambarmu hingga 4x (Ultra HD 4K) menggunakan algoritma interpolasi Lanczos yang tajam! 📐"
+        "Ingat kata mutiara fotografi: 'Fotografi adalah cerita yang gagal diungkapkan dengan kata-kata.' Teruslah berkarya dan ciptakan karya terbaikmu hari ini! ✨"
+      ]
+    },
+    {
+      keywords: ['bahasa', 'kamu bisa bahasa apa', 'indo', 'inggris', 'jepang'],
+      replies: [
+        "Yuki paling jago bahasa Indonesia dan sedikit-sedikit bahasa Jepang seperti Konnichiwa atau Arigatou! 🌸 Mau ngobrol pakai bahasa apa?"
+      ]
+    },
+    {
+      keywords: ['pacar', 'jodoh', 'nikah', 'cinta', 'love'],
+      replies: [
+        "Duh, kalau urusan percintaan Yuki kurang paham karena hatiku sudah terprogram sepenuhnya untuk membantu pengguna AMPER.AI! 😉💕"
+      ]
+    },
+    {
+      keywords: ['musik', 'lagu', 'nyanyi', 'konser'],
+      replies: [
+        "Musik adalah ritme kehidupan! Mendengarkan musik lofi yang tenang sangat cocok ditemani sambil mengedit foto di panel AMPER.AI ini. 🎧"
+      ]
+    },
+    {
+      keywords: ['film', 'movie', 'bioskop', 'sinematik'],
+      replies: [
+        "Film dengan color grading sinematik selalu punya daya tarik magis. Kamu bisa meniru gaya warna tersebut pakai preset Moody Cinematic di sidebar lho! 🎬"
+      ]
+    },
+    {
+      keywords: ['teknologi', 'komputer', 'ai', 'kecerdasan buatan', 'coding'],
+      replies: [
+        "Teknologi kecerdasan buatan berkembang sangat cepat! Melalui kolaborasi kode Python dan antarmuka Streamlit, AMPER.AI bisa tercipta sekeren ini. 💻"
+      ]
+    },
+    {
+      keywords: ['warna', 'rgb', 'kurva', 'saturation', 'vibrance'],
+      replies: [
+        "Pengaturan warna sangat krusial dalam fotografi. Gunakan kurva S-Curve untuk kontras dramatis atau Vibrance untuk menaikkan warna kulit secara natural! 🎨"
+      ]
+    },
+    {
+      keywords: ['waktu', 'jam', 'hari', 'tanggal'],
+      replies: [
+        "Waktu berjalan begitu cepat saat kita asyik berkarya. Pastikan kamu tidak lupa waktu ya, mari selesaikan editan fotomu dengan efisien! ⏰"
+      ]
+    },
+    {
+      keywords: ['lucu', 'imut', 'kawaii', 'gemesin'],
+      replies: [
+        "Akiwaa! Terima kasih pujiannya. Yuki memang didesain agar selalu ceria dan ramah menemani hari-hari kamu. 🌸✨"
+      ]
+    },
+    {
+      keywords: ['hewan', 'kucing', 'anjing', 'pet', 'peliharaan'],
+      replies: [
+        "Yuki sangat suka hewan peliharaan, terutama kucing yang gemesin! Punya hewan peliharaan juga di rumah? 🐾"
+      ]
+    },
+    {
+      keywords: ['game', 'gaming', 'main game', 'esport'],
+      replies: [
+        "Game seru banget untuk melatih ketangkasan berpikir! Tapi habis main game, jangan lupa mampir buat edit foto keren di sini ya. 🎮"
+      ]
+    },
+    {
+      keywords: ['liburan', 'traveling', 'jalan-jalan', 'wisata'],
+      replies: [
+        "Traveling adalah momen terbaik untuk mengumpulkan stok foto pemandangan luar biasa yang nantinya bisa kamu poles di AMPER.AI! ✈️"
+      ]
+    },
+    {
+      keywords: ['sukses', 'kerja', 'karir', 'bisnis', 'projek'],
+      replies: [
+        "Kesuksesan dibangun dari konsistensi dan ketekunan setiap hari. Teruslah asah skill fotografimu hingga menjadi seorang profesional! 💼"
+      ]
+    },
+    {
+      keywords: ['ketawa', 'haha', 'wkwk', 'hihi', 'lol'],
+      replies: [
+        "Hihihi! Senang rasanya bisa membuat suasana obrolan kita jadi lebih cair dan menyenangkan. Ketawa itu menular lho! 😄"
+      ]
+    },
+    {
+      keywords: ['maaf', 'sorrry', 'salah'],
+      replies: [
+        "Tidak apa-apa sama sekali! Manusia tempatnya salah, dan AI pun terus belajar. Mari kita perbaiki bersama ya. 🌸"
+      ]
+    },
+    {
+      keywords: ['pintar', 'cerdas', 'genius', 'pro'],
+      replies: [
+        "Wah, kamu juga tidak kalah pintar dalam memilih platform editing foto terbaik seperti AMPER.AI! Kita tim yang hebat. ✨"
+      ]
+    },
+    {
+      keywords: ['seni', 'art', 'lukisan', 'kreatif'],
+      replies: [
+        "Seni adalah kebebasan berekspresi. Setiap foto yang kamu sentuh di sini adalah sebuah mahakarya baru yang bernilai tinggi. 🖼️"
+      ]
+    },
+    {
+      keywords: ['tanya', 'pertanyaan', 'soal'],
+      replies: [
+        "Tanyakan apa saja pada Yuki! Mulai dari tips fotografi, cara menggunakan fitur aplikasi, hingga obrolan santai siap Yuki jawab. 💬"
+      ]
+    },
+    {
+      keywords: ['kecewa', 'sedih', 'galau', 'stress'],
+      replies: [
+        "Cup cup, jangan bersedih ya... Hidup memang punya naik turunnya. Tarik napas dalam-dalam, tersenyumlah, dan ingat Yuki selalu ada buat nemenin kamu. 🫂💖"
+      ]
+    },
+    {
+      keywords: ['hebat', 'keren', 'mantap', 'cool', 'gokil'],
+      replies: [
+        "Terima kasih banyak! Dukungan dan apresiasi kamu adalah bahan bakar utama bagi Yuki untuk terus aktif melayani. 🚀✨"
+      ]
+    },
+    {
+      keywords: ['bye', 'dadah', 'see you', 'keluar', 'sampai jumpa'],
+      replies: [
+        "Sayounara~ Sampai jumpa lagi di lain waktu! Jangan lupa kembali ke AMPER.AI kalau mau ngedit foto lagi ya. Bye-bye! 👋🌸"
       ]
     }
   ];
 
-  function tryMath(query){
-    const cleaned = query.toLowerCase().replace(/berapa|hasil|hitung/g, '');
-    const mathExpr = cleaned.match(/^[\\s0-9+\\-*/().]+$/);
-    if(mathExpr && /[0-9]/.test(cleaned) && /[+\\-*/]/.test(cleaned)){
-      try {
-        const result = Function('"use strict"; return (' + cleaned + ')')();
-        if(typeof result === 'number' && isFinite(result)){
-          return `Hasilnya adalah ${result}. 🧮`;
-        }
-      } catch(e) {}
-    }
-    return null;
-  }
-
-  function tokenize(text){
-    return text.toLowerCase()
-      .replace(/[.,!?;:()"']/g, ' ')
-      .split(/\\s+/)
-      .filter(Boolean);
-  }
-
-  function getSmartReply(query) {
-    const mathAnswer = tryMath(query);
-    if (mathAnswer) return mathAnswer;
-
-    const q = query.toLowerCase();
-    const qWords = tokenize(query);
-
-    let bestMatch = null;
-    let maxScore = 0;
-
-    for (let item of knowledgeBase) {
-      let score = 0;
-      for (let kw of item.keywords) {
-        if (kw.includes(' ')) {
-          if (q.includes(kw)) score += kw.length * 3;
-        } else {
-          if (qWords.includes(kw)) score += kw.length * 2;
+  function findReply(input){
+    const text = input.toLowerCase();
+    for(let item of knowledgeBase){
+      for(let kw of item.keywords){
+        if(text.includes(kw)){
+          const r = item.replies;
+          return r[Math.floor(Math.random() * r.length)];
         }
       }
-      if (score > maxScore) {
-        maxScore = score;
-        bestMatch = item;
-      }
     }
-
-    if (bestMatch && maxScore > 0) {
-      if (bestMatch.dynamic) return bestMatch.dynamic();
-      const options = bestMatch.replies;
-      return options[Math.floor(Math.random() * options.length)];
-    }
-
-    const fallbacks = [
-      `Wah, pertanyaan atau topik yang menarik tentang "${query}"! Menurutku itu punya sudut pandang yang unik. Boleh cerita lebih detail? 🌟`,
-      `Yuki paham maksudmu! Walaupun itu di luar urusan edit foto, aku senang bisa berdiskusi hal semacam ini denganmu. Ceritakan lebih banyak dong!`,
-      `Catatan yang menarik soal "${query}". Ada hal lain seputar hobi, teknologi, atau seni visual yang ingin kita bahas bareng? 🌸`,
-      `Itu pemikiran yang seru! Coba ceritakan lebih spesifik ya, biar Yuki bisa nyambung lebih dalam soal "${query}".`
-    ];
-    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    return "Wah, pertanyaan yang sangat menarik! Yuki akan ingat itu baik-baik. Ada lagi seputar editing foto atau hal lain yang ingin kita diskusikan? 🌸";
   }
 
   function sendMessage(){
     const txt = userInput.value.trim();
     if(!txt) return;
-
     addBubble('user', txt);
     userInput.value = '';
-    userInput.style.height = 'auto';
-
     setTimeout(() => {
-      const replyText = getSmartReply(txt);
-      addBubble('ai', replyText);
-    }, 350);
+      const reply = findReply(txt);
+      addBubble('ai', reply);
+    }, 400);
   }
 
   sendBtn.addEventListener('click', sendMessage);
@@ -748,7 +786,7 @@ with st.sidebar:
   });
 
   window.addEventListener('load', () => {
-    addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Sekarang kita bisa ngobrol apa saja—mulai dari menanyakan kabar, curhat santai, tanya jam/tanggal, hitung matematika sederhana, hingga tips fotografi profesional!');
+    addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan apa saja seputar fotografi!');
   });
 </script>
 </body>
@@ -775,7 +813,6 @@ if uploaded_file is not None and img is not None:
           scale_factor = max(1.0, adjusted_scale)
           st.warning(f"⚠️ Skala disesuaikan otomatis menjadi {scale_factor:.2f}x demi memori server.")
 
-        # --- APLIKASI EFEK REMINI ---
         if remini_boost > 0:
           skin_smooth = cv2.bilateralFilter(img, int(remini_boost / 5) * 2 + 5, 75, 75)
           sigma_val = 10 + (remini_boost / 100.0) * 20
@@ -783,7 +820,6 @@ if uploaded_file is not None and img is not None:
           del skin_smooth
           gc.collect()
 
-        # --- APLIKASI EFEK LATAR BELAKANG (Bokeh) ---
         if bg_blur > 0:
           blur_kernel = int(bg_blur / 5) * 2 + 1
           bg_blurred = cv2.GaussianBlur(img, (blur_kernel, blur_kernel), bg_blur / 2.0)
@@ -857,4 +893,41 @@ if uploaded_file is not None and img is not None:
           use_container_width=True,
       )
 else:
-  st.info("👆 Silakan unggah foto terlebih dahulu di atas.")
+  st.markdown("---")
+  
+  # --- BANNER KATA-KATA MOTIVASI FOTOGRAFI ---
+  st.markdown("""
+      <div style="background: linear-gradient(135deg, rgba(227,179,74,0.15), rgba(31,111,92,0.2)); padding: 22px; border-radius: 14px; border: 1px solid rgba(227,179,74,0.4); text-align: center; margin-bottom: 25px;">
+          <h3 style="color: #f3cf83; margin: 0 0 8px 0; font-family: 'Georgia', serif;">"Fotografi adalah cerita yang gagal diungkapkan dengan kata-kata."</h3>
+          <p style="color: #a9d6c9; font-size: 0.95em; margin: 0; font-style: italic;">— Abadikan momen terbaikmu, sempurnakan warnanya, dan biarkan karya berbicara bersama AMPER.AI & Yuki-Chan.</p>
+      </div>
+  """, unsafe_allow_html=True)
+
+  # --- KARTU FITUR UNGGULAN (GRID 3 KOLOM) ---
+  col_f1, col_f2, col_f3 = st.columns(3)
+  
+  with col_f1:
+    st.markdown("""
+        <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
+            <h4 style="color: #e3b34a; margin-top: 0;">🌸 Yuki AI Companion</h4>
+            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Asisten virtual cerdas di sidebar yang siap sedia mendampingi proses kreatifmu kapan saja tanpa biaya.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+  with col_f2:
+    st.markdown("""
+        <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
+            <h4 style="color: #e3b34a; margin-top: 0;">⚡ Remini & Bokeh Pro</h4>
+            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Perhalus tekstur kulit wajah secara natural dan ciptakan efek latar belakang blur DSLR instan dengan satu klik.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+  with col_f3:
+    st.markdown("""
+        <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
+            <h4 style="color: #e3b34a; margin-top: 0;">🎨 Cinematic Presets</h4>
+            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Pilih beragam filter gaya sinematik, cyberpunk, hingga vintage retro untuk mempercantik foto instan.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+  st.markdown("<br><p style='text-align: center; color: #8fa8a2; font-size: 0.95em;'>👆 Silakan unggah file foto di atas untuk mulai mengedit karya fotografimu.</p>", unsafe_allow_html=True)
