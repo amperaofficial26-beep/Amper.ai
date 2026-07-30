@@ -443,7 +443,7 @@ with main_col_yuki:
 </html>"""
   
   # Perbaikan ada di baris ini (menghapus parameter scrolling yang tidak valid/bermasalah)
-  components.v1.html(yuki_html, height=485)
+  components.html(yuki_html, height=485)
 st.markdown("---")
 
 # ==========================================================
