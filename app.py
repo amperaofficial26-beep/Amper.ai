@@ -11,7 +11,10 @@ import streamlit.components.v1 as components
 REQUIRE_LOGIN = False
 
 if REQUIRE_LOGIN:
-  from auth import render_auth_sidebar, get_credits, deduct_credit
+    try:
+        from auth import render_auth_sidebar, get_credits, deduct_credit
+    except ImportError:
+        st.error("Module 'auth.py' tidak ditemukan!")
 
 st.set_page_config(
     page_title="AMPER.AI - Pro Suite, & Yuki-Chan (Ai)",
@@ -27,31 +30,31 @@ MAX_OUTPUT_MEGAPIXELS = 35_000_000
 
 
 def get_base64_of_bin_file(path):
-  with open(path, "rb") as f:
-    return base64.b64encode(f.read()).decode()
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 
 def set_background(image_path):
-  try:
-    bin_str = get_base64_of_bin_file(image_path)
-    css = f"""
-      <style>
-      .stApp {{
-          background-image: linear-gradient(160deg, rgba(6,17,20,0.55), rgba(6,17,20,0.55)),
-              url("data:image/jpeg;base64,{bin_str}");
-          background-size: cover;
-          background-position: center center;
-          background-attachment: fixed;
-      }}
-      </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
-  except FileNotFoundError:
-    pass
+    try:
+        bin_str = get_base64_of_bin_file(image_path)
+        css = f"""
+        <style>
+        .stApp {{
+            background-image: linear-gradient(160deg, rgba(6,17,20,0.55), rgba(6,17,20,0.55)),
+                url("data:image/jpeg;base64,{bin_str}");
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+        }}
+        </style>
+        """
+        st.markdown(css, unsafe_allow_html=True)
+    except FileNotFoundError:
+        pass
 
 
 def set_custom_theme():
-  css = """
+    css = """
     <style>
     .stApp {
         background: linear-gradient(160deg, #07161a 0%, #0f2b30 55%, #07161a 100%);
@@ -101,84 +104,105 @@ def set_custom_theme():
         background-color: #e3b34a !important;
     }
     </style>
-  """
-  st.markdown(css, unsafe_allow_html=True)
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
 
 def compute_auto_suggestions(img_bgr):
-  gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-  mean_brightness = float(np.mean(gray))
-  contrast_std = float(np.std(gray))
-  laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    mean_brightness = float(np.mean(gray))
+    contrast_std = float(np.std(gray))
+    laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
 
-  target_brightness = 125.0
-  diff = target_brightness - mean_brightness
-  suggested_exposure = float(np.clip(diff / 90.0, -1.2, 1.2))
-  suggested_contrast = int(np.clip((45 - contrast_std) * 1.1, 0, 40))
+    target_brightness = 125.0
+    diff = target_brightness - mean_brightness
+    suggested_exposure = float(np.clip(diff / 90.0, -1.2, 1.2))
+    suggested_contrast = int(np.clip((45 - contrast_std) * 1.1, 0, 40))
 
-  hist = cv2.calcHist([gray], [0], None, [256], [0, 256]).flatten()
-  total_px = gray.size
-  shadow_clip_ratio = hist[:15].sum() / total_px
-  highlight_clip_ratio = hist[240:].sum() / total_px
-  suggested_shadows = int(np.clip(shadow_clip_ratio * 400, 0, 60))
-  suggested_highlights = int(np.clip(-highlight_clip_ratio * 400, -60, 0))
+    hist = cv2.calcHist([gray], [0], None, [256], [0, 256]).flatten()
+    total_px = gray.size
+    shadow_clip_ratio = hist[:15].sum() / total_px
+    highlight_clip_ratio = hist[240:].sum() / total_px
+    suggested_shadows = int(np.clip(shadow_clip_ratio * 400, 0, 60))
+    suggested_highlights = int(np.clip(-highlight_clip_ratio * 400, -60, 0))
 
-  if laplacian_var < 60:
-    suggested_sharpen, suggested_clarity = 55, 30
-  elif laplacian_var < 150:
-    suggested_sharpen, suggested_clarity = 35, 20
-  else:
-    suggested_sharpen, suggested_clarity = 15, 10
+    if laplacian_var < 60:
+        suggested_sharpen, suggested_clarity = 55, 30
+    elif laplacian_var < 150:
+        suggested_sharpen, suggested_clarity = 35, 20
+    else:
+        suggested_sharpen, suggested_clarity = 15, 10
 
-  return {
-      "exposure": round(suggested_exposure, 1),
-      "contrast": suggested_contrast,
-      "highlights": suggested_highlights,
-      "shadows": suggested_shadows,
-      "sharpen": suggested_sharpen,
-      "clarity": suggested_clarity,
-  }
+    return {
+        "exposure": round(suggested_exposure, 1),
+        "contrast": suggested_contrast,
+        "highlights": suggested_highlights,
+        "shadows": suggested_shadows,
+        "sharpen": suggested_sharpen,
+        "clarity": suggested_clarity,
+        "whites": 0,
+        "blacks": 0,
+        "temp": -5,
+        "tint": 0,
+        "vibrance": 15,
+        "saturation": 10,
+        "dehaze": 10,
+        "vignette": 25,
+        "noise_reduction": 0,
+        "smart_enhance": 0,
+    }
 
 
 def apply_tone_curve(img_f, curve_preset):
-  if curve_preset == "Linear (Standard)":
+    if curve_preset == "Linear (Standard)":
+        return img_f
+    elif curve_preset == "S-Curve (Kontras Tinggi & Sinematik)":
+        return np.sin(img_f * np.pi - np.pi / 2) * 0.5 + 0.5
+    elif curve_preset == "Matte / Fade (Gaya Film Indie)":
+        return img_f * 0.8 + 0.1
+    elif curve_preset == "Bright Pop (Terang & Segar)":
+        return np.power(img_f, 0.85)
     return img_f
-  elif curve_preset == "S-Curve (Kontras Tinggi & Sinematik)":
-    return np.sin(img_f * np.pi - np.pi / 2) * 0.5 + 0.5
-  elif curve_preset == "Matte / Fade (Gaya Film Indie)":
-    return img_f * 0.8 + 0.1
-  elif curve_preset == "Bright Pop (Terang & Segar)":
-    return np.power(img_f, 0.85)
-  return img_f
 
+
+# Inisialisasi Default State jika belum ada
+default_state = {
+    "exposure": 0.0, "contrast": 10, "highlights": -20, "shadows": 25,
+    "whites": 0, "blacks": 0, "temp": -5, "tint": 0, "vibrance": 15,
+    "saturation": 10, "clarity": 20, "dehaze": 10, "sharpen": 30,
+    "vignette": 25, "noise_reduction": 0, "smart_enhance": 0
+}
+for key, val in default_state.items():
+    if key not in st.session_state:
+        st.session_state[key] = val
 
 set_custom_theme()
 set_background(BG_PATH)
 
 current_user = None
 if REQUIRE_LOGIN:
-  is_logged_in = render_auth_sidebar()
-  if not is_logged_in:
-    st.title("👾 AMPER.AI — Pro Suite & Yuki-Chan")
-    st.info("Silakan Masuk atau Daftar lewat panel kiri untuk mulai.")
-    st.stop()
-  current_user = st.session_state["user"]
+    is_logged_in = render_auth_sidebar()
+    if not is_logged_in:
+        st.title("👾 AMPER.AI — Pro Suite & Yuki-Chan")
+        st.info("Silakan Masuk atau Daftar lewat panel kiri untuk mulai.")
+        st.stop()
+    current_user = st.session_state.get("user")
 
 header_col1, header_col2 = st.columns([1, 6])
 with header_col1:
-  try:
-    st.image(LOGO_PATH, use_container_width=True)
-  except Exception:
-    st.markdown("<h1 style='margin:0;'>👾</h1>", unsafe_allow_html=True)
+    try:
+        st.image(LOGO_PATH, use_container_width=True)
+    except Exception:
+        st.markdown("<h1 style='margin:0;'>👾</h1>", unsafe_allow_html=True)
 
 with header_col2:
-  st.title("AMPER.AI — Professional Editing, & Yuki-Chan Suite")
-  st.markdown(
-      "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
-      " foto pro lengkap dengan efek perjelas wajah, latar belakang bokeh,"
-      " dan Yuki Asisten AI!</p>",
-      unsafe_allow_html=True,
-  )
+    st.title("AMPER.AI — Professional Editing, & Yuki-Chan Suite")
+    st.markdown(
+        "<p style='color: #a9d6c9; font-size: 1.05em;'>Platform pengolahan"
+        " foto pro lengkap dengan efek perjelas wajah, latar belakang bokeh,"
+        " dan Yuki Asisten AI!</p>",
+        unsafe_allow_html=True,
+    )
 
 uploaded_file = st.file_uploader(
     "📂 Unggah File Foto Utama Kamu Disini... (JPG, JPEG, PNG)", 
@@ -190,151 +214,151 @@ img = None
 auto_suggestions = None
 
 if uploaded_file is not None:
-  file_signature = f"{uploaded_file.name}_{uploaded_file.size}"
-  if st.session_state.get("last_file_signature") != file_signature:
-    st.session_state["last_file_signature"] = file_signature
-    st.session_state.pop("processed_img", None)
-    st.session_state.pop("auto_applied_for", None)
+    file_signature = f"{uploaded_file.name}_{uploaded_file.size}"
+    if st.session_state.get("last_file_signature") != file_signature:
+        st.session_state["last_file_signature"] = file_signature
+        st.session_state.pop("processed_img", None)
+        st.session_state.pop("auto_applied_for", None)
 
-  file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-  img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-  if img is None:
-    st.error("❌ Oppss..Gagal membaca file gambar. Coba unggah file lain.")
-    st.stop()
+    if img is None:
+        st.error("❌ Oppss..Gagal membaca file gambar. Coba unggah file lain.")
+        st.stop()
 
-  h0, w0 = img.shape[:2]
-  if max(h0, w0) > MAX_INPUT_DIM:
-    input_scale = MAX_INPUT_DIM / max(h0, w0)
-    img = cv2.resize(
-        img,
-        (int(w0 * input_scale), int(h0 * input_scale)),
-        interpolation=cv2.INTER_AREA,
-    )
-    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
+    h0, w0 = img.shape[:2]
+    if max(h0, w0) > MAX_INPUT_DIM:
+        input_scale = MAX_INPUT_DIM / max(h0, w0)
+        img = cv2.resize(
+            img,
+            (int(w0 * input_scale), int(h0 * input_scale)),
+            interpolation=cv2.INTER_AREA,
+        )
+        st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
-  auto_suggestions = compute_auto_suggestions(img)
+    auto_suggestions = compute_auto_suggestions(img)
 
-  if st.session_state.get("auto_applied_for") != file_signature:
-    for slider_key, val in auto_suggestions.items():
-      st.session_state[slider_key] = val
-    st.session_state["auto_applied_for"] = file_signature
+    if st.session_state.get("auto_applied_for") != file_signature:
+        for slider_key, val in auto_suggestions.items():
+            st.session_state[slider_key] = val
+        st.session_state["auto_applied_for"] = file_signature
 
 # ==========================================================
 # SIDEBAR KONTROL
 # ==========================================================
 with st.sidebar:
-  st.markdown("## 👾 Pro Suite & Ampera AI")
+    st.markdown("## 👾 Pro Suite & Ampera AI")
 
-  st.markdown("### 🎭 Face & Body Professional Retouch")
-  remini_boost = st.slider("Perjelas Wajah & Kulit (Remini Effect)", 0, 100, 0, 1)
-  body_slim = st.slider("Body Slimming & Contour Pro", 0, 100, 0, 1)
-  bg_blur = st.slider("Efek Latar Belakang (Bokeh / Blur Halus)", 0, 100, 0, 2)
+    st.markdown("### 🎭 Face & Body Professional Retouch")
+    remini_boost = st.slider("Perjelas Wajah & Kulit (Remini Effect)", 0, 100, 0, 1)
+    body_slim = st.slider("Body Slimming & Contour Pro", 0, 100, 0, 1)
+    bg_blur = st.slider("Efek Latar Belakang (Bokeh / Blur Halus)", 0, 100, 0, 2)
 
-  st.markdown("### 📍 Selective Edit (Control Points)")
-  enable_selective = st.checkbox("Aktifkan Selective Control Point")
-  sel_x_pct = st.slider("Titik Kontrol X (Posisi Horizontal %)", 0, 100, 50, 1)
-  sel_y_pct = st.slider("Titik Kontrol Y (Posisi Vertikal %)", 0, 100, 50, 1)
-  sel_radius = st.slider("Radius Area Pengaruh", 20, 300, 100, 5)
-  sel_exposure = st.slider("Exposure Khusus Area", -1.0, 1.0, 0.0, 0.1)
-  sel_sat = st.slider("Saturasi Khusus Area", -50, 50, 0, 1)
+    st.markdown("### 📍 Selective Edit (Control Points)")
+    enable_selective = st.checkbox("Aktifkan Selective Control Point")
+    sel_x_pct = st.slider("Titik Kontrol X (Posisi Horizontal %)", 0, 100, 50, 1)
+    sel_y_pct = st.slider("Titik Kontrol Y (Posisi Vertikal %)", 0, 100, 50, 1)
+    sel_radius = st.slider("Radius Area Pengaruh", 20, 300, 100, 5)
+    sel_exposure = st.slider("Exposure Khusus Area", -1.0, 1.0, 0.0, 0.1)
+    sel_sat = st.slider("Saturasi Khusus Area", -50, 50, 0, 1)
 
-  st.markdown("### 🧬 Layer Blending (Gabung Foto)")
-  enable_layer = st.checkbox("Aktifkan Gabung Layer Kedua")
-  layer_file = st.file_uploader("Unggah Foto Kedua (Layer Overlay)", type=["jpg", "jpeg", "png"], key="layer_uploader")
-  layer_opacity = st.slider("Opacity / Transparansi Layer", 0.0, 1.0, 0.5, 0.05)
-  layer_mode = st.selectbox("Mode Blending", ["Normal", "Overlay", "Screen", "Multiply"])
+    st.markdown("### 🧬 Layer Blending (Gabung Foto)")
+    enable_layer = st.checkbox("Aktifkan Gabung Layer Kedua")
+    layer_file = st.file_uploader("Unggah Foto Kedua (Layer Overlay)", type=["jpg", "jpeg", "png"], key="layer_uploader")
+    layer_opacity = st.slider("Opacity / Transparansi Layer", 0.0, 1.0, 0.5, 0.05)
+    layer_mode = st.selectbox("Mode Blending", ["Normal", "Overlay", "Screen", "Multiply"])
 
-  st.markdown("### 📈 RGB Tone Curve")
-  curve_preset = st.selectbox(
-      "Pilih Kurva Pencahayaan",
-      [
-          "Linear (Standard)",
-          "S-Curve (Kontras Tinggi & Sinematik)",
-          "Matte / Fade (Gaya Film Indie)",
-          "Bright Pop (Terang & Segar)",
-      ],
-  )
+    st.markdown("### 📈 RGB Tone Curve")
+    curve_preset = st.selectbox(
+        "Pilih Kurva Pencahayaan",
+        [
+            "Linear (Standard)",
+            "S-Curve (Kontras Tinggi & Sinematik)",
+            "Matte / Fade (Gaya Film Indie)",
+            "Bright Pop (Terang & Segar)",
+        ],
+    )
 
-  st.markdown("### 🎬 10+ Pro Filter Presets")
-  capcut_preset = st.selectbox(
-      "Pilih Filter / Template Gaya",
-      [
-          "Normal / Manual",
-          "✨ Cyberpunk Neon (Pop & Vibrant)",
-          "🎞️ Vintage Retro Film (Warm & Faded)",
-          "🎬 Moody Cinematic (Dark & Deep)",
-          "🌟 Clean & Fresh (Bright & Clear)",
-          "☕ Warm Portrait (Skin Tone Enhancer)",
-          "🖤 Dramatic B&W (Monochrome Pro)",
-          "🌅 Golden Hour Sunset (Warm Glow)",
-          "🌲 Emerald Forest (Deep Green Tone)",
-          "🧊 Arctic Frost (Cool Blue Tone)",
-          "🍑 Peach Blossom (Soft Pastel)",
-      ],
-  )
+    st.markdown("### 🎬 10+ Pro Filter Presets")
+    capcut_preset = st.selectbox(
+        "Pilih Filter / Template Gaya",
+        [
+            "Normal / Manual",
+            "✨ Cyberpunk Neon (Pop & Vibrant)",
+            "🎞️ Vintage Retro Film (Warm & Faded)",
+            "🎬 Moody Cinematic (Dark & Deep)",
+            "🌟 Clean & Fresh (Bright & Clear)",
+            "☕ Warm Portrait (Skin Tone Enhancer)",
+            "🖤 Dramatic B&W (Monochrome Pro)",
+            "🌅 Golden Hour Sunset (Warm Glow)",
+            "🌲 Emerald Forest (Deep Green Tone)",
+            "🧊 Arctic Frost (Cool Blue Tone)",
+            "🍑 Peach Blossom (Soft Pastel)",
+        ],
+    )
 
-  if st.button("🪄 Terapkan Preset Pilihan"):
-    if capcut_preset.startswith("✨ Cyberpunk"):
-      st.session_state.update({"exposure": 0.2, "contrast": 25, "highlights": -10, "shadows": 15, "temp": -15, "tint": 15, "vibrance": 35, "saturation": 20, "clarity": 25, "vignette": 40})
-    elif capcut_preset.startswith("🎞️ Vintage"):
-      st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": -20, "shadows": 30, "temp": 25, "tint": -5, "vibrance": -10, "saturation": -5, "clarity": 10, "vignette": 50})
-    elif capcut_preset.startswith("🎬 Moody"):
-      st.session_state.update({"exposure": -0.3, "contrast": 35, "highlights": -40, "shadows": -20, "temp": -10, "tint": 5, "vibrance": 10, "saturation": 5, "clarity": 30, "vignette": 65})
-    elif capcut_preset.startswith("🌟 Clean"):
-      st.session_state.update({"exposure": 0.3, "contrast": 15, "highlights": 10, "shadows": 25, "temp": 0, "tint": 0, "vibrance": 20, "saturation": 15, "clarity": 15, "vignette": 10})
-    elif capcut_preset.startswith("☕ Warm Portrait"):
-      st.session_state.update({"exposure": 0.1, "contrast": 5, "highlights": 10, "shadows": 20, "temp": 15, "tint": 5, "vibrance": 15, "saturation": 5, "clarity": 5, "vignette": 15})
-    elif capcut_preset.startswith("🖤 Dramatic"):
-      st.session_state.update({"exposure": 0.0, "contrast": 40, "highlights": -30, "shadows": -30, "temp": 0, "tint": 0, "vibrance": -50, "saturation": -50, "clarity": 35, "vignette": 50})
-    elif capcut_preset.startswith("🌅 Golden Hour"):
-      st.session_state.update({"exposure": 0.2, "contrast": 15, "highlights": 5, "shadows": 20, "temp": 30, "tint": 10, "vibrance": 25, "saturation": 15, "clarity": 10, "vignette": 20})
-    elif capcut_preset.startswith("🌲 Emerald Forest"):
-      st.session_state.update({"exposure": -0.1, "contrast": 20, "highlights": -10, "shadows": 10, "temp": -10, "tint": -20, "vibrance": 30, "saturation": 20, "clarity": 20, "vignette": 30})
-    elif capcut_preset.startswith("🧊 Arctic Frost"):
-      st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": 15, "shadows": 10, "temp": -35, "tint": 10, "vibrance": 15, "saturation": 5, "clarity": 15, "vignette": 15})
-    elif capcut_preset.startswith("🍑 Peach Blossom"):
-      st.session_state.update({"exposure": 0.2, "contrast": 5, "highlights": 20, "shadows": 25, "temp": 10, "tint": 15, "vibrance": 20, "saturation": 10, "clarity": 5, "vignette": 10})
-    st.rerun()
+    if st.button("🪄 Terapkan Preset Pilihan"):
+        if capcut_preset.startswith("✨ Cyberpunk"):
+            st.session_state.update({"exposure": 0.2, "contrast": 25, "highlights": -10, "shadows": 15, "temp": -15, "tint": 15, "vibrance": 35, "saturation": 20, "clarity": 25, "vignette": 40})
+        elif capcut_preset.startswith("🎞️ Vintage"):
+            st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": -20, "shadows": 30, "temp": 25, "tint": -5, "vibrance": -10, "saturation": -5, "clarity": 10, "vignette": 50})
+        elif capcut_preset.startswith("🎬 Moody"):
+            st.session_state.update({"exposure": -0.3, "contrast": 35, "highlights": -40, "shadows": -20, "temp": -10, "tint": 5, "vibrance": 10, "saturation": 5, "clarity": 30, "vignette": 65})
+        elif capcut_preset.startswith("🌟 Clean"):
+            st.session_state.update({"exposure": 0.3, "contrast": 15, "highlights": 10, "shadows": 25, "temp": 0, "tint": 0, "vibrance": 20, "saturation": 15, "clarity": 15, "vignette": 10})
+        elif capcut_preset.startswith("☕ Warm Portrait"):
+            st.session_state.update({"exposure": 0.1, "contrast": 5, "highlights": 10, "shadows": 20, "temp": 15, "tint": 5, "vibrance": 15, "saturation": 5, "clarity": 5, "vignette": 15})
+        elif capcut_preset.startswith("🖤 Dramatic"):
+            st.session_state.update({"exposure": 0.0, "contrast": 40, "highlights": -30, "shadows": -30, "temp": 0, "tint": 0, "vibrance": -50, "saturation": -50, "clarity": 35, "vignette": 50})
+        elif capcut_preset.startswith("🌅 Golden Hour"):
+            st.session_state.update({"exposure": 0.2, "contrast": 15, "highlights": 5, "shadows": 20, "temp": 30, "tint": 10, "vibrance": 25, "saturation": 15, "clarity": 10, "vignette": 20})
+        elif capcut_preset.startswith("🌲 Emerald Forest"):
+            st.session_state.update({"exposure": -0.1, "contrast": 20, "highlights": -10, "shadows": 10, "temp": -10, "tint": -20, "vibrance": 30, "saturation": 20, "clarity": 20, "vignette": 30})
+        elif capcut_preset.startswith("🧊 Arctic Frost"):
+            st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": 15, "shadows": 10, "temp": -35, "tint": 10, "vibrance": 15, "saturation": 5, "clarity": 15, "vignette": 15})
+        elif capcut_preset.startswith("🍑 Peach Blossom"):
+            st.session_state.update({"exposure": 0.2, "contrast": 5, "highlights": 20, "shadows": 25, "temp": 10, "tint": 15, "vibrance": 20, "saturation": 10, "clarity": 5, "vignette": 10})
+        st.rerun()
 
-  st.markdown("---")
-
-  if auto_suggestions is not None and capcut_preset == "Normal / Manual":
-    if st.button("🪄 Auto Enhance Standar"):
-      for slider_key, val in auto_suggestions.items():
-        st.session_state[slider_key] = val
-      st.rerun()
     st.markdown("---")
 
-  st.markdown("### 1. Light & Exposure")
-  exposure = st.slider("Exposure", -2.0, 2.0, 0.0, 0.1, key="exposure")
-  contrast = st.slider("Contrast", -50, 50, 10, 1, key="contrast")
-  highlights = st.slider("Highlights", -100, 100, -20, 1, key="highlights")
-  shadows = st.slider("Shadows", -100, 100, 25, 1, key="shadows")
-  whites = st.slider("Whites", -50, 50, 0, 1, key="whites")
-  blacks = st.slider("Blacks", -50, 50, 0, 1, key="blacks")
+    if auto_suggestions is not None and capcut_preset == "Normal / Manual":
+        if st.button("🪄 Auto Enhance Standar"):
+            for slider_key, val in auto_suggestions.items():
+                st.session_state[slider_key] = val
+            st.rerun()
+        st.markdown("---")
 
-  st.markdown("### 2. Color & White Balance")
-  temp = st.slider("Temperature (Kelvin/Tint)", -50, 50, -5, 1, key="temp")
-  tint = st.slider("Tint", -50, 50, 0, 1, key="tint")
-  vibrance = st.slider("Vibrance", -50, 50, 15, 1, key="vibrance")
-  saturation = st.slider("Saturation", -50, 50, 10, 1, key="saturation")
+    st.markdown("### 1. Light & Exposure")
+    exposure = st.slider("Exposure", -2.0, 2.0, key="exposure", step=0.1)
+    contrast = st.slider("Contrast", -50, 50, key="contrast", step=1)
+    highlights = st.slider("Highlights", -100, 100, key="highlights", step=1)
+    shadows = st.slider("Shadows", -100, 100, key="shadows", step=1)
+    whites = st.slider("Whites", -50, 50, key="whites", step=1)
+    blacks = st.slider("Blacks", -50, 50, key="blacks", step=1)
 
-  st.markdown("### 3. Detail, Clarity & Effects")
-  clarity = st.slider("Clarity / Texture", -50, 50, 20, 1, key="clarity")
-  dehaze = st.slider("Dehaze", -50, 50, 10, 1, key="dehaze")
-  sharpen = st.slider("Sharpening HD", 0, 100, 30, 1, key="sharpen")
-  vignette = st.slider("Vignette (Cinematic Edge)", 0, 100, 25, 1, key="vignette")
+    st.markdown("### 2. Color & White Balance")
+    temp = st.slider("Temperature (Kelvin/Tint)", -50, 50, key="temp", step=1)
+    tint = st.slider("Tint", -50, 50, key="tint", step=1)
+    vibrance = st.slider("Vibrance", -50, 50, key="vibrance", step=1)
+    saturation = st.slider("Saturation", -50, 50, key="saturation", step=1)
 
-  st.markdown("### 4. Quality Boost")
-  denoise_strength = st.slider("Noise Reduction", 0, 30, 0, 1, key="noise_reduction")
-  smart_enhance = st.slider("Smart Detail Enhance", 0, 100, 0, 1, key="smart_enhance")
+    st.markdown("### 3. Detail, Clarity & Effects")
+    clarity = st.slider("Clarity / Texture", -50, 50, key="clarity", step=1)
+    dehaze = st.slider("Dehaze", -50, 50, key="dehaze", step=1)
+    sharpen = st.slider("Sharpening HD", 0, 100, key="sharpen", step=1)
+    vignette = st.slider("Vignette (Cinematic Edge)", 0, 100, key="vignette", step=1)
 
-  st.markdown("---")
-  upscale_choice = st.selectbox(
-      "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0, key="upscale_choice"
-  )
-  process_btn = st.button("⬆️ Terapkan & Render Instan")
+    st.markdown("### 4. Quality Boost")
+    denoise_strength = st.slider("Noise Reduction", 0, 30, key="noise_reduction", step=1)
+    smart_enhance = st.slider("Smart Detail Enhance", 0, 100, key="smart_enhance", step=1)
+
+    st.markdown("---")
+    upscale_choice = st.selectbox(
+        "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0, key="upscale_choice"
+    )
+    process_btn = st.button("⬆️ Terapkan & Render Instan")
 
 with st.sidebar:
     st.markdown("---")
