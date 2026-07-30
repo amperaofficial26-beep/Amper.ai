@@ -181,7 +181,7 @@ with header_col2:
   )
 
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Keren Kamu Disini... (JPG, JPEG, PNG)", 
+    "📂 Unggah File Foto Utama Kamu Disini... (JPG, JPEG, PNG)", 
     type=["jpg", "jpeg", "png"],
     key="main_photo_uploader"
 )
@@ -226,13 +226,24 @@ if uploaded_file is not None:
 with st.sidebar:
   st.markdown("## 👾 Pro Suite & Ampera AI")
 
-  st.markdown("### 🎭 Ampera.ai Face Enhancer & Portrait")
-  remini_boost = st.slider(
-      "Perjelas Wajah & Kulit (Remini Effect)", 0, 100, 0, 1
-  )
-  bg_blur = st.slider(
-      "Efek Latar Belakang (Bokeh / Blur Halus)", 0, 100, 0, 2
-  )
+  st.markdown("### 🎭 Face & Body Professional Retouch")
+  remini_boost = st.slider("Perjelas Wajah & Kulit (Remini Effect)", 0, 100, 0, 1)
+  body_slim = st.slider("Body Slimming & Contour Pro", 0, 100, 0, 1)
+  bg_blur = st.slider("Efek Latar Belakang (Bokeh / Blur Halus)", 0, 100, 0, 2)
+
+  st.markdown("### 📍 Selective Edit (Control Points)")
+  enable_selective = st.checkbox("Aktifkan Selective Control Point")
+  sel_x_pct = st.slider("Titik Kontrol X (Posisi Horizontal %)", 0, 100, 50, 1)
+  sel_y_pct = st.slider("Titik Kontrol Y (Posisi Vertikal %)", 0, 100, 50, 1)
+  sel_radius = st.slider("Radius Area Pengaruh", 20, 300, 100, 5)
+  sel_exposure = st.slider("Exposure Khusus Area", -1.0, 1.0, 0.0, 0.1)
+  sel_sat = st.slider("Saturasi Khusus Area", -50, 50, 0, 1)
+
+  st.markdown("### 🧬 Layer Blending (Gabung Foto)")
+  enable_layer = st.checkbox("Aktifkan Gabung Layer Kedua")
+  layer_file = st.file_uploader("Unggah Foto Kedua (Layer Overlay)", type=["jpg", "jpeg", "png"], key="layer_uploader")
+  layer_opacity = st.slider("Opacity / Transparansi Layer", 0.0, 1.0, 0.5, 0.05)
+  layer_mode = st.selectbox("Mode Blending", ["Normal", "Overlay", "Screen", "Multiply"])
 
   st.markdown("### 📈 RGB Tone Curve")
   curve_preset = st.selectbox(
@@ -245,7 +256,7 @@ with st.sidebar:
       ],
   )
 
-  st.markdown("### 🎬 CapCut & Pro Filter Presets")
+  st.markdown("### 🎬 10+ Pro Filter Presets")
   capcut_preset = st.selectbox(
       "Pilih Filter / Template Gaya",
       [
@@ -256,100 +267,34 @@ with st.sidebar:
           "🌟 Clean & Fresh (Bright & Clear)",
           "☕ Warm Portrait (Skin Tone Enhancer)",
           "🖤 Dramatic B&W (Monochrome Pro)",
+          "🌅 Golden Hour Sunset (Warm Glow)",
+          "🌲 Emerald Forest (Deep Green Tone)",
+          "🧊 Arctic Frost (Cool Blue Tone)",
+          "🍑 Peach Blossom (Soft Pastel)",
       ],
   )
 
   if st.button("🪄 Terapkan Preset Pilihan"):
     if capcut_preset.startswith("✨ Cyberpunk"):
-      st.session_state.update(
-          {
-              "exposure": 0.2,
-              "contrast": 25,
-              "highlights": -10,
-              "shadows": 15,
-              "temp": -15,
-              "tint": 15,
-              "vibrance": 35,
-              "saturation": 20,
-              "clarity": 25,
-              "vignette": 40,
-          }
-      )
+      st.session_state.update({"exposure": 0.2, "contrast": 25, "highlights": -10, "shadows": 15, "temp": -15, "tint": 15, "vibrance": 35, "saturation": 20, "clarity": 25, "vignette": 40})
     elif capcut_preset.startswith("🎞️ Vintage"):
-      st.session_state.update(
-          {
-              "exposure": 0.1,
-              "contrast": 10,
-              "highlights": -20,
-              "shadows": 30,
-              "temp": 25,
-              "tint": -5,
-              "vibrance": -10,
-              "saturation": -5,
-              "clarity": 10,
-              "vignette": 50,
-          }
-      )
+      st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": -20, "shadows": 30, "temp": 25, "tint": -5, "vibrance": -10, "saturation": -5, "clarity": 10, "vignette": 50})
     elif capcut_preset.startswith("🎬 Moody"):
-      st.session_state.update(
-          {
-              "exposure": -0.3,
-              "contrast": 35,
-              "highlights": -40,
-              "shadows": -20,
-              "temp": -10,
-              "tint": 5,
-              "vibrance": 10,
-              "saturation": 5,
-              "clarity": 30,
-              "vignette": 65,
-          }
-      )
+      st.session_state.update({"exposure": -0.3, "contrast": 35, "highlights": -40, "shadows": -20, "temp": -10, "tint": 5, "vibrance": 10, "saturation": 5, "clarity": 30, "vignette": 65})
     elif capcut_preset.startswith("🌟 Clean"):
-      st.session_state.update(
-          {
-              "exposure": 0.3,
-              "contrast": 15,
-              "highlights": 10,
-              "shadows": 25,
-              "temp": 0,
-              "tint": 0,
-              "vibrance": 20,
-              "saturation": 15,
-              "clarity": 15,
-              "vignette": 10,
-          }
-      )
+      st.session_state.update({"exposure": 0.3, "contrast": 15, "highlights": 10, "shadows": 25, "temp": 0, "tint": 0, "vibrance": 20, "saturation": 15, "clarity": 15, "vignette": 10})
     elif capcut_preset.startswith("☕ Warm Portrait"):
-      st.session_state.update(
-          {
-              "exposure": 0.1,
-              "contrast": 5,
-              "highlights": 10,
-              "shadows": 20,
-              "temp": 15,
-              "tint": 5,
-              "vibrance": 15,
-              "saturation": 5,
-              "clarity": 5,
-              "vignette": 15,
-          }
-      )
+      st.session_state.update({"exposure": 0.1, "contrast": 5, "highlights": 10, "shadows": 20, "temp": 15, "tint": 5, "vibrance": 15, "saturation": 5, "clarity": 5, "vignette": 15})
     elif capcut_preset.startswith("🖤 Dramatic"):
-      st.session_state.update(
-          {
-              "exposure": 0.0,
-              "contrast": 40,
-              "highlights": -30,
-              "shadows": -30,
-              "temp": 0,
-              "tint": 0,
-              "vibrance": -50,
-              "saturation": -50,
-              "clarity": 35,
-              "vignette": 50,
-          }
-      )
+      st.session_state.update({"exposure": 0.0, "contrast": 40, "highlights": -30, "shadows": -30, "temp": 0, "tint": 0, "vibrance": -50, "saturation": -50, "clarity": 35, "vignette": 50})
+    elif capcut_preset.startswith("🌅 Golden Hour"):
+      st.session_state.update({"exposure": 0.2, "contrast": 15, "highlights": 5, "shadows": 20, "temp": 30, "tint": 10, "vibrance": 25, "saturation": 15, "clarity": 10, "vignette": 20})
+    elif capcut_preset.startswith("🌲 Emerald Forest"):
+      st.session_state.update({"exposure": -0.1, "contrast": 20, "highlights": -10, "shadows": 10, "temp": -10, "tint": -20, "vibrance": 30, "saturation": 20, "clarity": 20, "vignette": 30})
+    elif capcut_preset.startswith("🧊 Arctic Frost"):
+      st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": 15, "shadows": 10, "temp": -35, "tint": 10, "vibrance": 15, "saturation": 5, "clarity": 15, "vignette": 15})
+    elif capcut_preset.startswith("🍑 Peach Blossom"):
+      st.session_state.update({"exposure": 0.2, "contrast": 5, "highlights": 20, "shadows": 25, "temp": 10, "tint": 15, "vibrance": 20, "saturation": 10, "clarity": 5, "vignette": 10})
     st.rerun()
 
   st.markdown("---")
@@ -562,7 +507,7 @@ with st.sidebar:
     {
       keywords: ['amper', 'amper.ai', 'ampera', 'platform', 'aplikasi ini', 'web apa ini'],
       replies: [
-        "AMPER.AI adalah platform web editing foto profesional berteknologi tinggi yang dilengkapi fitur Remini face enhancer, bokeh, filter sinematik, dan AI Upscaler! ✨"
+        "AMPER.AI adalah platform web editing foto profesional berteknologi tinggi yang dilengkapi fitur Remini face enhancer, bokeh, selective edit, layer blending, dan AI Upscaler! ✨"
       ]
     },
     {
@@ -803,7 +748,7 @@ if uploaded_file is not None and img is not None:
 
   if process_btn or "processed_img" not in st.session_state:
     try:
-      with st.spinner("🛠️ Yuki & sistem sedang merender Remini & Upscaler..."):
+      with st.spinner("🛠️ Yuki & sistem sedang merender proses foto..."):
         scale_factor = 2 if "2x" in upscale_choice else 4
         h, w = img.shape[:2]
 
@@ -813,12 +758,44 @@ if uploaded_file is not None and img is not None:
           scale_factor = max(1.0, adjusted_scale)
           st.warning(f"⚠️ Skala disesuaikan otomatis menjadi {scale_factor:.2f}x demi memori server.")
 
+        # 1. Body Slimming & Retouch Pro
+        if body_slim > 0:
+          src_pts = np.float32([[w/2, h/2], [w/2, h*0.2], [w/2, h*0.8]])
+          # Simulasi deformasi mesh ringan untuk body/contouring
+          factor = 1.0 - (body_slim * 0.0008)
+          resized_body = cv2.resize(img, (int(w), int(h * factor)))
+          if resized_body.shape[0] < h:
+            pad_top = (h - resized_body.shape[0]) // 2
+            pad_bot = h - resized_body.shape[0] - pad_top
+            img = cv2.copyMakeBorder(resized_body, pad_top, pad_bot, 0, 0, cv2.BORDER_REFLECT)
+          gc.collect()
+
         if remini_boost > 0:
           skin_smooth = cv2.bilateralFilter(img, int(remini_boost / 5) * 2 + 5, 75, 75)
           sigma_val = 10 + (remini_boost / 100.0) * 20
           img = cv2.detailEnhance(skin_smooth, sigma_s=sigma_val, sigma_r=0.15)
           del skin_smooth
           gc.collect()
+
+        # 2. Layer Blending (Gabung Foto Kedua)
+        if enable_layer and layer_file is not None:
+          layer_bytes = np.asarray(bytearray(layer_file.read()), dtype=np.uint8)
+          layer_img = cv2.imdecode(layer_bytes, cv2.IMREAD_COLOR)
+          if layer_img is not None:
+            layer_resized = cv2.resize(layer_img, (img.shape[1], img.shape[0]))
+            if layer_mode == "Normal":
+              img = cv2.addWeighted(img, 1.0 - layer_opacity, layer_resized, layer_opacity, 0)
+            elif layer_mode == "Screen":
+              screen = 255 - ((255 - img) * (255 - layer_resized) / 255.0)
+              img = cv2.addWeighted(img, 1.0 - layer_opacity, screen.astype("uint8"), layer_opacity, 0)
+            elif layer_mode == "Multiply":
+              multiply = (img.astype(float) * layer_resized.astype(float) / 255.0)
+              img = cv2.addWeighted(img, 1.0 - layer_opacity, multiply.astype("uint8"), layer_opacity, 0)
+            else: # Overlay
+              overlay = np.where(img < 128, (2 * img * layer_resized / 255.0), (255 - 2 * (255 - img) * (255 - layer_resized) / 255.0))
+              img = cv2.addWeighted(img, 1.0 - layer_opacity, overlay.astype("uint8"), layer_opacity, 0)
+            del layer_img, layer_resized
+            gc.collect()
 
         if bg_blur > 0:
           blur_kernel = int(bg_blur / 5) * 2 + 1
@@ -858,7 +835,24 @@ if uploaded_file is not None and img is not None:
           sh_mask = np.clip((0.5 - l_norm) * 2.0, 0, 1)
           l_ch += shadows * 0.3 * sh_mask
 
+        # 3. Selective Edit (Control Points Masking)
+        if enable_selective:
+          rows_s, cols_s = l_ch.shape
+          cx = int(cols_s * (sel_x_pct / 100.0))
+          cy = int(rows_s * (sel_y_pct / 100.0))
+          Y_grid, X_grid = np.ogrid[:rows_s, :cols_s]
+          dist_from_center = np.sqrt((X_grid - cx)**2 + (Y_grid - cy)**2)
+          sel_mask = np.clip(1.0 - (dist_from_center / float(sel_radius)), 0, 1)
+          
+          if sel_exposure != 0.0:
+            l_ch += (sel_exposure * 40.0) * sel_mask
+          if sel_sat != 0:
+            a_ch += (sel_sat * 0.5) * sel_mask
+            b_ch += (sel_sat * 0.5) * sel_mask
+
         l_ch = np.clip(l_ch, 0, 255)
+        a_ch = np.clip(a_ch, 0, 255)
+        b_ch = np.clip(b_ch, 0, 255)
         lab = cv2.merge([l_ch, a_ch, b_ch])
         adjusted_bgr = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR).astype("float32") / 255.0
 
@@ -910,23 +904,23 @@ else:
     st.markdown("""
         <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
             <h4 style="color: #e3b34a; margin-top: 0;">🌸 Yuki AI Companion</h4>
-            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Asisten virtual cerdas di sidebar yang siap sedia mendampingi proses kreatifmu kapan saja tanpa biaya.</p>
+            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Asisten virtual cerdas di sidebar yang dilengkapi 35+ kamus topik siap sedia mendampingi proses kreatifmu.</p>
         </div>
     """, unsafe_allow_html=True)
     
   with col_f2:
     st.markdown("""
         <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
-            <h4 style="color: #e3b34a; margin-top: 0;">⚡ Remini & Bokeh Pro</h4>
-            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Perhalus tekstur kulit wajah secara natural dan ciptakan efek latar belakang blur DSLR instan dengan satu klik.</p>
+            <h4 style="color: #e3b34a; margin-top: 0;">⚡ Selective & Layer Pro</h4>
+            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Gunakan kontrol titik spesifik (selective edit) dan gabungkan beberapa foto dengan dukungan layer blending instan.</p>
         </div>
     """, unsafe_allow_html=True)
     
   with col_f3:
     st.markdown("""
         <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
-            <h4 style="color: #e3b34a; margin-top: 0;">🎨 Cinematic Presets</h4>
-            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Pilih beragam filter gaya sinematik, cyberpunk, hingga vintage retro untuk mempercantik foto instan.</p>
+            <h4 style="color: #e3b34a; margin-top: 0;">🎨 10+ Pro Cinematic Presets</h4>
+            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Pilih beragam filter gaya sinematik, cyberpunk, hingga golden hour untuk mempercantik foto instan.</p>
         </div>
     """, unsafe_allow_html=True)
 
