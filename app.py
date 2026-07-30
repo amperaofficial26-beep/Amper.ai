@@ -441,8 +441,9 @@ with main_col_yuki:
 </script>
 </body>
 </html>"""
-  components.v1.html(yuki_html, height=485, scrolling=False)
-
+  
+  # Perbaikan ada di baris ini (menghapus parameter scrolling yang tidak valid/bermasalah)
+  components.v1.html(yuki_html, height=485)
 st.markdown("---")
 
 # ==========================================================
