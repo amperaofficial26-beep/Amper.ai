@@ -163,6 +163,170 @@ def apply_tone_curve(img_f, curve_preset):
     elif curve_preset == "Bright Pop (Terang & Segar)":
         return np.power(img_f, 0.85)
     return img_f
+    def _pil_to_cv2(img: Image.Image) -> np.ndarray:
+    arr = np.array(img.convert("RGB"))
+    return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+
+
+def _cv2_to_pil(arr: np.ndarray) -> Image.Image:
+    rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(rgb)
+
+
+def _apply_exposure_contrast(img, exposure, contrast, whites, blacks):
+    img = img.astype(np.float32)
+    img = img * (2.0 ** exposure)
+    factor = (259 * (contrast + 255)) / (255 * (259 - contrast)) if contrast != 0 else 1.0
+    img = factor * (img - 128) + 128
+    if whites != 0:
+        mask = img > 200
+        img[mask] += whites * 0.5
+    if blacks != 0:
+        mask = img < 55
+        img[mask] += blacks * 0.5
+    return np.clip(img, 0, 255).astype(np.uint8)
+
+
+def _apply_highlights_shadows(img, highlights, shadows):
+    img = img.astype(np.float32) / 255.0
+    luminance = 0.299 * img[:, :, 2] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 0]
+    if highlights != 0:
+        highlight_mask = np.clip((luminance - 0.5) * 2, 0, 1)[:, :, None]
+        img = img + (highlights / 100.0) * highlight_mask * (1 - img) * 0.5
+    if shadows != 0:
+        shadow_mask = np.clip((0.5 - luminance) * 2, 0, 1)[:, :, None]
+        img = img + (shadows / 100.0) * shadow_mask * img * 0.5
+    return np.clip(img * 255, 0, 255).astype(np.uint8)
+
+
+def _apply_shadow_lift_highlight_recovery(img, shadow_lift, highlight_recovery):
+    if shadow_lift == 0 and highlight_recovery == 0:
+        return img
+    img_f = img.astype(np.float32) / 255.0
+    lum = 0.299 * img_f[:, :, 2] + 0.587 * img_f[:, :, 1] + 0.114 * img_f[:, :, 0]
+    if shadow_lift > 0:
+        mask = np.clip(1 - lum * 3, 0, 1)[:, :, None]
+        img_f = img_f + (shadow_lift / 100.0) * mask * (0.5 - img_f) * 0.6
+    if highlight_recovery > 0:
+        mask = np.clip((lum - 0.75) * 4, 0, 1)[:, :, None]
+        img_f = img_f - (highlight_recovery / 100.0) * mask * (img_f - 0.75) * 0.6
+    return np.clip(img_f * 255, 0, 255).astype(np.uint8)
+
+
+def _apply_temp_tint(img, temp, tint):
+    img = img.astype(np.float32)
+    img[:, :, 2] += temp * 0.6
+    img[:, :, 0] -= temp * 0.6
+    img[:, :, 1] += tint * 0.5
+    return np.clip(img, 0, 255).astype(np.uint8)
+
+
+def _apply_vibrance_saturation(img, vibrance, saturation):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float32)
+    if saturation != 0:
+        hsv[:, :, 1] = np.clip(hsv[:, :, 1] * (1 + saturation / 50.0), 0, 255)
+    if vibrance != 0:
+        sat = hsv[:, :, 1] / 255.0
+        vib_mask = 1 - sat
+        hsv[:, :, 1] = np.clip(hsv[:, :, 1] + (vibrance / 50.0) * vib_mask * 60, 0, 255)
+    return cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+
+
+def _apply_clarity_dehaze(img, clarity, dehaze):
+    if clarity != 0:
+        blurred = cv2.GaussianBlur(img, (0, 0), 3)
+        img = cv2.addWeighted(img, 1 + clarity / 100.0, blurred, -clarity / 100.0, 0)
+    if dehaze != 0:
+        lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+        l_channel, a, b = cv2.split(lab)
+        strength = 2.0 + abs(dehaze) / 25.0
+        clahe = cv2.createCLAHE(clipLimit=strength, tileGridSize=(8, 8))
+        l_channel = clahe.apply(l_channel) if dehaze > 0 else cv2.GaussianBlur(l_channel, (0, 0), 2)
+        img = cv2.cvtColor(cv2.merge((l_channel, a, b)), cv2.COLOR_LAB2BGR)
+    return img
+
+
+def _apply_sharpen(img, sharpen, radius):
+    if sharpen <= 0:
+        return img
+    radius = max(1, radius)
+    blurred = cv2.GaussianBlur(img, (0, 0), radius)
+    amount = sharpen / 100.0
+    return cv2.addWeighted(img, 1 + amount, blurred, -amount, 0)
+
+
+def _apply_smart_detail_enhance(img, strength, radius):
+    if strength <= 0:
+        return img
+    radius = max(1, radius)
+    blurred = cv2.GaussianBlur(img, (0, 0), radius)
+    detail = cv2.subtract(img, blurred)
+    boosted = cv2.addWeighted(img, 1.0, detail, strength / 40.0, 0)
+    return boosted
+
+
+def _apply_denoise(img, luminance_strength, color_strength):
+    if luminance_strength <= 0 and color_strength <= 0:
+        return img
+    h_luma = max(1, int(luminance_strength))
+    h_color = max(1, int(color_strength))
+    return cv2.fastNlMeansDenoisingColored(img, None, h_luma, h_color, 7, 21)
+
+
+def _apply_vignette(img, strength):
+    if strength <= 0:
+        return img
+    rows, cols = img.shape[:2]
+    kernel_x = cv2.getGaussianKernel(cols, cols / (0.5 + strength / 100.0))
+    kernel_y = cv2.getGaussianKernel(rows, rows / (0.5 + strength / 100.0))
+    mask = kernel_y * kernel_x.T
+    mask = mask / mask.max()
+    vignette_mask = 1 - (1 - mask) * (strength / 100.0)
+    out = img.astype(np.float32)
+    for c in range(3):
+        out[:, :, c] *= vignette_mask
+    return np.clip(out, 0, 255).astype(np.uint8)
+
+
+def _apply_upscale(img, upscale_choice):
+    scale = 4 if "4x" in upscale_choice else 2
+    h, w = img.shape[:2]
+    return cv2.resize(img, (w * scale, h * scale), interpolation=cv2.INTER_LANCZOS4)
+
+
+def apply_all_edits(pil_image: Image.Image, params: dict) -> Image.Image:
+    """
+    Menerapkan semua koreksi piksel berdasarkan nilai dari panel slider Ampera-AI.
+    `params` = dict berisi semua key dari st.session_state, contoh:
+    {
+        "exposure": 0.0, "contrast": 0, "highlights": 0, "shadows": 0,
+        "whites": 0, "blacks": 0, "temp": 0, "tint": 0,
+        "vibrance": 0, "saturation": 0, "clarity": 0, "dehaze": 0,
+        "sharpen": 0, "sharpen_radius": 2, "vignette": 0,
+        "noise_reduction": 0, "noise_reduction_color": 0,
+        "smart_enhance": 0, "smart_enhance_radius": 3,
+        "highlight_recovery": 0, "shadow_lift": 0,
+        "upscale_choice": "2x (HD 2K)",
+    }
+    """
+    img = _pil_to_cv2(pil_image)
+
+    img = _apply_denoise(img, params.get("noise_reduction", 0), params.get("noise_reduction_color", 0))
+    img = _apply_exposure_contrast(img, params.get("exposure", 0.0), params.get("contrast", 0),
+                                    params.get("whites", 0), params.get("blacks", 0))
+    img = _apply_highlights_shadows(img, params.get("highlights", 0), params.get("shadows", 0))
+    img = _apply_shadow_lift_highlight_recovery(img, params.get("shadow_lift", 0), params.get("highlight_recovery", 0))
+    img = _apply_temp_tint(img, params.get("temp", 0), params.get("tint", 0))
+    img = _apply_vibrance_saturation(img, params.get("vibrance", 0), params.get("saturation", 0))
+    img = _apply_clarity_dehaze(img, params.get("clarity", 0), params.get("dehaze", 0))
+    img = _apply_smart_detail_enhance(img, params.get("smart_enhance", 0), params.get("smart_enhance_radius", 3))
+    img = _apply_sharpen(img, params.get("sharpen", 0), params.get("sharpen_radius", 2))
+    img = _apply_vignette(img, params.get("vignette", 0))
+
+    if params.get("upscale_choice"):
+        img = _apply_upscale(img, params["upscale_choice"])
+
+    return _cv2_to_pil(img)
 
 
 # Inisialisasi Default State jika belum ada
