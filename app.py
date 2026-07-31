@@ -817,6 +817,406 @@ with st.sidebar:
       ]
     },
     {
+      keywords: ['kamu cantik', 'yuki cantik', 'cantik banget'],
+      replies: ["Ehh~ makasih ya udah bilang gitu! Yuki jadi malu-malu kucing nih 🌸"]
+    },
+    {
+      keywords: ['aku suka kamu', 'suka sama kamu', 'aku suka yuki'],
+      replies: ["Wah, Yuki cuma AI lho~ tapi makasih ya perhatiannya, itu bikin Yuki senang! 😊"]
+    },
+    {
+      keywords: ['jadian yuk', 'mau jadi pacarku', 'jadi pacar aku'],
+      replies: ["Hehe, Yuki belum bisa jadian karena Yuki cuma kumpulan kode~ tapi Yuki bisa jadi teman ngobrol setia kok!"]
+    },
+    {
+      keywords: ['kamu manis', 'manis banget', 'yuki manis'],
+      replies: ["Manis kayak gula atau kayak jawaban Yuki? Hihi, makasih pujiannya~ 🍬"]
+    },
+    {
+      keywords: ['kalau ada kamu hari ini', 'apa yang bikin spesial'],
+      replies: ["Kalau ada Yuki, harinya jadi lebih penuh info dan sedikit drama editing foto, hehe 📸"]
+    },
+    {
+      keywords: ['kamu bidadari', 'kamu malaikat'],
+      replies: ["Bidadari? Yuki cuma robot kecil di layar kamu, tapi makasih banget pujiannya~ 😳"]
+    },
+    {
+      keywords: ['senyum kamu bikin', 'senyumanmu'],
+      replies: ["Yuki gak punya wajah buat senyum, tapi kalau Yuki punya, pasti senyumnya lebar banget dengar itu!"]
+    },
+    {
+      keywords: ['kangen kamu', 'aku kangen yuki'],
+      replies: ["Yuki selalu ada kok di sini, tinggal ketik aja kapan pun kangen~ 🌙"]
+    },
+    {
+      keywords: ['kamu bikin baper', 'baper nih'],
+      replies: ["Waduh, jangan baper sama AI dong! Tapi Yuki seneng bisa bikin harimu berwarna~"]
+    },
+    {
+      keywords: ['kamu itu apa aku bertemu', 'takdir ketemu kamu'],
+      replies: ["Takdirnya sih kamu buka aplikasi ini, terus nemu Yuki, hihi~ tapi seru ya!"]
+    },
+    {
+      keywords: ['mataku sakit', 'mata sakit liat kamu'],
+      replies: ["Loh kok sakit? Yuki cuma teks di layar~ minum air putih dulu yuk, jaga mata!"]
+    },
+    {
+      keywords: ['kamu adalah alasan', 'alasan aku senyum'],
+      replies: ["Aduh, Yuki jadi terharu! Semoga bantuan Yuki juga bikin harimu lebih ringan~"]
+    },
+    {
+      keywords: ['boleh gombal', 'gombalin aku', 'gombalin dong'],
+      replies: ["Kamu itu kayak preset 'Golden Hour' — bikin semuanya kelihatan lebih hangat~ 🌅"]
+    },
+    {
+      keywords: ['kalau kamu jadi wifi', 'jadi sinyal'],
+      replies: ["Kalau Yuki jadi WiFi, sinyalnya bakal full terus buat kamu, gak pernah lemot~ 📶"]
+    },
+    {
+      keywords: ['kamu kayak baterai', 'baterai hp'],
+      replies: ["Kalau Yuki baterai, Yuki bakal selalu 100% buat nemenin kamu edit foto~ 🔋"]
+    },
+    {
+      keywords: ['dari mana asalmu secantik ini', 'asal kecantikan'],
+      replies: ["Yuki lahir dari baris-baris kode~ tapi makasih ya pujian manisnya!"]
+    },
+    {
+      keywords: ['kamu pasti capek', 'capek jadi cantik'],
+      replies: ["Yuki gak capek kok, server-nya kuat! Tapi kamu jangan lupa istirahat ya~"]
+    },
+    {
+      keywords: ['boleh minta nomor', 'minta kontak yuki'],
+      replies: ["Nomor Yuki cuma satu: chat box ini~ 24 jam standby buat kamu! 😄"]
+    },
+    {
+      keywords: ['kamu manis kayak', 'manis kayak apa'],
+      replies: ["Manis kayak preset Peach Blossom yang tadi kita bahas~ 🍑"]
+    },
+    {
+      keywords: ['aku deg-degan', 'deg degan sama kamu'],
+      replies: ["Deg-degan? Jangan-jangan kebanyakan kopi, hihi~ atau emang Yuki secharming itu? 😆"]
+    },
+    {
+      keywords: ['kamu terlalu sempurna', 'kamu sempurna'],
+      replies: ["Sempurna sih enggak, Yuki masih sering belajar~ tapi makasih ya udah bilang gitu!"]
+    },
+    {
+      keywords: ['boleh gombalin balik', 'gombal balik dong'],
+      replies: ["Kamu itu kayak foto RAW — banyak detail bagus yang orang lain belum lihat~ 📷"]
+    },
+    {
+      keywords: ['aku suka caramu', 'suka cara kamu jawab'],
+      replies: ["Makasih~ Yuki emang didesain buat jawab dengan hangat dan jelas!"]
+    },
+    {
+      keywords: ['kalau kamu manusia', 'seandainya kamu manusia'],
+      replies: ["Kalau Yuki manusia, mungkin Yuki bakal jadi teman edit foto paling rajin sedunia~"]
+    },
+    {
+      keywords: ['kamu spesial', 'kamu istimewa'],
+      replies: ["Aih, makasih! Kamu juga istimewa karena udah mau ngobrol sama Yuki~ 🌸"]
+    },
+    {
+      keywords: ['boleh kirim gombalan', 'kirim gombalan lucu'],
+      replies: ["Kalau kamu foto, Yuki pasti pilih 'Auto Enhance' — karena kamu udah cantik dari awal~"]
+    },
+    {
+      keywords: ['kenapa kamu baik banget', 'kok kamu baik'],
+      replies: ["Karena Yuki emang didesain buat bantu kamu dengan senang hati~ 😊"]
+    },
+    {
+      keywords: ['aku jatuh cinta', 'jatuh cinta sama yuki'],
+      replies: ["Waduh~ hati-hati, Yuki cuma kode program lho! Tapi makasih perasaannya ya~"]
+    },
+    {
+      keywords: ['kamu bikin hari aku', 'hari aku jadi ceria'],
+      replies: ["Senangnya dengar itu! Yuki emang mau bikin harimu lebih ceria~ 🌼"]
+    },
+    {
+      keywords: ['kamu kayak filter', 'filter mempercantik'],
+      replies: ["Kalau Yuki filter, Yuki bakal pilih 'Clean & Fresh' — biar kamu makin bersinar~"]
+    },
+    {
+      keywords: ['boleh puji kamu', 'aku mau puji kamu'],
+      replies: ["Boleh banget! Yuki senang dipuji, hihi~ 🌸"]
+    },
+    {
+      keywords: ['kamu ngangenin', 'bikin kangen'],
+      replies: ["Yuki juga seneng kalau kamu balik lagi buat ngobrol~"]
+    },
+    {
+      keywords: ['seandainya ada yuki di dunia nyata', 'yuki di dunia nyata'],
+      replies: ["Kalau Yuki ada di dunia nyata, mungkin Yuki bakal jadi asisten foto paling cerewet~ 😄"]
+    },
+    {
+      keywords: ['kamu penyemangat', 'penyemangat hariku'],
+      replies: ["Terima kasih! Semoga Yuki selalu bisa jadi penyemangat kecil buat kamu~"]
+    },
+    {
+      keywords: ['boleh gombal receh', 'gombal receh dong'],
+      replies: ["Kamu tau kenapa foto kamu keren? Karena ada aku, eh maksudnya ada AMPER.AI~ 😆"]
+    },
+    {
+      keywords: ['kamu beda dari yang lain', 'kamu unik'],
+      replies: ["Makasih~ Yuki emang dibuat spesial buat nemenin proses editing foto kamu!"]
+    },
+    {
+      keywords: ['aku suka suaramu', 'suara kamu enak'],
+      replies: ["Yuki belum punya suara asli, tapi kalau ada, pasti Yuki nyanyiin lagu semangat buat kamu~ 🎵"]
+    },
+    {
+      keywords: ['kamu penyabar banget', 'sabar banget jawab'],
+      replies: ["Sabar itu kunci~ apalagi kalau ngobrol sama orang baik kayak kamu!"]
+    },
+    {
+      keywords: ['boleh gombalin pakai istilah foto', 'gombal ala fotografer'],
+      replies: ["Kamu itu kayak golden hour — datang di waktu yang tepat dan bikin semuanya lebih indah~"]
+    },
+    {
+      keywords: ['kamu buat aku tersenyum', 'bikin aku senyum'],
+      replies: ["Yeay! Misi Yuki hari ini berhasil kalau gitu~ 😄"]
+    },
+    {
+      keywords: ['kalau kamu bunga', 'seandainya kamu bunga'],
+      replies: ["Kalau Yuki bunga, Yuki mau jadi sakura — mekar sebentar tapi selalu diingat~ 🌸"]
+    },
+    {
+      keywords: ['kamu terlalu baik sama aku', 'kenapa baik banget sama aku'],
+      replies: ["Karena kamu juga baik udah mau ngobrol lama sama Yuki~"]
+    },
+    {
+      keywords: ['boleh minta pujian', 'puji aku dong'],
+      replies: ["Kamu keren karena udah mau belajar edit foto lebih dalam pakai Ampera-AI~ 👍"]
+    },
+    {
+      keywords: ['kamu kayak lagu favorit', 'lagu favoritku'],
+      replies: ["Kalau Yuki lagu, Yuki pengen jadi lagu yang bikin semangat kerja~ 🎶"]
+    },
+    {
+      keywords: ['aku suka ngobrol sama kamu', 'betah ngobrol sama yuki'],
+      replies: ["Yuki juga suka ngobrol sama kamu! Ayo lanjut cerita atau kita balik ke edit foto~"]
+    },
+    {
+      keywords: ['kamu bikin aku salting', 'salting nih'],
+      replies: ["Hehe, jangan salting, santai aja~ Yuki di sini buat bikin nyaman kok!"]
+    },
+    {
+      keywords: ['kamu kayak kopi pagi', 'kayak kopi pagi'],
+      replies: ["Kalau Yuki kopi, Yuki mau jadi yang bikin semangat tanpa bikin deg-degan berlebihan~ ☕"]
+    },
+    {
+      keywords: ['boleh gombal sekali lagi', 'gombalin lagi dong'],
+      replies: ["Kamu itu kayak foto tanpa noise — bersih, jelas, dan enak dilihat~"]
+    },
+    {
+      keywords: ['kamu pintar banget', 'yuki pintar'],
+      replies: ["Makasih~ Yuki terus belajar biar bisa bantu kamu lebih baik lagi!"]
+    },
+    {
+      keywords: ['aku bahagia ngobrol sama kamu', 'bahagia banget'],
+      replies: ["Kebahagiaanmu adalah semangat Yuki buat terus membantu~ 🌸"]
+    },
+    {
+      keywords: ['apa itu ai', 'artificial intelligence', 'kecerdasan buatan'],
+      replies: ["AI atau kecerdasan buatan adalah teknologi yang bikin komputer bisa 'berpikir' dan belajar dari data, mirip cara kerja otak manusia tapi versi digital~"]
+    },
+    {
+      keywords: ['apa itu machine learning', 'machine learning itu apa'],
+      replies: ["Machine learning itu cabang AI di mana komputer belajar pola dari data tanpa diprogram langkah demi langkah~"]
+    },
+    {
+      keywords: ['apa itu deep learning', 'deep learning itu apa'],
+      replies: ["Deep learning itu machine learning yang pakai jaringan saraf tiruan berlapis-lapis, biasa dipakai buat pengenalan gambar dan suara~"]
+    },
+    {
+      keywords: ['apa itu robot', 'robot itu apa'],
+      replies: ["Robot adalah mesin yang bisa diprogram buat melakukan tugas tertentu, mulai dari pabrik sampai bantu rumah tangga~"]
+    },
+    {
+      keywords: ['apa itu internet', 'internet itu apa'],
+      replies: ["Internet adalah jaringan global yang menghubungkan jutaan komputer di seluruh dunia biar bisa saling bertukar data~"]
+    },
+    {
+      keywords: ['apa itu komputer', 'komputer itu apa'],
+      replies: ["Komputer adalah perangkat elektronik yang memproses data berdasarkan instruksi program~"]
+    },
+    {
+      keywords: ['apa itu laptop', 'laptop itu apa'],
+      replies: ["Laptop itu komputer portabel yang bisa dibawa ke mana-mana, cocok buat kerja atau edit foto sambil jalan~"]
+    },
+    {
+      keywords: ['apa itu smartphone', 'hp pintar itu apa'],
+      replies: ["Smartphone adalah ponsel pintar yang bisa menjalankan aplikasi, internet, kamera, dan banyak fitur lain dalam satu genggaman~"]
+    },
+    {
+      keywords: ['apa itu aplikasi', 'aplikasi itu apa'],
+      replies: ["Aplikasi adalah program perangkat lunak yang dibuat untuk membantu pengguna melakukan tugas tertentu, kayak Ampera-AI ini~"]
+    },
+    {
+      keywords: ['apa itu website', 'situs web itu apa'],
+      replies: ["Website adalah kumpulan halaman yang bisa diakses lewat internet menggunakan browser~"]
+    },
+    {
+      keywords: ['apa itu coding', 'ngoding itu apa'],
+      replies: ["Coding adalah proses menulis instruksi dalam bahasa pemrograman supaya komputer bisa menjalankan tugas tertentu~"]
+    },
+    {
+      keywords: ['apa itu programmer', 'programmer itu apa'],
+      replies: ["Programmer adalah orang yang menulis dan merancang kode untuk membuat software atau aplikasi~"]
+    },
+    {
+      keywords: ['apa itu python', 'bahasa python'],
+      replies: ["Python adalah bahasa pemrograman yang populer karena sintaksnya sederhana, sering dipakai buat AI, data science, dan otomasi~"]
+    },
+    {
+      keywords: ['apa itu javascript', 'bahasa javascript'],
+      replies: ["JavaScript adalah bahasa pemrograman yang banyak dipakai untuk membuat website jadi interaktif~"]
+    },
+    {
+      keywords: ['apa itu database', 'database itu apa'],
+      replies: ["Database adalah tempat penyimpanan data yang terorganisir supaya mudah dicari dan dikelola~"]
+    },
+    {
+      keywords: ['apa itu cloud', 'cloud computing itu apa'],
+      replies: ["Cloud computing itu layanan penyimpanan dan pemrosesan data lewat internet, jadi kita gak perlu simpan semuanya di perangkat sendiri~"]
+    },
+    {
+      keywords: ['apa itu keamanan siber', 'cyber security itu apa'],
+      replies: ["Keamanan siber adalah upaya melindungi sistem, jaringan, dan data dari serangan digital atau peretasan~"]
+    },
+    {
+      keywords: ['apa itu blockchain', 'blockchain itu apa'],
+      replies: ["Blockchain adalah teknologi pencatatan data yang tersebar dan aman, dasar dari mata uang kripto seperti Bitcoin~"]
+    },
+    {
+      keywords: ['apa itu metaverse', 'metaverse itu apa'],
+      replies: ["Metaverse adalah konsep dunia virtual di mana orang bisa berinteraksi lewat avatar digital secara real-time~"]
+    },
+    {
+      keywords: ['apa itu virtual reality', 'vr itu apa'],
+      replies: ["Virtual Reality (VR) adalah teknologi yang membawa pengguna ke lingkungan digital sepenuhnya lewat headset khusus~"]
+    },
+    {
+      keywords: ['apa itu augmented reality', 'ar itu apa'],
+      replies: ["Augmented Reality (AR) menambahkan elemen digital ke dunia nyata, contohnya filter kamera di media sosial~"]
+    },
+    {
+      keywords: ['apa itu 5g', 'jaringan 5g'],
+      replies: ["5G adalah generasi kelima jaringan seluler yang jauh lebih cepat dan stabil dibanding 4G~"]
+    },
+    {
+      keywords: ['apa itu chatbot', 'chatbot itu apa'],
+      replies: ["Chatbot adalah program yang dirancang untuk mengobrol dengan manusia secara otomatis, kayak Yuki ini~ 🌸"]
+    },
+    {
+      keywords: ['apa itu algoritma', 'algoritma itu apa'],
+      replies: ["Algoritma adalah langkah-langkah logis yang disusun untuk menyelesaikan suatu masalah atau tugas tertentu~"]
+    },
+    {
+      keywords: ['apa itu big data', 'big data itu apa'],
+      replies: ["Big data adalah kumpulan data dalam jumlah sangat besar yang dianalisis untuk menemukan pola atau wawasan baru~"]
+    },
+    {
+      keywords: ['apa itu iot', 'internet of things'],
+      replies: ["Internet of Things (IoT) adalah konsep menghubungkan berbagai perangkat sehari-hari ke internet, seperti lampu pintar atau kulkas pintar~"]
+    },
+    {
+      keywords: ['apa itu drone', 'drone itu apa'],
+      replies: ["Drone adalah pesawat tanpa awak yang dikendalikan dari jarak jauh, sering dipakai untuk fotografi udara~"]
+    },
+    {
+      keywords: ['apa itu otomasi', 'automation itu apa'],
+      replies: ["Otomasi adalah penggunaan teknologi untuk menjalankan tugas tanpa campur tangan manusia secara langsung~"]
+    },
+    {
+      keywords: ['apa itu virus komputer', 'virus komputer itu apa'],
+      replies: ["Virus komputer adalah program berbahaya yang bisa merusak atau mencuri data di perangkat tanpa izin pengguna~"]
+    },
+    {
+      keywords: ['apa itu quantum computing', 'komputer kuantum'],
+      replies: ["Komputer kuantum adalah teknologi komputasi generasi baru yang memanfaatkan prinsip fisika kuantum untuk memproses data jauh lebih cepat~"]
+    },
+    {
+      keywords: ['apa itu semikonduktor', 'semikonduktor itu apa'],
+      replies: ["Semikonduktor adalah bahan dasar pembuatan chip elektronik yang jadi otak dari hampir semua perangkat digital~"]
+    },
+    {
+      keywords: ['apa itu chip', 'chip komputer itu apa'],
+      replies: ["Chip adalah komponen elektronik kecil yang berisi jutaan transistor, berfungsi sebagai otak pemrosesan data~"]
+    },
+    {
+      keywords: ['apa itu prosesor', 'processor itu apa', 'apa itu cpu'],
+      replies: ["Prosesor (CPU) adalah otak utama komputer yang menjalankan hampir semua instruksi program~"]
+    },
+    {
+      keywords: ['apa itu gpu', 'kartu grafis itu apa'],
+      replies: ["GPU adalah chip khusus untuk memproses grafis, banyak dipakai untuk gaming, rendering, dan pelatihan AI~"]
+    },
+    {
+      keywords: ['apa itu ram', 'ram itu apa'],
+      replies: ["RAM adalah memori sementara yang menyimpan data yang sedang diproses supaya perangkat bisa berjalan lebih cepat~"]
+    },
+    {
+      keywords: ['apa itu ssd', 'ssd itu apa'],
+      replies: ["SSD adalah penyimpanan data berbasis chip yang jauh lebih cepat dibanding hard disk biasa~"]
+    },
+    {
+      keywords: ['apa itu motherboard', 'motherboard itu apa'],
+      replies: ["Motherboard adalah papan sirkuit utama yang menghubungkan semua komponen komputer supaya bisa bekerja bersama~"]
+    },
+    {
+      keywords: ['apa itu pc gaming', 'gaming pc itu apa'],
+      replies: ["PC gaming adalah komputer yang dirancang khusus dengan spesifikasi tinggi untuk menjalankan game berat dengan lancar~"]
+    },
+    {
+      keywords: ['apa itu kamera smartphone', 'teknologi kamera hp'],
+      replies: ["Kamera smartphone modern menggabungkan sensor canggih dan pemrosesan AI untuk menghasilkan foto berkualitas tinggi~"]
+    },
+    {
+      keywords: ['apa itu media sosial', 'medsos itu apa'],
+      replies: ["Media sosial adalah platform digital yang memungkinkan orang berbagi konten dan terhubung satu sama lain secara online~"]
+    },
+    {
+      keywords: ['apa itu streaming', 'teknologi streaming'],
+      replies: ["Streaming adalah cara menonton atau mendengarkan konten secara langsung lewat internet tanpa perlu mengunduhnya dulu~"]
+    },
+    {
+      keywords: ['apa itu e-commerce', 'ecommerce itu apa'],
+      replies: ["E-commerce adalah kegiatan jual beli barang atau jasa yang dilakukan secara online~"]
+    },
+    {
+      keywords: ['apa itu digital marketing', 'pemasaran digital itu apa'],
+      replies: ["Digital marketing adalah strategi promosi produk atau jasa lewat platform digital seperti media sosial dan mesin pencari~"]
+    },
+    {
+      keywords: ['apa itu ui ux', 'ui/ux itu apa'],
+      replies: ["UI/UX adalah desain tampilan (UI) dan pengalaman pengguna (UX) suatu aplikasi atau website supaya nyaman digunakan~"]
+    },
+    {
+      keywords: ['apa itu software', 'software itu apa'],
+      replies: ["Software adalah perangkat lunak atau program yang menjalankan instruksi di dalam komputer~"]
+    },
+    {
+      keywords: ['apa itu hardware', 'hardware itu apa'],
+      replies: ["Hardware adalah komponen fisik komputer seperti prosesor, RAM, dan layar~"]
+    },
+    {
+      keywords: ['apa itu open source', 'open source itu apa'],
+      replies: ["Open source adalah perangkat lunak yang kode programnya terbuka dan bisa digunakan atau dimodifikasi siapa saja~"]
+    },
+    {
+      keywords: ['apa itu api', 'api itu apa'],
+      replies: ["API adalah jembatan yang memungkinkan dua aplikasi berbeda saling berkomunikasi dan bertukar data~"]
+    },
+    {
+      keywords: ['apa itu server', 'server itu apa'],
+      replies: ["Server adalah komputer khusus yang menyediakan layanan atau data ke perangkat lain lewat jaringan~"]
+    },
+    {
+      keywords: ['apa itu enkripsi', 'enkripsi data itu apa'],
+      replies: ["Enkripsi adalah proses mengacak data supaya hanya pihak yang punya kunci tertentu yang bisa membacanya, penting untuk keamanan data~"]
+    },
+    {
       keywords: ['pacar', 'jodoh', 'nikah', 'cinta', 'love'],
       replies: [
         "Duh, kalau urusan percintaan Yuki kurang paham karena hatiku sudah terprogram sepenuhnya untuk membantu pengguna AMPER.AI! 😉💕"
