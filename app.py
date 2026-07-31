@@ -280,7 +280,7 @@ with st.sidebar:
         ],
     )
 
-    st.markdown("### 🎬 10+ Pro Filter Presets")
+    st.markdown("### 🎬 30+ Pro Filter Presets")
     capcut_preset = st.selectbox(
         "Pilih Filter / Template Gaya",
         [
@@ -295,30 +295,71 @@ with st.sidebar:
             "🌲 Emerald Forest (Deep Green Tone)",
             "🧊 Arctic Frost (Cool Blue Tone)",
             "🍑 Peach Blossom (Soft Pastel)",
+            "🌇 Urban Dusk (City Twilight)",
+            "🏝️ Tropical Vibrant (Saturated Summer)",
+            "🍂 Autumn Warmth (Rustic Orange)",
+            "❄️ Winter Blue (Cold Crisp)",
+            "🎥 Film Noir (High Contrast B&W)",
+            "🌸 Soft Pastel Dream (Airy & Light)",
+            "🔥 High Contrast HDR (Punchy)",
+            "🌊 Ocean Breeze (Teal & Cyan)",
+            "🍇 Moody Purple Haze",
+            "🌾 Rustic Earth Tone (Desaturated Brown)",
+            "🌃 Neon Nightlife (Saturated Night)",
+            "🥂 Elegant Wedding (Soft Highlights)",
+            "📷 Analog Film 35mm",
+            "🌵 Desert Sand (Warm Dusty)",
+            "🍓 Berry Pop (Vivid Red/Pink)",
+            "🌙 Midnight Blue (Deep Cool Shadow)",
+            "🧁 Pastel Candy (Bright Playful)",
+            "🏔️ Alpine Clarity (Sharp & Clean)",
+            "🖼️ Editorial Matte (Flat Muted)",
+            "🎇 Vibrant Pop Art",
+            "🍃 Fresh Mint (Cool Green)",
+            "🕯️ Warm Candlelight (Amber Glow)",
+            "🌫️ Foggy Morning (Low Contrast Haze)",
         ],
     )
 
+    preset_map = {
+        "✨ Cyberpunk Neon (Pop & Vibrant)": {"exposure": 0.2, "contrast": 25, "highlights": -10, "shadows": 15, "temp": -15, "tint": 15, "vibrance": 35, "saturation": 20, "clarity": 25, "vignette": 40},
+        "🎞️ Vintage Retro Film (Warm & Faded)": {"exposure": 0.1, "contrast": 10, "highlights": -20, "shadows": 30, "temp": 25, "tint": -5, "vibrance": -10, "saturation": -5, "clarity": 10, "vignette": 50},
+        "🎬 Moody Cinematic (Dark & Deep)": {"exposure": -0.3, "contrast": 35, "highlights": -40, "shadows": -20, "temp": -10, "tint": 5, "vibrance": 10, "saturation": 5, "clarity": 30, "vignette": 65},
+        "🌟 Clean & Fresh (Bright & Clear)": {"exposure": 0.3, "contrast": 15, "highlights": 10, "shadows": 25, "temp": 0, "tint": 0, "vibrance": 20, "saturation": 15, "clarity": 15, "vignette": 10},
+        "☕ Warm Portrait (Skin Tone Enhancer)": {"exposure": 0.1, "contrast": 5, "highlights": 10, "shadows": 20, "temp": 15, "tint": 5, "vibrance": 15, "saturation": 5, "clarity": 5, "vignette": 15},
+        "🖤 Dramatic B&W (Monochrome Pro)": {"exposure": 0.0, "contrast": 40, "highlights": -30, "shadows": -30, "temp": 0, "tint": 0, "vibrance": -50, "saturation": -50, "clarity": 35, "vignette": 50},
+        "🌅 Golden Hour Sunset (Warm Glow)": {"exposure": 0.2, "contrast": 15, "highlights": 5, "shadows": 20, "temp": 30, "tint": 10, "vibrance": 25, "saturation": 15, "clarity": 10, "vignette": 20},
+        "🌲 Emerald Forest (Deep Green Tone)": {"exposure": -0.1, "contrast": 20, "highlights": -10, "shadows": 10, "temp": -10, "tint": -20, "vibrance": 30, "saturation": 20, "clarity": 20, "vignette": 30},
+        "🧊 Arctic Frost (Cool Blue Tone)": {"exposure": 0.1, "contrast": 10, "highlights": 15, "shadows": 10, "temp": -35, "tint": 10, "vibrance": 15, "saturation": 5, "clarity": 15, "vignette": 15},
+        "🍑 Peach Blossom (Soft Pastel)": {"exposure": 0.2, "contrast": 5, "highlights": 20, "shadows": 25, "temp": 10, "tint": 15, "vibrance": 20, "saturation": 10, "clarity": 5, "vignette": 10},
+        "🌇 Urban Dusk (City Twilight)": {"exposure": -0.1, "contrast": 25, "highlights": -15, "shadows": 5, "temp": 5, "tint": -10, "vibrance": 20, "saturation": 10, "clarity": 20, "vignette": 45},
+        "🏝️ Tropical Vibrant (Saturated Summer)": {"exposure": 0.25, "contrast": 20, "highlights": 5, "shadows": 15, "temp": 5, "tint": 5, "vibrance": 40, "saturation": 30, "clarity": 15, "vignette": 10},
+        "🍂 Autumn Warmth (Rustic Orange)": {"exposure": 0.05, "contrast": 15, "highlights": -5, "shadows": 15, "temp": 35, "tint": 5, "vibrance": 20, "saturation": 15, "clarity": 10, "vignette": 25},
+        "❄️ Winter Blue (Cold Crisp)": {"exposure": 0.1, "contrast": 20, "highlights": 10, "shadows": 5, "temp": -30, "tint": 5, "vibrance": 5, "saturation": -5, "clarity": 20, "vignette": 20},
+        "🎥 Film Noir (High Contrast B&W)": {"exposure": -0.1, "contrast": 45, "highlights": -35, "shadows": -35, "temp": 0, "tint": 0, "vibrance": -50, "saturation": -50, "clarity": 40, "vignette": 60},
+        "🌸 Soft Pastel Dream (Airy & Light)": {"exposure": 0.35, "contrast": -10, "highlights": 20, "shadows": 30, "temp": 5, "tint": 10, "vibrance": 10, "saturation": -5, "clarity": -10, "vignette": 5},
+        "🔥 High Contrast HDR (Punchy)": {"exposure": 0.1, "contrast": 45, "highlights": -25, "shadows": 30, "temp": 0, "tint": 0, "vibrance": 30, "saturation": 15, "clarity": 40, "vignette": 20},
+        "🌊 Ocean Breeze (Teal & Cyan)": {"exposure": 0.1, "contrast": 15, "highlights": 5, "shadows": 10, "temp": -25, "tint": -15, "vibrance": 30, "saturation": 15, "clarity": 15, "vignette": 15},
+        "🍇 Moody Purple Haze": {"exposure": -0.15, "contrast": 20, "highlights": -20, "shadows": -5, "temp": -5, "tint": 25, "vibrance": 20, "saturation": 10, "clarity": 20, "vignette": 40},
+        "🌾 Rustic Earth Tone (Desaturated Brown)": {"exposure": 0.0, "contrast": 10, "highlights": -10, "shadows": 15, "temp": 20, "tint": 0, "vibrance": -20, "saturation": -15, "clarity": 15, "vignette": 30},
+        "🌃 Neon Nightlife (Saturated Night)": {"exposure": -0.2, "contrast": 30, "highlights": -20, "shadows": -10, "temp": -20, "tint": 20, "vibrance": 40, "saturation": 25, "clarity": 25, "vignette": 50},
+        "🥂 Elegant Wedding (Soft Highlights)": {"exposure": 0.25, "contrast": 5, "highlights": 25, "shadows": 20, "temp": 10, "tint": 5, "vibrance": 10, "saturation": 0, "clarity": 0, "vignette": 15},
+        "📷 Analog Film 35mm": {"exposure": 0.05, "contrast": 15, "highlights": -15, "shadows": 20, "temp": 15, "tint": -5, "vibrance": -5, "saturation": -10, "clarity": 5, "vignette": 35},
+        "🌵 Desert Sand (Warm Dusty)": {"exposure": 0.15, "contrast": 10, "highlights": -5, "shadows": 10, "temp": 30, "tint": -10, "vibrance": 10, "saturation": 5, "clarity": 15, "vignette": 20},
+        "🍓 Berry Pop (Vivid Red/Pink)": {"exposure": 0.1, "contrast": 20, "highlights": 0, "shadows": 10, "temp": 5, "tint": 20, "vibrance": 35, "saturation": 25, "clarity": 15, "vignette": 15},
+        "🌙 Midnight Blue (Deep Cool Shadow)": {"exposure": -0.25, "contrast": 25, "highlights": -15, "shadows": -25, "temp": -25, "tint": 0, "vibrance": 10, "saturation": 5, "clarity": 20, "vignette": 45},
+        "🧁 Pastel Candy (Bright Playful)": {"exposure": 0.3, "contrast": -5, "highlights": 15, "shadows": 25, "temp": 5, "tint": 15, "vibrance": 25, "saturation": 15, "clarity": -5, "vignette": 5},
+        "🏔️ Alpine Clarity (Sharp & Clean)": {"exposure": 0.15, "contrast": 20, "highlights": 5, "shadows": 15, "temp": -10, "tint": 0, "vibrance": 15, "saturation": 10, "clarity": 35, "vignette": 10},
+        "🖼️ Editorial Matte (Flat Muted)": {"exposure": 0.05, "contrast": -15, "highlights": -20, "shadows": 20, "temp": 0, "tint": 0, "vibrance": -15, "saturation": -20, "clarity": 5, "vignette": 10},
+        "🎇 Vibrant Pop Art": {"exposure": 0.15, "contrast": 35, "highlights": 0, "shadows": 10, "temp": 0, "tint": 0, "vibrance": 45, "saturation": 35, "clarity": 30, "vignette": 20},
+        "🍃 Fresh Mint (Cool Green)": {"exposure": 0.2, "contrast": 10, "highlights": 10, "shadows": 15, "temp": -15, "tint": -20, "vibrance": 20, "saturation": 10, "clarity": 10, "vignette": 10},
+        "🕯️ Warm Candlelight (Amber Glow)": {"exposure": 0.1, "contrast": 10, "highlights": -10, "shadows": 20, "temp": 40, "tint": 15, "vibrance": 15, "saturation": 10, "clarity": 5, "vignette": 30},
+        "🌫️ Foggy Morning (Low Contrast Haze)": {"exposure": 0.2, "contrast": -20, "highlights": 15, "shadows": 25, "temp": -5, "tint": 0, "vibrance": -10, "saturation": -10, "clarity": -15, "vignette": 5},
+    }
+
     if st.button("🪄 Terapkan Preset Pilihan"):
-        if capcut_preset.startswith("✨ Cyberpunk"):
-            st.session_state.update({"exposure": 0.2, "contrast": 25, "highlights": -10, "shadows": 15, "temp": -15, "tint": 15, "vibrance": 35, "saturation": 20, "clarity": 25, "vignette": 40})
-        elif capcut_preset.startswith("🎞️ Vintage"):
-            st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": -20, "shadows": 30, "temp": 25, "tint": -5, "vibrance": -10, "saturation": -5, "clarity": 10, "vignette": 50})
-        elif capcut_preset.startswith("🎬 Moody"):
-            st.session_state.update({"exposure": -0.3, "contrast": 35, "highlights": -40, "shadows": -20, "temp": -10, "tint": 5, "vibrance": 10, "saturation": 5, "clarity": 30, "vignette": 65})
-        elif capcut_preset.startswith("🌟 Clean"):
-            st.session_state.update({"exposure": 0.3, "contrast": 15, "highlights": 10, "shadows": 25, "temp": 0, "tint": 0, "vibrance": 20, "saturation": 15, "clarity": 15, "vignette": 10})
-        elif capcut_preset.startswith("☕ Warm Portrait"):
-            st.session_state.update({"exposure": 0.1, "contrast": 5, "highlights": 10, "shadows": 20, "temp": 15, "tint": 5, "vibrance": 15, "saturation": 5, "clarity": 5, "vignette": 15})
-        elif capcut_preset.startswith("🖤 Dramatic"):
-            st.session_state.update({"exposure": 0.0, "contrast": 40, "highlights": -30, "shadows": -30, "temp": 0, "tint": 0, "vibrance": -50, "saturation": -50, "clarity": 35, "vignette": 50})
-        elif capcut_preset.startswith("🌅 Golden Hour"):
-            st.session_state.update({"exposure": 0.2, "contrast": 15, "highlights": 5, "shadows": 20, "temp": 30, "tint": 10, "vibrance": 25, "saturation": 15, "clarity": 10, "vignette": 20})
-        elif capcut_preset.startswith("🌲 Emerald Forest"):
-            st.session_state.update({"exposure": -0.1, "contrast": 20, "highlights": -10, "shadows": 10, "temp": -10, "tint": -20, "vibrance": 30, "saturation": 20, "clarity": 20, "vignette": 30})
-        elif capcut_preset.startswith("🧊 Arctic Frost"):
-            st.session_state.update({"exposure": 0.1, "contrast": 10, "highlights": 15, "shadows": 10, "temp": -35, "tint": 10, "vibrance": 15, "saturation": 5, "clarity": 15, "vignette": 15})
-        elif capcut_preset.startswith("🍑 Peach Blossom"):
-            st.session_state.update({"exposure": 0.2, "contrast": 5, "highlights": 20, "shadows": 25, "temp": 10, "tint": 15, "vibrance": 20, "saturation": 10, "clarity": 5, "vignette": 10})
+        if capcut_preset in preset_map:
+            st.session_state.update(preset_map[capcut_preset])
         st.rerun()
 
     st.markdown("---")
@@ -331,7 +372,7 @@ with st.sidebar:
         st.markdown("---")
 
     st.markdown("### 1. Light & Exposure")
-    exposure = st.slider("Exposure", -2.0, 2.0, key="exposure", step=0.1)
+    exposure = st.slider("Exposure", -2.0, 2.0, key="exposure", step=0.05)
     contrast = st.slider("Contrast", -50, 50, key="contrast", step=1)
     highlights = st.slider("Highlights", -100, 100, key="highlights", step=1)
     shadows = st.slider("Shadows", -100, 100, key="shadows", step=1)
@@ -348,11 +389,16 @@ with st.sidebar:
     clarity = st.slider("Clarity / Texture", -50, 50, key="clarity", step=1)
     dehaze = st.slider("Dehaze", -50, 50, key="dehaze", step=1)
     sharpen = st.slider("Sharpening HD", 0, 100, key="sharpen", step=1)
+    sharpen_radius = st.slider("Sharpen Radius (px)", 1, 10, key="sharpen_radius", step=1)
     vignette = st.slider("Vignette (Cinematic Edge)", 0, 100, key="vignette", step=1)
 
     st.markdown("### 4. Quality Boost")
-    denoise_strength = st.slider("Noise Reduction", 0, 30, key="noise_reduction", step=1)
+    denoise_strength = st.slider("Noise Reduction (Luminance)", 0, 30, key="noise_reduction", step=1)
+    denoise_color = st.slider("Noise Reduction (Color)", 0, 30, key="noise_reduction_color", step=1)
     smart_enhance = st.slider("Smart Detail Enhance", 0, 100, key="smart_enhance", step=1)
+    smart_enhance_radius = st.slider("Smart Detail Radius (px)", 1, 15, key="smart_enhance_radius", step=1)
+    highlight_recovery = st.slider("Highlight Recovery", 0, 100, key="highlight_recovery", step=1)
+    shadow_lift = st.slider("Shadow Lift (Adaptive)", 0, 100, key="shadow_lift", step=1)
 
     st.markdown("---")
     upscale_choice = st.selectbox(
