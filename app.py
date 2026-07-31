@@ -163,7 +163,7 @@ def apply_tone_curve(img_f, curve_preset):
     elif curve_preset == "Bright Pop (Terang & Segar)":
         return np.power(img_f, 0.85)
     return img_f
-    def _pil_to_cv2(img: Image.Image) -> np.ndarray:
+def _pil_to_cv2(img: Image.Image) -> np.ndarray:
     arr = np.array(img.convert("RGB"))
     return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
 
