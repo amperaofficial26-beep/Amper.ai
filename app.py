@@ -7855,6 +7855,26 @@ function findReply(input){
 // =========================================================
 // PENGIRIMAN PESAN YUKI
 // =========================================================
+// 1. Definisikan / Timpa addBubble agar mendukung HTML (tombol link Aira)
+function addBubble(sender, text) {
+    const chatBox = document.getElementById('chatBox') || document.querySelector('.chat-box');
+    const div = document.createElement('div');
+    div.className = 'bubble ' + sender;
+    
+    // Pakai innerHTML khusus untuk AI agar tag <a> dan <br> ter-render jadi tombol!
+    if (sender === 'ai') {
+        div.innerHTML = text;
+    } else {
+        div.textContent = text;
+    }
+    
+    if (chatBox) {
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+}
+
+// 2. Fungsi Pengiriman Pesan
 function sendMessage(){
     const txt = userInput.value.trim();
     if(!txt) return;
@@ -7868,24 +7888,17 @@ function sendMessage(){
     }, 400);
 }
 
-  function sendMessage(){
-    const txt = userInput.value.trim();
-    if(!txt) return;
-    addBubble('user', txt);
-    userInput.value = '';
-    setTimeout(() => {
-      const reply = findReply(txt);
-      addBubble('ai', reply);
-    }, 400);
-  }
-
-  sendBtn.addEventListener('click', sendMessage);
-  userInput.addEventListener('keydown', (e) => {
+sendBtn.addEventListener('click', sendMessage);
+userInput.addEventListener('keydown', (e) => {
     if(e.key === 'Enter' && !e.shiftKey){
-      e.preventDefault();
-      sendMessage();
+        e.preventDefault();
+        sendMessage();
     }
-  });
+});
+
+window.addEventListener('load', () => {
+    addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan sesuatu!');
+});
 
   window.addEventListener('load', () => {
     addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan apa saja seputar fotografi!');
