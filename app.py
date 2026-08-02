@@ -7855,24 +7855,26 @@ function findReply(input){
 // =========================================================
 // PENGIRIMAN PESAN YUKI
 // =========================================================
-// 1. Timpa addBubble dengan penanganan innerHTML untuk AI
+// 1. Fungsi addBubble asli kamu (dengan perbaikan innerHTML untuk AI)
 function addBubble(sender, text) {
     const div = document.createElement('div');
     div.className = 'bubble ' + sender;
     
+    // UBAH DIBAGIAN INI: Pakai innerHTML agar link/tombol Aira bisa diklik
     if (sender === 'ai') {
-        div.innerHTML = text; // Agar tombol Aira merender dengan benar
+        div.innerHTML = text;
     } else {
         div.textContent = text;
     }
     
-    // Ambil wadah chat (menggunakan variabel/elemen bawaan)
-    const container = document.getElementById('chatContainer') || document.getElementById('chatBox') || document.querySelector('.chat-body') || document.body;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    // Menggunakan variabel chatBox bawaan kodingan kamu
+    if (typeof chatBox !== 'undefined' && chatBox) {
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 }
 
-// 2. Fungsi Pengiriman Pesan
+// 2. Pengiriman Pesan Yuki
 function sendMessage(){
     const txt = userInput.value.trim();
     if(!txt) return;
@@ -7897,14 +7899,6 @@ userInput.addEventListener('keydown', (e) => {
 window.addEventListener('load', () => {
     addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan sesuatu!');
 });
-
-window.addEventListener('load', () => {
-    addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan sesuatu!');
-});
-
-  window.addEventListener('load', () => {
-    addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan apa saja seputar fotografi!');
-  });
 </script>
 </body>
 </html>"""
