@@ -7825,18 +7825,48 @@ with st.sidebar:
     }
   ];
 
-  function findReply(input){
+  // =========================================================
+// LOGIKA PENCARIAN & FALLBACK YUKI -> AIRA
+// =========================================================
+function findReply(input){
     const text = input.toLowerCase();
+    
+    // 1. Pencarian Kata Kunci di Kamus Yuki
     for(let item of knowledgeBase){
-      for(let kw of item.keywords){
-        if(text.includes(kw)){
-          const r = item.replies;
-          return r[Math.floor(Math.random() * r.length)];
+        for(let kw of item.keywords){
+            if(text.includes(kw)){
+                const r = item.replies;
+                return r[Math.floor(Math.random() * r.length)];
+            }
         }
-      }
     }
-    return "Maaf Ya...,Yuki Masih Belum Di Program Sedeteail Itu..Jadi Yuki Belum Bisa Menjawab Lebih Ke Pertanyaan Itu.. 🌸";
-  }
+    
+    // 2. Fallback Response (Jika Tidak Ditemukan di Kamus Yuki)
+    return `Gomen ne~ Yuki cuma fokus membantu di <b>AMPER.AI Upscaler</b> saja. 🌸<br><br>` +
+           `Pertanyaan kamu sepertinya di luar jangkauan Yuki. Coba tanyakan ke <b>Aira</b> ya!<br>` +
+           `<a href="https://amperaai-aira-chatbot.streamlit.app/" target="_blank" style="` +
+           `display: inline-block; margin-top: 8px; padding: 6px 12px; ` +
+           `background: #ff7aa8; color: white; border-radius: 6px; ` +
+           `text-decoration: none; font-weight: bold; font-size: 0.8rem; ` +
+           `box-shadow: 0 2px 6px rgba(255,122,168,0.4);">` +
+           `💬 Tanya Aira Sekarang</a>`;
+}
+
+// =========================================================
+// PENGIRIMAN PESAN YUKI
+// =========================================================
+function sendMessage(){
+    const txt = userInput.value.trim();
+    if(!txt) return;
+    
+    addBubble('user', txt);
+    userInput.value = '';
+    
+    setTimeout(() => {
+        const reply = findReply(txt);
+        addBubble('ai', reply);
+    }, 400);
+}
 
   function sendMessage(){
     const txt = userInput.value.trim();
