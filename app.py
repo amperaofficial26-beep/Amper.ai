@@ -7910,7 +7910,6 @@ if (userInput) {
 window.addEventListener('load', () => {
     addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan sesuatu!');
 });
-});
 </script>
 </body>
 </html>"""
