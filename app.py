@@ -7855,23 +7855,21 @@ function findReply(input){
 // =========================================================
 // PENGIRIMAN PESAN YUKI
 // =========================================================
-// 1. Definisikan / Timpa addBubble agar mendukung HTML (tombol link Aira)
+// 1. Timpa addBubble dengan penanganan innerHTML untuk AI
 function addBubble(sender, text) {
-    const chatBox = document.getElementById('chatBox') || document.querySelector('.chat-box');
     const div = document.createElement('div');
     div.className = 'bubble ' + sender;
     
-    // Pakai innerHTML khusus untuk AI agar tag <a> dan <br> ter-render jadi tombol!
     if (sender === 'ai') {
-        div.innerHTML = text;
+        div.innerHTML = text; // Agar tombol Aira merender dengan benar
     } else {
         div.textContent = text;
     }
     
-    if (chatBox) {
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    // Ambil wadah chat (menggunakan variabel/elemen bawaan)
+    const container = document.getElementById('chatContainer') || document.getElementById('chatBox') || document.querySelector('.chat-body') || document.body;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
 }
 
 // 2. Fungsi Pengiriman Pesan
@@ -7894,6 +7892,10 @@ userInput.addEventListener('keydown', (e) => {
         e.preventDefault();
         sendMessage();
     }
+});
+
+window.addEventListener('load', () => {
+    addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan sesuatu!');
 });
 
 window.addEventListener('load', () => {
