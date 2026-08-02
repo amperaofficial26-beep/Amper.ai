@@ -7893,12 +7893,10 @@ function sendMessage(){
 }
 
 // 3. Pasang Event Listener ke Tombol & Input Keyboard
-const sendBtn = document.getElementById('sendBtn') || document.querySelector('button');
 if (sendBtn) {
     sendBtn.onclick = sendMessage;
 }
 
-const userInput = document.getElementById('userInput') || document.querySelector('input');
 if (userInput) {
     userInput.onkeydown = (e) => {
         if(e.key === 'Enter' && !e.shiftKey){
