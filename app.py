@@ -7855,37 +7855,33 @@ function findReply(input){
 // =========================================================
 // PENGIRIMAN PESAN YUKI
 // =========================================================
-// 1. Fungsi addBubble mandiri (mencari elemen chat secara otomatis)
+// 1. Fungsi addBubble Presisi
 function addBubble(sender, text) {
-    // Cari wadah chat berdasarkan class atau tag yang umum
-    const box = document.querySelector('.chat-box') || 
-                document.querySelector('.chat-body') || 
-                document.getElementById('chatBox') || 
-                document.getElementById('chatContainer');
-                
-    if (!box) return; // Mencegah error jika elemen belum siap
+    // Ambil wadah chat berdasarkan ID bawaan atau querySelector
+    const chatBox = document.getElementById('chatBox') || document.querySelector('.chat-box') || document.querySelector('[class*="chat"]');
+    if (!chatBox) return;
 
     const div = document.createElement('div');
     div.className = 'bubble ' + sender;
     
-    // Pakai innerHTML untuk AI agar tombol Aira merender dengan benar
+    // Ganti innerHTML khusus pesan AI agar tombol Aira muncul & ter-render
     if (sender === 'ai') {
         div.innerHTML = text;
     } else {
         div.textContent = text;
     }
     
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 2. Fungsi Kirim Pesan Mandiri
+// 2. Fungsi Kirim Pesan Yuki
 function sendMessage(){
-    const input = document.querySelector('input[type="text"]') || document.getElementById('userInput');
+    const input = document.getElementById('userInput') || document.querySelector('input');
     if (!input) return;
     
     const txt = input.value.trim();
-    if (!txt) return;
+    if(!txt) return;
     
     addBubble('user', txt);
     input.value = '';
@@ -7896,24 +7892,26 @@ function sendMessage(){
     }, 400);
 }
 
-// 3. Event Listener
-const btn = document.querySelector('button') || document.getElementById('sendBtn');
-if (btn) {
-    btn.onclick = sendMessage;
+// 3. Pasang Event Listener ke Tombol & Input Keyboard
+const sendBtn = document.getElementById('sendBtn') || document.querySelector('button');
+if (sendBtn) {
+    sendBtn.onclick = sendMessage;
 }
 
-const inputElem = document.querySelector('input[type="text"]') || document.getElementById('userInput');
-if (inputElem) {
-    inputElem.onkeydown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+const userInput = document.getElementById('userInput') || document.querySelector('input');
+if (userInput) {
+    userInput.onkeydown = (e) => {
+        if(e.key === 'Enter' && !e.shiftKey){
             e.preventDefault();
             sendMessage();
         }
     };
 }
 
+// 4. Sapaan Awal Yuki
 window.addEventListener('load', () => {
     addBubble('ai', 'Konnichiwa~ 🌸 Aku Yuki. Silakan unggah fotomu atau tanyakan sesuatu!');
+});
 });
 </script>
 </body>
