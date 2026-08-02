@@ -7858,7 +7858,7 @@ function findReply(input){
 // 1. Fungsi addBubble Presisi
 function addBubble(sender, text) {
     // Ambil wadah chat berdasarkan ID bawaan atau querySelector
-    const chatBox = document.getElementById('chatBox') || document.querySelector('.chat-box') || document.querySelector('[class*="chat"]');
+    const chatBox = document.getElementById('chatArea');
     if (!chatBox) return;
 
     const div = document.createElement('div');
