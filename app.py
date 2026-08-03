@@ -661,6 +661,103 @@ with st.sidebar:
     display:flex; align-items:center; justify-content:center;
   }
   #sendBtn svg{ width:14px; height:14px; }
+  /* =========================================================
+   GELEMBUNG CHAT GAYA WHATSAPP UNTUK YUKI
+   Taruh di dalam <style>...</style> yang sudah ada di komponen Yuki
+   ========================================================= */
+
+#chatArea {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+}
+
+/* Baris pembungkus, untuk atur perataan kiri/kanan */
+.row {
+  display: flex;
+  width: 100%;
+}
+.row.user {
+  justify-content: flex-end;   /* pesan user rata kanan, seperti WA */
+}
+.row.ai {
+  justify-content: flex-start; /* pesan Yuki rata kiri */
+}
+
+/* Bentuk dasar gelembung */
+.bubble {
+  position: relative;
+  max-width: 75%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  animation: bubbleIn 0.15s ease-out;
+}
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Gelembung USER — hijau ala WA, rata kanan, ekor di kanan bawah */
+.bubble.user, .row.user .bubble {
+  background: #DCF8C6;
+  color: #111;
+  border-bottom-right-radius: 4px;
+  margin-right: 6px;
+}
+.row.user .bubble::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: -6px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-left-color: #DCF8C6;
+  border-bottom: 0;
+  border-right: 0;
+}
+
+/* Gelembung AI (Yuki) — putih/gelap, rata kiri, ekor di kiri bawah */
+.bubble.ai, .row.ai .bubble {
+  background: #ffffff;
+  color: #111;
+  border-bottom-left-radius: 4px;
+  margin-left: 6px;
+}
+.row.ai .bubble::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-right-color: #ffffff;
+  border-bottom: 0;
+  border-left: 0;
+}
+
+/* Kalau tema dark, versi gelap ala WhatsApp Dark Mode: */
+.bubble.ai.dark-mode {
+  background: #1F2C34;
+  color: #E9EDEF;
+}
+.bubble.user.dark-mode {
+  background: #005C4B;
+  color: #E9EDEF;
+}
+
+/* Link/tombol Aira di dalam bubble Yuki tetap kebaca jelas */
+.bubble a {
+  color: #ff7aa8;
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -6368,7 +6465,7 @@ function findReply(input) {
         "Mau coba eksplorasi motret lampu jalan sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
-    {
+    {                                                                                                                                       
       keywords: ["motret cermin", "motretcermin", "apa itu motret cermin", "jelaskan motret cermin", "tips motret cermin"],
       replies: [
         "Motret Cermin adalah salah satu objek foto favorit penting dalam dunia fotografi. Memahami motret cermin dengan baik akan membantumu menghasilkan foto yang lebih kaya secara visual. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
@@ -6450,22 +6547,23 @@ function findReply(input) {
 // =========================================================
 // 1. Fungsi addBubble Presisi
 function addBubble(sender, text) {
-    // Ambil wadah chat berdasarkan ID bawaan atau querySelector
-    const chatBox = document.getElementById('chatArea');
-    if (!chatBox) return;
+  const chatBox = document.getElementById('chatArea');
+  if (!chatBox) return;
 
-    const div = document.createElement('div');
-    div.className = 'bubble ' + sender;
-    
-    // Ganti innerHTML khusus pesan AI agar tombol Aira muncul & ter-render
-    if (sender === 'ai') {
-        div.innerHTML = text;
-    } else {
-        div.textContent = text;
-    }
-    
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
+  const row = document.createElement('div');
+  row.className = 'row ' + sender;
+
+  const div = document.createElement('div');
+  div.className = 'bubble ' + sender;
+  if (sender === 'ai') {
+    div.innerHTML = text;
+  } else {
+    div.textContent = text;
+  }
+
+  row.appendChild(div);
+  chatBox.appendChild(row);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 // 2. Fungsi Kirim Pesan Yuki
