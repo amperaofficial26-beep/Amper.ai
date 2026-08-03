@@ -6684,8 +6684,8 @@ else:
   with col_f1:
     st.markdown("""
         <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
-            <h4 style="color: #e3b34a; margin-top: 0;">🌸 Yuki AI Companion</h4>
-            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Asisten virtual cerdas di sidebar yang dilengkapi 35+ kamus topik siap sedia mendampingi proses kreatifmu.</p>
+            <h4 style="color: #e3b34a; margin-top: 0;">🌸 Yuki Chatbot Editing</h4>
+            <p style="font-size: 0.85em; color: #cfe8e1; margin-bottom: 0;">Asisten virtual cerdas di sidebar yang dilengkapi 35+ kamus topik Tentang Fotogarphi & Editing.</p>
         </div>
     """, unsafe_allow_html=True)
     
