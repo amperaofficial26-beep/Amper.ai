@@ -582,8 +582,8 @@ with st.sidebar:
   :root{
     --bg-deep:#120c1e;
     --bg-panel:#251a3d;
-    --bg-bubble-ai:#2a1f45;
-    --bg-bubble-user:#3a2361;
+    --bg-bubble-ai:#ffffff;
+    --bg-bubble-user:#DCF8C6;
     --accent-pink:#ff7aa8;
     --accent-pink-soft:#ff9dc0;
     --accent-gold:#ffca6b;
@@ -638,16 +638,26 @@ with st.sidebar:
   .row{ display:flex; gap:8px; max-width:100%; align-items:flex-end; }
   .row.user{ flex-direction:row-reverse; }
   .bubble{
+    posotion:relative;
     max-width:82%; padding:8px 12px; border-radius:12px; font-size:0.82rem; line-height:1.4;
     word-wrap:break-word; white-space:pre-wrap;
-  }
+  }                                                                                                                                                                                                                                                                                                  
   .row.ai .bubble{
-    background:var(--bg-bubble-ai); border:1px solid rgba(255,202,107,0.18); border-bottom-left-radius:2px;
+    background:var(--bg-bubble-ai); color:#111; border-bottom-left-radius:4px;
+  }
+  .row.ai .bubble::after{
+    content:""; position:absolute; bottom:0; left:-6px; width:0; height:0;
+    border:6px solid transparent; border-reight-color:va r(--bg-bubble-ai); border-bottom:0; border-left:0;
   }
   .row.user .bubble{
-    background:var(--bg-bubble-user); border:1px solid rgba(127,233,220,0.2); border-bottom-right-radius:2px; color:#f3ecff;
+  background:var(--bg-bubble-user); color:#111;
+  border-bottom-right-radius:4px;
   }
-  .tag{ display:block; font-size:0.6rem; color:var(--accent-pink-soft); margin-bottom:2px; }
+  .row.user .bubble::after{
+    content:""; position:absolute; bottom:0; right:-6px; width:0; height:0;
+    border:6px solid transparent; border-left-color:var(--bg-bubble-user); border-bottom:0; border-right:0;
+  }
+    .tag{ display:block; font-size:0.6rem; color:var(--accent-pink-soft); margin-bottom:2px; }
 
   .dialogue-wrap{ padding:8px; background:rgba(28,19,48,0.9); border-top:1px solid var(--border-glow); }
   .dialogue-box{ display:flex; align-items:flex-end; gap:6px; background:rgba(37,26,61,0.9); border:1px solid var(--border-glow); border-radius:8px; padding:6px 8px; }
@@ -661,103 +671,6 @@ with st.sidebar:
     display:flex; align-items:center; justify-content:center;
   }
   #sendBtn svg{ width:14px; height:14px; }
-  /* =========================================================
-   GELEMBUNG CHAT GAYA WHATSAPP UNTUK YUKI
-   Taruh di dalam <style>...</style> yang sudah ada di komponen Yuki
-   ========================================================= */
-
-#chatArea {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-}
-
-/* Baris pembungkus, untuk atur perataan kiri/kanan */
-.row {
-  display: flex;
-  width: 100%;
-}
-.row.user {
-  justify-content: flex-end;   /* pesan user rata kanan, seperti WA */
-}
-.row.ai {
-  justify-content: flex-start; /* pesan Yuki rata kiri */
-}
-
-/* Bentuk dasar gelembung */
-.bubble {
-  position: relative;
-  max-width: 75%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-size: 0.92rem;
-  line-height: 1.4;
-  word-wrap: break-word;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
-  animation: bubbleIn 0.15s ease-out;
-}
-
-@keyframes bubbleIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Gelembung USER — hijau ala WA, rata kanan, ekor di kanan bawah */
-.bubble.user, .row.user .bubble {
-  background: #DCF8C6;
-  color: #111;
-  border-bottom-right-radius: 4px;
-  margin-right: 6px;
-}
-.row.user .bubble::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: -6px;
-  width: 0;
-  height: 0;
-  border: 6px solid transparent;
-  border-left-color: #DCF8C6;
-  border-bottom: 0;
-  border-right: 0;
-}
-
-/* Gelembung AI (Yuki) — putih/gelap, rata kiri, ekor di kiri bawah */
-.bubble.ai, .row.ai .bubble {
-  background: #ffffff;
-  color: #111;
-  border-bottom-left-radius: 4px;
-  margin-left: 6px;
-}
-.row.ai .bubble::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: -6px;
-  width: 0;
-  height: 0;
-  border: 6px solid transparent;
-  border-right-color: #ffffff;
-  border-bottom: 0;
-  border-left: 0;
-}
-
-/* Kalau tema dark, versi gelap ala WhatsApp Dark Mode: */
-.bubble.ai.dark-mode {
-  background: #1F2C34;
-  color: #E9EDEF;
-}
-.bubble.user.dark-mode {
-  background: #005C4B;
-  color: #E9EDEF;
-}
-
-/* Link/tombol Aira di dalam bubble Yuki tetap kebaca jelas */
-.bubble a {
-  color: #ff7aa8;
-  font-weight: bold;
-}
 </style>
 </head>
 <body>
