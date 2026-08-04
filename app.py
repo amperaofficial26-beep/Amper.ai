@@ -6989,7 +6989,7 @@ with col_f1:
         </div>
     """, unsafe_allow_html=True)
     
-  with col_f2:
+with col_f2:
     st.markdown("""
         <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
             <h4 style="color: #e3b34a; margin-top: 0;">🎊 Selective & Layer Pro</h4>
@@ -6997,7 +6997,7 @@ with col_f1:
         </div>
     """, unsafe_allow_html=True)
     
-  with col_f3:
+with col_f3:
     st.markdown("""
         <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
             <h4 style="color: #e3b34a; margin-top: 0;">🎨 10+ Pro Cinematic Presets</h4>
