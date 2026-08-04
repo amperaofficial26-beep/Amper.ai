@@ -7005,4 +7005,4 @@ with col_f3:
         </div>
     """, unsafe_allow_html=True)
 
-  st.markdown("<br><p style='text-align: center; color: #8fa8a2; font-size: 0.95em;'>👆 Silakan unggah file foto di atas untuk mulai mengedit karya fotografimu.</p>", unsafe_allow_html=True)
+st.markdown("<br><p style='text-align: center; color: #8fa8a2; font-size: 0.95em;'>👆 Silakan unggah file foto di atas untuk mulai mengedit karya fotografimu.</p>", unsafe_allow_html=True)
