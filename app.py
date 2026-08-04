@@ -6972,16 +6972,16 @@ else:
   
   # --- BANNER KATA-KATA MOTIVASI FOTOGRAFI ---
 st.markdown("""
-      <div style="background: linear-gradient(135deg, rgba(227,179,74,0.15), rgba(31,111,92,0.2)); padding: 22px; border-radius: 14px; border: 1px solid rgba(227,179,74,0.4); text-align: center; margin-bottom: 25px;">
-          <h3 style="color: #f3cf83; margin: 0 0 8px 0; font-family: 'Georgia', serif;">"Fotografi adalah cerita yang gagal diungkapkan dengan kata-kata."</h3>
-          <p style="color: #a9d6c9; font-size: 0.95em; margin: 0; font-style: italic;">— Abadikan momen terbaikmu, sempurnakan warnanya, dan biarkan karya berbicara bersama AMPER.AI & Yuki-Chan.</p>
-      </div>
-  """, unsafe_allow_html=True)
+<div style="background: linear-gradient(135deg, rgba(227,179,74,0.15), rgba(31,111,92,0.2)); padding: 22px; border-radius: 14px; border: 1px solid rgba(227,179,74,0.4); text-align: center; margin-bottom: 25px;">
+    <h3 style="color: #f3cf83; margin: 0 0 8px 0; font-family: 'Georgia', serif;">"Fotografi adalah cerita yang gagal diungkapkan dengan kata-kata."</h3>
+    <p style="color: #a9d6c9; font-size: 0.95em; margin: 0; font-style: italic;">— Abadikan momen terbaikmu, sempurnakan warnanya, dan biarkan karya berbicara bersama AMPER.AI & Yuki-Chan.</p>
+</div>
+""", unsafe_allow_html=True)
 
   # --- KARTU FITUR UNGGULAN (GRID 3 KOLOM) ---
-  col_f1, col_f2, col_f3 = st.columns(3)
+col_f1, col_f2, col_f3 = st.columns(3)
   
-  with col_f1:
+with col_f1:
     st.markdown("""
         <div style="background: rgba(18, 34, 38, 0.75); padding: 20px; border-radius: 12px; border: 1px solid rgba(227, 179, 74, 0.25); height: 100%;">
             <h4 style="color: #e3b34a; margin-top: 0;">🌸 Yuki Chatbot Editing</h4>
