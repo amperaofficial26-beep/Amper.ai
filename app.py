@@ -6810,153 +6810,165 @@ window.addEventListener('load', () => {
 
 # ---------------- Tampilkan foto & proses (Area Utama) ----------------
 if uploaded_file is not None and img is not None:
-  col_orig, col_res = st.columns(2)
-  with col_orig:
-    st.subheader("🎆 Foto Asli")
-    st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True)
-
-  if process_btn or "processed_img" not in st.session_state:
-    try:
-      with st.spinner("🛠️ Yuki & sistem sedang merender proses foto..."):
-        scale_factor = 2 if "2x" in upscale_choice else 4
-        h, w = img.shape[:2]
-
-        out_pixels = (w * scale_factor) * (h * scale_factor)
-        if out_pixels > MAX_OUTPUT_MEGAPIXELS:
-          adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
-          scale_factor = max(1.0, adjusted_scale)
-          st.warning(f"⚠️ Skala disesuaikan otomatis menjadi {scale_factor:.2f}x demi memori server.")
-
-        # 1. Body Slimming & Retouch Pro
-        if body_slim > 0:
-          src_pts = np.float32([[w/2, h/2], [w/2, h*0.2], [w/2, h*0.8]])
-          # Simulasi deformasi mesh ringan untuk body/contouring
-          factor = 1.0 - (body_slim * 0.0008)
-          resized_body = cv2.resize(img, (int(w), int(h * factor)))
-          if resized_body.shape[0] < h:
-            pad_top = (h - resized_body.shape[0]) // 2
-            pad_bot = h - resized_body.shape[0] - pad_top
-            img = cv2.copyMakeBorder(resized_body, pad_top, pad_bot, 0, 0, cv2.BORDER_REFLECT)
-          gc.collect()
-
-        if remini_boost > 0:
-          skin_smooth = cv2.bilateralFilter(img, int(remini_boost / 5) * 2 + 5, 75, 75)
-          sigma_val = 10 + (remini_boost / 100.0) * 20
-          img = cv2.detailEnhance(skin_smooth, sigma_s=sigma_val, sigma_r=0.15)
-          del skin_smooth
-          gc.collect()
-
-        # 2. Layer Blending (Gabung Foto Kedua)
-        if enable_layer and layer_file is not None:
-          layer_bytes = np.asarray(bytearray(layer_file.read()), dtype=np.uint8)
-          layer_img = cv2.imdecode(layer_bytes, cv2.IMREAD_COLOR)
-          if layer_img is not None:
-            layer_resized = cv2.resize(layer_img, (img.shape[1], img.shape[0]))
-            if layer_mode == "Normal":
-              img = cv2.addWeighted(img, 1.0 - layer_opacity, layer_resized, layer_opacity, 0)
-            elif layer_mode == "Screen":
-              screen = 255 - ((255 - img) * (255 - layer_resized) / 255.0)
-              img = cv2.addWeighted(img, 1.0 - layer_opacity, screen.astype("uint8"), layer_opacity, 0)
-            elif layer_mode == "Multiply":
-              multiply = (img.astype(float) * layer_resized.astype(float) / 255.0)
-              img = cv2.addWeighted(img, 1.0 - layer_opacity, multiply.astype("uint8"), layer_opacity, 0)
-            else: # Overlay
-              overlay = np.where(img < 128, (2 * img * layer_resized / 255.0), (255 - 2 * (255 - img) * (255 - layer_resized) / 255.0))
-              img = cv2.addWeighted(img, 1.0 - layer_opacity, overlay.astype("uint8"), layer_opacity, 0)
-            del layer_img, layer_resized
-            gc.collect()
-
-        if bg_blur > 0:
-          blur_kernel = int(bg_blur / 5) * 2 + 1
-          bg_blurred = cv2.GaussianBlur(img, (blur_kernel, blur_kernel), bg_blur / 2.0)
-          rows, cols = img.shape[:2]
-          kernel_x = cv2.getGaussianKernel(cols, cols / 2.5)
-          kernel_y = cv2.getGaussianKernel(rows, rows / 2.5)
-          mask = kernel_y * kernel_x.T
-          mask = mask / mask.max()
-          mask = np.dstack([mask, mask, mask])
-          img = (img * mask + bg_blurred * (1.0 - mask)).astype("uint8")
-          del bg_blurred, kernel_x, kernel_y, mask
-          gc.collect()
-
-        if denoise_strength > 0:
-          img = cv2.fastNlMeansDenoisingColored(img, None, float(denoise_strength), float(denoise_strength), 7, 21)
-
-        img_f = img.astype("float32") / 255.0
-        img_f = apply_tone_curve(img_f, curve_preset)
-
-        if exposure != 0.0:
-          img_f = img_f * (2.0**exposure)
-        if contrast != 0:
-          f_contrast = (259 * (contrast + 255)) / (255 * (259 - contrast))
-          img_f = f_contrast * (img_f - 0.5) + 0.5
-        img_f = np.clip(img_f, 0, 1)
-
-        lab = cv2.cvtColor((img_f * 255).astype("uint8"), cv2.COLOR_BGR2LAB).astype("float32")
-        del img_f
-        l_ch, a_ch, b_ch = cv2.split(lab)
-        l_norm = l_ch / 255.0
-
-        if highlights != 0:
-          hl_mask = np.clip((l_norm - 0.5) * 2.0, 0, 1)
-          l_ch += highlights * 0.3 * hl_mask
-        if shadows != 0:
-          sh_mask = np.clip((0.5 - l_norm) * 2.0, 0, 1)
-          l_ch += shadows * 0.3 * sh_mask
-
-        # 3. Selective Edit (Control Points Masking)
-        if enable_selective:
-          rows_s, cols_s = l_ch.shape
-          cx = int(cols_s * (sel_x_pct / 100.0))
-          cy = int(rows_s * (sel_y_pct / 100.0))
-          Y_grid, X_grid = np.ogrid[:rows_s, :cols_s]
-          dist_from_center = np.sqrt((X_grid - cx)**2 + (Y_grid - cy)**2)
-          sel_mask = np.clip(1.0 - (dist_from_center / float(sel_radius)), 0, 1)
-          
-          if sel_exposure != 0.0:
-            l_ch += (sel_exposure * 40.0) * sel_mask
-          if sel_sat != 0:
-            a_ch += (sel_sat * 0.5) * sel_mask
-            b_ch += (sel_sat * 0.5) * sel_mask
-
-        l_ch = np.clip(l_ch, 0, 255)
-        a_ch = np.clip(a_ch, 0, 255)
-        b_ch = np.clip(b_ch, 0, 255)
-        lab = cv2.merge([l_ch, a_ch, b_ch])
-        adjusted_bgr = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR).astype("float32") / 255.0
-
-        new_w = max(1, int(w * scale_factor))
-        new_h = max(1, int(h * scale_factor))
-        upscaled = cv2.resize((adjusted_bgr * 255).astype("uint8"), (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
-        
-        st.session_state["processed_img"] = cv2.cvtColor(upscaled, cv2.COLOR_BGR2RGB)
-        gc.collect()
-
-    except Exception as e:
-      st.error("❌ Opss..Terjadi kesalahan saat memproses gambar.")
-      with st.expander("Detail teknis error"):
-        st.exception(e)
-      st.session_state.pop("processed_img", None)
-
-  with col_res:
-    st.subheader("🎇 Hasil Ai-Upscaller & Pro Suite")
-    if "processed_img" in st.session_state:
-      st.image(st.session_state["processed_img"], use_container_width=True)
-
-      result_pil = Image.fromarray(st.session_state["processed_img"])
-      buf = io.BytesIO()
-      result_pil.save(buf, format="JPEG", quality=95)
-      byte_im = buf.getvalue()
-
-      st.download_button(
-          label="📥 Unduh Foto Hasil Amper.Ai Style (JPEG)",
-          data=byte_im,
-          file_name="amper_ai_pro_style.jpg",
-          mime="image/jpeg",
-          use_container_width=True,
-      )
+    col_orig, col_res = st.columns(2)
+    with col_orig:
+        st.subheader("🎆 Foto Asli")
+        st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), use_container_width=True)
+ 
+    if process_btn or "processed_img" not in st.session_state:
+        try:
+            with st.spinner("🛠️ Yuki & sistem sedang merender proses foto..."):
+                scale_factor = 2 if "2x" in upscale_choice else 4
+                h, w = img.shape[:2]
+ 
+                out_pixels = (w * scale_factor) * (h * scale_factor)
+                if out_pixels > MAX_OUTPUT_MEGAPIXELS:
+                    adjusted_scale = (MAX_OUTPUT_MEGAPIXELS / (w * h)) ** 0.5
+                    scale_factor = max(1.0, adjusted_scale)
+                    st.warning(f"⚠️ Skala disesuaikan otomatis menjadi {scale_factor:.2f}x demi memori server.")
+ 
+                # 1. Body Slimming & Retouch Pro
+                if body_slim > 0:
+                    src_pts = np.float32([[w / 2, h / 2], [w / 2, h * 0.2], [w / 2, h * 0.8]])
+                    # Simulasi deformasi mesh ringan untuk body/contouring
+                    factor = 1.0 - (body_slim * 0.0008)
+                    resized_body = cv2.resize(img, (int(w), int(h * factor)))
+                    if resized_body.shape[0] < h:
+                        pad_top = (h - resized_body.shape[0]) // 2
+                        pad_bot = h - resized_body.shape[0] - pad_top
+                        img = cv2.copyMakeBorder(resized_body, pad_top, pad_bot, 0, 0, cv2.BORDER_REFLECT)
+                    gc.collect()
+ 
+                if remini_boost > 0:
+                    skin_smooth = cv2.bilateralFilter(img, int(remini_boost / 5) * 2 + 5, 75, 75)
+                    sigma_val = 10 + (remini_boost / 100.0) * 20
+                    img = cv2.detailEnhance(skin_smooth, sigma_s=sigma_val, sigma_r=0.15)
+                    del skin_smooth
+                    gc.collect()
+ 
+                # 2. Layer Blending (Gabung Foto Kedua)
+                if enable_layer and layer_file is not None:
+                    layer_bytes = np.asarray(bytearray(layer_file.read()), dtype=np.uint8)
+                    layer_img = cv2.imdecode(layer_bytes, cv2.IMREAD_COLOR)
+                    if layer_img is not None:
+                        layer_resized = cv2.resize(layer_img, (img.shape[1], img.shape[0]))
+                        if layer_mode == "Normal":
+                            img = cv2.addWeighted(img, 1.0 - layer_opacity, layer_resized, layer_opacity, 0)
+                        elif layer_mode == "Screen":
+                            screen = 255 - ((255 - img) * (255 - layer_resized) / 255.0)
+                            img = cv2.addWeighted(img, 1.0 - layer_opacity, screen.astype("uint8"), layer_opacity, 0)
+                        elif layer_mode == "Multiply":
+                            multiply = (img.astype(float) * layer_resized.astype(float) / 255.0)
+                            img = cv2.addWeighted(img, 1.0 - layer_opacity, multiply.astype("uint8"), layer_opacity, 0)
+                        else:  # Overlay
+                            overlay = np.where(
+                                img < 128,
+                                (2 * img * layer_resized / 255.0),
+                                (255 - 2 * (255 - img) * (255 - layer_resized) / 255.0),
+                            )
+                            img = cv2.addWeighted(img, 1.0 - layer_opacity, overlay.astype("uint8"), layer_opacity, 0)
+                        del layer_img, layer_resized
+                        gc.collect()
+ 
+                if bg_blur > 0:
+                    blur_kernel = int(bg_blur / 5) * 2 + 1
+                    bg_blurred = cv2.GaussianBlur(img, (blur_kernel, blur_kernel), bg_blur / 2.0)
+                    rows, cols = img.shape[:2]
+                    kernel_x = cv2.getGaussianKernel(cols, cols / 2.5)
+                    kernel_y = cv2.getGaussianKernel(rows, rows / 2.5)
+                    mask = kernel_y * kernel_x.T
+                    mask = mask / mask.max()
+                    mask = np.dstack([mask, mask, mask])
+                    img = (img * mask + bg_blurred * (1.0 - mask)).astype("uint8")
+                    del bg_blurred, kernel_x, kernel_y, mask
+                    gc.collect()
+ 
+                if denoise_strength > 0:
+                    img = cv2.fastNlMeansDenoisingColored(img, None, float(denoise_strength), float(denoise_strength), 7, 21)
+ 
+                img_f = img.astype("float32") / 255.0
+                img_f = apply_tone_curve(img_f, curve_preset)
+ 
+                if exposure != 0.0:
+                    img_f = img_f * (2.0 ** exposure)
+                if contrast != 0:
+                    f_contrast = (259 * (contrast + 255)) / (255 * (259 - contrast))
+                    img_f = f_contrast * (img_f - 0.5) + 0.5
+                img_f = np.clip(img_f, 0, 1)
+ 
+                lab = cv2.cvtColor((img_f * 255).astype("uint8"), cv2.COLOR_BGR2LAB).astype("float32")
+                del img_f
+                l_ch, a_ch, b_ch = cv2.split(lab)
+                l_norm = l_ch / 255.0
+ 
+                if highlights != 0:
+                    hl_mask = np.clip((l_norm - 0.5) * 2.0, 0, 1)
+                    l_ch += highlights * 0.3 * hl_mask
+                if shadows != 0:
+                    sh_mask = np.clip((0.5 - l_norm) * 2.0, 0, 1)
+                    l_ch += shadows * 0.3 * sh_mask
+ 
+                # 3. Selective Edit (Control Points Masking)
+                if enable_selective:
+                    rows_s, cols_s = l_ch.shape
+                    cx = int(cols_s * (sel_x_pct / 100.0))
+                    cy = int(rows_s * (sel_y_pct / 100.0))
+                    Y_grid, X_grid = np.ogrid[:rows_s, :cols_s]
+                    dist_from_center = np.sqrt((X_grid - cx) ** 2 + (Y_grid - cy) ** 2)
+                    sel_mask = np.clip(1.0 - (dist_from_center / float(sel_radius)), 0, 1)
+ 
+                    if sel_exposure != 0.0:
+                        l_ch += (sel_exposure * 40.0) * sel_mask
+                    if sel_sat != 0:
+                        a_ch += (sel_sat * 0.5) * sel_mask
+                        b_ch += (sel_sat * 0.5) * sel_mask
+ 
+                l_ch = np.clip(l_ch, 0, 255)
+                a_ch = np.clip(a_ch, 0, 255)
+                b_ch = np.clip(b_ch, 0, 255)
+                lab = cv2.merge([l_ch, a_ch, b_ch])
+                adjusted_bgr = cv2.cvtColor(lab.astype("uint8"), cv2.COLOR_LAB2BGR).astype("float32") / 255.0
+ 
+                # ------------------------------------------------------------------
+                # 🚀 UPSCALE FINAL — sekarang lewat Advanced Resolution Engine
+                # (Real-ESRGAN -> OpenCV DNN Super-Res -> Classical Multi-Pass),
+                # bukan lagi cv2.resize polos. Target ukuran akhir tetap menghormati
+                # scale_factor yang sudah disesuaikan otomatis demi memori server.
+                # ------------------------------------------------------------------
+                new_w = max(1, int(w * scale_factor))
+                new_h = max(1, int(h * scale_factor))
+                pre_upscale_img = (adjusted_bgr * 255).astype("uint8")
+                upscaled = apply_advanced_upscale_to_size(pre_upscale_img, new_w, new_h, method="auto")
+ 
+                st.session_state["processed_img"] = cv2.cvtColor(upscaled, cv2.COLOR_BGR2RGB)
+                gc.collect()
+ 
+        except Exception as e:
+            st.error("❌ Opss..Terjadi kesalahan saat memproses gambar.")
+            with st.expander("Detail teknis error"):
+                st.exception(e)
+            st.session_state.pop("processed_img", None)
+ 
+    with col_res:
+        st.subheader("🎇 Hasil Ai-Upscaller & Pro Suite")
+        if "processed_img" in st.session_state:
+            st.image(st.session_state["processed_img"], use_container_width=True)
+ 
+            result_pil = Image.fromarray(st.session_state["processed_img"])
+            buf = io.BytesIO()
+            result_pil.save(buf, format="JPEG", quality=95)
+            byte_im = buf.getvalue()
+ 
+            st.download_button(
+                label="📥 Unduh Foto Hasil Amper.Ai Style (JPEG)",
+                data=byte_im,
+                file_name="amper_ai_pro_style.jpg",
+                mime="image/jpeg",
+                use_container_width=True,
+            )
 else:
-  st.markdown("---")
+    st.markdown("---")
+ 
   
   # --- BANNER KATA-KATA MOTIVASI FOTOGRAFI ---
   st.markdown("""
