@@ -1,11 +1,16 @@
 import base64
 import gc
 import io
+import os
+import logging
 import cv2
 import numpy as np
 from PIL import Image
 import streamlit as st
 import streamlit.components.v1 as components
+
+logger = logging.getLogger("ampera_upscaler")
+logging.basicConfig(level=logging.INFO)
 
 # Untuk uji coba pertama: sistem login & kredit dimatikan dulu.
 REQUIRE_LOGIN = False
@@ -27,6 +32,11 @@ BG_PATH = "bg_amper.jpg"
 
 MAX_INPUT_DIM = 3000
 MAX_OUTPUT_MEGAPIXELS = 35_000_000
+
+# Folder tempat file model AI upscaler (opsional) diletakkan.
+# Kalau folder/file ini tidak ada, aplikasi tetap jalan normal — otomatis
+# turun ke mesin upscaler klasik (Tier 3) yang tidak butuh model apapun.
+MODEL_DIR = os.environ.get("AMPERA_MODEL_DIR", "models")
 
 
 def get_base64_of_bin_file(path):
@@ -163,6 +173,8 @@ def apply_tone_curve(img_f, curve_preset):
     elif curve_preset == "Bright Pop (Terang & Segar)":
         return np.power(img_f, 0.85)
     return img_f
+
+
 def _pil_to_cv2(img: Image.Image) -> np.ndarray:
     arr = np.array(img.convert("RGB"))
     return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
@@ -288,10 +300,233 @@ def _apply_vignette(img, strength):
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
-def _apply_upscale(img, upscale_choice):
+# ==================================================================================
+# 🚀 ADVANCED RESOLUTION ENGINE — pengganti _apply_upscale() lama yang cuma
+# cv2.resize biasa. Sekarang bertingkat 3 (otomatis fallback ke bawah kalau
+# tingkat di atasnya tidak tersedia di server):
+#
+#   TIER 1 — Real-ESRGAN (AI generative super-resolution, kualitas setara
+#            Remini/Bigjpg/Topaz Gigapixel). Aktif kalau `realesrgan` +
+#            `basicsr` + `torch` terpasang DAN file model .pth ada di MODEL_DIR.
+#   TIER 2 — OpenCV DNN Super-Res (EDSR/FSRCNN). Aktif kalau
+#            `opencv-contrib-python` terpasang DAN file model .pb ada di MODEL_DIR.
+#   TIER 3 — Classical Multi-Pass Upscaler. SELALU tersedia (tanpa model
+#            apapun): iterative back-projection + detail synthesis +
+#            edge-aware denoise + adaptive unsharp mask. Jauh lebih tajam &
+#            bersih dari cv2.resize polos.
+#
+# Cara mengaktifkan Tier 1/2 (opsional, untuk kualitas maksimal):
+#   1. Buat folder "models/" sejajar app.py di repo.
+#   2. Unduh model dari rilis resmi:
+#        - xinntao/Real-ESRGAN (GitHub releases) -> RealESRGAN_x4plus.pth
+#        - opencv/opencv_contrib, modules/dnn_superres -> EDSR_x4.pb / FSRCNN_x4.pb
+#      lalu masukkan ke folder "models/".
+#   3. Tambahkan ke requirements.txt sesuai tier yang diinginkan:
+#        opencv-contrib-python
+#        # opsional, untuk Tier 1 (berat, butuh RAM lebih besar):
+#        # torch
+#        # torchvision
+#        # basicsr
+#        # realesrgan
+#   Kalau langkah di atas tidak dilakukan, aplikasi TETAP berjalan normal
+#   memakai Tier 3 — jadi aman dipasang langsung tanpa setup tambahan.
+# ==================================================================================
+
+@st.cache_resource(show_spinner=False)
+def _load_realesrgan(model_variant: str = "general"):
+    """Muat model Real-ESRGAN sekali saja (di-cache Streamlit). None kalau tidak tersedia."""
+    try:
+        from basicsr.archs.rrdbnet_arch import RRDBNet
+        from realesrgan import RealESRGANer
+    except ImportError:
+        return None
+
+    weight_name = (
+        "RealESRGAN_x4plus_anime_6B.pth" if model_variant == "anime"
+        else "RealESRGAN_x4plus.pth"
+    )
+    weight_path = os.path.join(MODEL_DIR, weight_name)
+    if not os.path.isfile(weight_path):
+        return None
+
+    try:
+        num_block = 6 if model_variant == "anime" else 23
+        model = RRDBNet(
+            num_in_ch=3, num_out_ch=3, num_feat=64,
+            num_block=num_block, num_grow_ch=32, scale=4,
+        )
+        upsampler = RealESRGANer(
+            scale=4,
+            model_path=weight_path,
+            model=model,
+            tile=256,       # tiling agar aman di RAM/VRAM terbatas (server gratisan)
+            tile_pad=10,
+            pre_pad=0,
+            half=False,     # set True kalau GPU mendukung FP16 (lebih cepat)
+        )
+        logger.info("[Tier1] Real-ESRGAN berhasil dimuat.")
+        return upsampler
+    except Exception as e:
+        logger.warning(f"[Tier1] Gagal memuat Real-ESRGAN: {e}")
+        return None
+
+
+def _upscale_realesrgan(img_bgr, scale, model_variant="general"):
+    upsampler = _load_realesrgan(model_variant)
+    if upsampler is None:
+        return None
+    try:
+        output, _ = upsampler.enhance(img_bgr, outscale=scale)
+        return output
+    except Exception as e:
+        logger.warning(f"[Tier1] Real-ESRGAN gagal saat proses: {e} — turun ke Tier 2.")
+        return None
+
+
+@st.cache_resource(show_spinner=False)
+def _load_dnn_superres(scale: int, backend: str = "edsr"):
+    if not hasattr(cv2, "dnn_superres"):
+        return None
+
+    scale = scale if scale in (2, 3, 4) else 4
+    backend = backend.lower()
+    model_filename = {
+        "edsr": f"EDSR_x{scale}.pb",
+        "fsrcnn": f"FSRCNN_x{scale}.pb",
+        "espcn": f"ESPCN_x{scale}.pb",
+    }.get(backend, f"EDSR_x{scale}.pb")
+
+    model_path = os.path.join(MODEL_DIR, model_filename)
+    if not os.path.isfile(model_path):
+        return None
+
+    try:
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        sr.readModel(model_path)
+        sr.setModel(backend, scale)
+        logger.info(f"[Tier2] Model {backend.upper()} x{scale} berhasil dimuat.")
+        return sr
+    except Exception as e:
+        logger.warning(f"[Tier2] Gagal memuat model dnn_superres: {e}")
+        return None
+
+
+def _upscale_dnn_superres(img_bgr, scale, backend="edsr"):
+    sr = _load_dnn_superres(scale, backend)
+    if sr is None:
+        return None
+    try:
+        return sr.upsample(img_bgr)
+    except Exception as e:
+        logger.warning(f"[Tier2] dnn_superres gagal saat proses: {e} — turun ke Tier 3.")
+        return None
+
+
+def _pyramid_upscale(img: np.ndarray, target_scale: int) -> np.ndarray:
+    """Upscale bertahap 2x per langkah (mengurangi artefak blocky dibanding loncat langsung 4x)."""
+    result = img.copy()
+    steps = 1 if target_scale <= 2 else 2
+    for _ in range(steps):
+        h, w = result.shape[:2]
+        result = cv2.resize(result, (w * 2, h * 2), interpolation=cv2.INTER_LANCZOS4)
+    return result
+
+
+def _iterative_back_projection(low_res: np.ndarray, high_res: np.ndarray,
+                                iterations: int = 3, strength: float = 0.6) -> np.ndarray:
+    """Mengoreksi high_res agar konsisten dengan detail asli low_res (teknik Irani & Peleg)."""
+    h_hi, w_hi = high_res.shape[:2]
+    h_lo, w_lo = low_res.shape[:2]
+    result = high_res.astype(np.float32)
+    low_res_f = low_res.astype(np.float32)
+
+    for _ in range(iterations):
+        downsampled = cv2.resize(result, (w_lo, h_lo), interpolation=cv2.INTER_AREA)
+        error = low_res_f - downsampled
+        error_upsampled = cv2.resize(error, (w_hi, h_hi), interpolation=cv2.INTER_LANCZOS4)
+        result = result + strength * error_upsampled
+        result = np.clip(result, 0, 255)
+
+    return result.astype(np.uint8)
+
+
+def _synthesize_high_frequency_detail(original: np.ndarray, upscaled: np.ndarray,
+                                       detail_strength: float = 0.35) -> np.ndarray:
+    """Ambil tekstur halus dari citra asli dan suntikkan kembali ke hasil upscale."""
+    blurred_original = cv2.GaussianBlur(original, (0, 0), 1.2)
+    detail_layer = cv2.subtract(original, blurred_original)
+
+    h_up, w_up = upscaled.shape[:2]
+    detail_layer_resized = cv2.resize(detail_layer, (w_up, h_up), interpolation=cv2.INTER_LANCZOS4)
+
+    result = cv2.addWeighted(upscaled, 1.0, detail_layer_resized, detail_strength, 0)
+    return np.clip(result, 0, 255).astype(np.uint8)
+
+
+def _edge_aware_denoise(img: np.ndarray, strength: float) -> np.ndarray:
+    """Bilateral filter — menghaluskan noise sambil menjaga tepi tetap tajam."""
+    if strength <= 0:
+        return img
+    d = 7
+    sigma_color = 25 + strength * 0.5
+    sigma_space = 25 + strength * 0.5
+    return cv2.bilateralFilter(img, d, sigma_color, sigma_space)
+
+
+def _adaptive_unsharp_mask(img: np.ndarray, amount: float = 0.6, radius: float = 1.5,
+                            threshold: int = 2) -> np.ndarray:
+    """Unsharp mask dengan threshold — hanya menajamkan area dengan kontras lokal signifikan."""
+    img_f = img.astype(np.float32)
+    blurred = cv2.GaussianBlur(img_f, (0, 0), radius)
+    diff = img_f - blurred
+
+    if threshold > 0:
+        mask = (np.abs(diff).max(axis=2, keepdims=True) > threshold).astype(np.float32)
+        diff = diff * mask
+
+    sharpened = img_f + amount * diff
+    return np.clip(sharpened, 0, 255).astype(np.uint8)
+
+
+def _upscale_classical(img_bgr: np.ndarray, scale: int, denoise_strength: float = 8.0) -> np.ndarray:
+    scale = 4 if scale >= 4 else 2
+
+    upscaled = _pyramid_upscale(img_bgr, scale)
+    upscaled = _iterative_back_projection(img_bgr, upscaled, iterations=3, strength=0.6)
+    upscaled = _synthesize_high_frequency_detail(img_bgr, upscaled, detail_strength=0.35)
+    upscaled = _edge_aware_denoise(upscaled, denoise_strength)
+    upscaled = _adaptive_unsharp_mask(upscaled, amount=0.5, radius=1.3, threshold=2)
+
+    return upscaled
+
+
+def apply_advanced_upscale(img_bgr: np.ndarray, upscale_choice: str,
+                            method: str = "auto", model_variant: str = "general") -> np.ndarray:
+    """
+    Mesin upscaler bertingkat. method="auto" mencoba Tier 1 -> Tier 2 -> Tier 3
+    secara otomatis dan berhenti di tingkat pertama yang berhasil.
+    """
     scale = 4 if "4x" in upscale_choice else 2
-    h, w = img.shape[:2]
-    return cv2.resize(img, (w * scale, h * scale), interpolation=cv2.INTER_LANCZOS4)
+    original = img_bgr.copy()
+
+    tiers_to_try = ["realesrgan", "dnn", "classical"] if method == "auto" else [method, "classical"]
+
+    result = None
+    used_tier = None
+    for tier in tiers_to_try:
+        if tier == "realesrgan":
+            result = _upscale_realesrgan(original, scale, model_variant)
+        elif tier == "dnn":
+            result = _upscale_dnn_superres(original, scale, backend="edsr")
+        elif tier == "classical":
+            result = _upscale_classical(original, scale)
+
+        if result is not None:
+            used_tier = tier
+            break
+
+    logger.info(f"[AmperaUpscaler] Upscale x{scale} selesai memakai tier: {used_tier}")
+    return result
 
 
 def apply_all_edits(pil_image: Image.Image, params: dict) -> Image.Image:
@@ -324,7 +559,10 @@ def apply_all_edits(pil_image: Image.Image, params: dict) -> Image.Image:
     img = _apply_vignette(img, params.get("vignette", 0))
 
     if params.get("upscale_choice"):
-        img = _apply_upscale(img, params["upscale_choice"])
+        # Tier otomatis: Real-ESRGAN -> OpenCV DNN Super-Res -> Classical Multi-Pass.
+        # Kalau server sering timeout/OOM karena Tier 1 terlalu berat,
+        # ganti method="auto" jadi method="dnn" (Tier 2 saja, lebih ringan).
+        img = apply_advanced_upscale(img, params["upscale_choice"], method="auto")
 
     return _cv2_to_pil(img)
 
@@ -369,7 +607,7 @@ with header_col2:
     )
 
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Utama Kamu Disini... (JPG, JPEG, PNG)", 
+    "📂 Unggah File Foto Utama Kamu Disini... (JPG, JPEG, PNG)",
     type=["jpg", "jpeg", "png"],
     key="main_photo_uploader"
 )
@@ -569,6 +807,56 @@ with st.sidebar:
         "Resolution Upscaling", ["2x (HD 2K)", "4x (Ultra HD 4K)"], index=0, key="upscale_choice"
     )
     process_btn = st.button("⬆️ Terapkan & Render Instan")
+
+# ==========================================================
+# PROSES & TAMPILKAN HASIL
+# ==========================================================
+if img is not None:
+    pil_input = _cv2_to_pil(img)
+
+    current_params = {
+        "exposure": exposure, "contrast": contrast, "highlights": highlights, "shadows": shadows,
+        "whites": whites, "blacks": blacks, "temp": temp, "tint": tint,
+        "vibrance": vibrance, "saturation": saturation, "clarity": clarity, "dehaze": dehaze,
+        "sharpen": sharpen, "sharpen_radius": sharpen_radius, "vignette": vignette,
+        "noise_reduction": denoise_strength, "noise_reduction_color": denoise_color,
+        "smart_enhance": smart_enhance, "smart_enhance_radius": smart_enhance_radius,
+        "highlight_recovery": highlight_recovery, "shadow_lift": shadow_lift,
+        "upscale_choice": upscale_choice,
+    }
+
+    preview_col, result_col = st.columns(2)
+    with preview_col:
+        st.markdown("#### 📷 Foto Asli")
+        st.image(pil_input, use_container_width=True)
+
+    if process_btn:
+        with st.spinner("✨ Memproses foto dengan Advanced Resolution Engine..."):
+            try:
+                processed_pil = apply_all_edits(pil_input, current_params)
+                st.session_state["processed_img"] = processed_pil
+            except Exception as e:
+                st.error(f"❌ Gagal memproses foto: {e}")
+        gc.collect()
+
+    with result_col:
+        st.markdown("#### ✨ Hasil Edit")
+        result_img = st.session_state.get("processed_img")
+        if result_img is not None:
+            st.image(result_img, use_container_width=True)
+
+            buf = io.BytesIO()
+            result_img.save(buf, format="PNG")
+            st.download_button(
+                "⬇️ Unduh Hasil (PNG)",
+                data=buf.getvalue(),
+                file_name="ampera_ai_result.png",
+                mime="image/png",
+            )
+        else:
+            st.info("Klik '⬆️ Terapkan & Render Instan' untuk melihat hasilnya di sini.")
+else:
+    st.info("👆 Unggah foto di atas untuk mulai mengedit dengan Ampera-AI.")
 
 with st.sidebar:
     st.markdown("---")
