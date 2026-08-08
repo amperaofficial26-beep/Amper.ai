@@ -57,7 +57,7 @@ def _cv2_to_pil(cv2_img):
     rgb_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
     return Image.fromarray(rgb_img)
     
-    def _pil_to_cv2(pil_img):
+def _pil_to_cv2(pil_img):
     """
     Mengubah gambar PIL (RGB) menjadi format OpenCV (BGR).
     """
