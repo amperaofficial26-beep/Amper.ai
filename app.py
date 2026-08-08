@@ -1092,8 +1092,9 @@ if img is not None:
         if result_img is not None:
             st.image(result_img, use_container_width=True)
 
-            buf = io.BytesIO()
-            result_img.save(buf, format="PNG")
+            # Gunakan fungsi konversi yang sudah ada
+            result_img_pil = _cv2_to_pil(result_img) if isinstance(result_img, np.ndarray) else result_img
+            result_img_pil.save(buf, format="PNG")
             st.download_button(
                 "⬇️ Unduh Hasil (PNG)",
                 data=buf.getvalue(),
