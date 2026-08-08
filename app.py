@@ -912,7 +912,7 @@ if uploaded_file is not None:
 else:
     st.info("Silakan unggah gambar terlebih dahulu.")
     st.stop()
-        st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
+    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
   
 # ==========================================================
