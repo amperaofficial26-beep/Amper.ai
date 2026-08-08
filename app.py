@@ -914,9 +914,7 @@ if uploaded_file is not None:
     if img is not None:
         st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), caption="foto asli", use_container_width=True)
 else:
-    st.info("📤 Silakan unggah gambar terlebih dahulu.")
-    # Jangan panggil st.stop() di sini agar aplikasi tetap berjalan
-    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
+    st.info("ℹ️ Foto asli akan diturunkan sementara ke resolusi aman jikalau melebihi batas yang diizinkan server.")
   
 # ==========================================================
 # SIDEBAR KONTROL
