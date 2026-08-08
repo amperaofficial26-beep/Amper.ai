@@ -56,8 +56,8 @@ def _cv2_to_pil(cv2_img):
     # OpenCV pakai BGR, PIL pakai RGB
     rgb_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
     return Image.fromarray(rgb_img)
-
-def _pil_to_cv2(pil_img):
+    
+    def _pil_to_cv2(pil_img):
     """
     Mengubah gambar PIL (RGB) menjadi format OpenCV (BGR).
     """
@@ -872,7 +872,7 @@ with header_col2:
     )
 
 uploaded_file = st.file_uploader(
-    "📂 Unggah File Foto Utama Kamu Disini... (JPG, JPEG, PNG)",
+    "Unggah File Foto Utama Kamu Disini... (JPG, JPEG, PNG)",
     type=["jpg", "jpeg", "png"],
     key="main_photo_uploader"
 )
@@ -881,19 +881,22 @@ img = None
 auto_suggestions = None
 
 if uploaded_file is not None:
+    # Cek apakah file baru (untuk reset state)
     file_signature = f"{uploaded_file.name}_{uploaded_file.size}"
     if st.session_state.get("last_file_signature") != file_signature:
         st.session_state["last_file_signature"] = file_signature
         st.session_state.pop("processed_img", None)
         st.session_state.pop("auto_applied_for", None)
 
+    # Baca file bytes
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
     if img is None:
-        st.error("❌ Oppss..Gagal membaca file gambar. Coba unggah file lain.")
+        st.error("❌ Oppss.. Gagal membaca file gambar. Coba unggah file lain.")
         st.stop()
 
+    # Resize jika terlalu besar, tapi jika tidak, tetap pakai asli
     h0, w0 = img.shape[:2]
     if max(h0, w0) > MAX_INPUT_DIM:
         input_scale = MAX_INPUT_DIM / max(h0, w0)
@@ -902,6 +905,13 @@ if uploaded_file is not None:
             (int(w0 * input_scale), int(h0 * input_scale)),
             interpolation=cv2.INTER_AREA,
         )
+    # else: tidak perlu resize, img tetap seperti aslinya
+
+    # Tampilkan preview (opsional)
+    st.image(img, caption="Foto Asli", use_column_width=True)
+else:
+    st.info("Silakan unggah gambar terlebih dahulu.")
+    st.stop()
         st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
   
