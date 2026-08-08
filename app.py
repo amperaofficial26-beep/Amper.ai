@@ -910,13 +910,12 @@ if uploaded_file is not None:
             interpolation=cv2.INTER_AREA,
         )
     
-    # Tampilkan preview HANYA jika img tidak None
+    if img is not None:
     st.image(img, caption="Foto Asli", use_column_width=True)
-
 else:
     st.info("📤 Silakan unggah gambar terlebih dahulu.")
     # Jangan panggil st.stop() di sini agar aplikasi tetap berjalan
-    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
+      st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
   
 # ==========================================================
