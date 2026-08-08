@@ -1356,24 +1356,6 @@ const YukiBrain = (function () {
         followUp: false
       };
     }
-
-    // ---------------------------------------------------------
-    // 8. FALLBACK KE AIRA (skor terlalu rendah / tidak ketemu)
-    // ---------------------------------------------------------
-    lastMatchedItem = null;
-    const fallbackText =
-      `Gomen ne~ Yuki cuma fokus membantu di <b>AMPER.AI Upscaler</b> saja. 🌸<br><br>` +
-      `Pertanyaan kamu sepertinya di luar jangkauan Yuki. Coba tanyakan ke <b>Aira</b> ya!<br>` +
-      `<a href="https://amperaai-aira-chatbot.streamlit.app/" target="_blank" style="` +
-      `display: inline-block; margin-top: 8px; padding: 6px 12px; ` +
-      `background: #ff7aa8; color: white; border-radius: 6px; ` +
-      `text-decoration: none; font-weight: bold; font-size: 0.8rem; ` +
-      `box-shadow: 0 2px 6px rgba(255,122,168,0.4);">` +
-      `💬 Tanya Aira Sekarang</a>`;
-
-    return { text: fallbackText, matched: false, confidence: bestScore, followUp: false };
-  }
-
   function resetContext() {
     lastMatchedItem = null;
     history = [];
