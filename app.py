@@ -912,7 +912,7 @@ if uploaded_file is not None:
         )
     
     if img is not None:
-        st.image(img, caption="Foto Asli", use_container_width=True)
+        st.image(cv.2cvtColor(img, cv2.COLOR_BGR2RGB), caption="foto asli", use_container_width=true)
 else:
     st.info("📤 Silakan unggah gambar terlebih dahulu.")
     # Jangan panggil st.stop() di sini agar aplikasi tetap berjalan
@@ -7154,8 +7154,8 @@ if uploaded_file is not None and img is not None:
                 if denoise_strength > 0:
                     img = cv2.fastNlMeansDenoisingColored(img, None, float(denoise_strength), float(denoise_strength), 7, 21)
  
-                img_f = img.astype("float32") / 255.0
-                img_f = apply_tone_curve(img_f, curve_preset)
+                img_toned = apply_tone_curve(img, curve_preset)      # kirim img asli (0-255), bukan img_f
+                img_f = img_toned.astype("float32") / 255.0           # baru normalisasi setelah itu
  
                 if exposure != 0.0:
                     img_f = img_f * (2.0 ** exposure)
