@@ -806,31 +806,32 @@ def apply_all_edits(pil_image: Image.Image, params: dict) -> Image.Image:
         "noise_reduction": 0, "noise_reduction_color": 0,
         "smart_enhance": 0, "smart_enhance_radius": 3,
         "highlight_recovery": 0, "shadow_lift": 0,
-        "upscale_choice": "2x (HD 2K)",
+        "upscale_choice": "2x (HD 2K "curve_preset": 0,
     }
     """
     img = _pil_to_cv2(pil_image)
+    editor = AdvancedImageEditor(img)
 
-    img = _apply_denoise(img, params.get("noise_reduction", 0), params.get("noise_reduction_color", 0))
-    img = _apply_exposure_contrast(img, params.get("exposure", 0.0), params.get("contrast", 0),
-                                    params.get("whites", 0), params.get("blacks", 0))
-    img = _apply_highlights_shadows(img, params.get("highlights", 0), params.get("shadows", 0))
-    img = _apply_shadow_lift_highlight_recovery(img, params.get("shadow_lift", 0), params.get("highlight_recovery", 0))
-    img = _apply_temp_tint(img, params.get("temp", 0), params.get("tint", 0))
-    img = _apply_vibrance_saturation(img, params.get("vibrance", 0), params.get("saturation", 0))
-    img = _apply_clarity_dehaze(img, params.get("clarity", 0), params.get("dehaze", 0))
-    img = _apply_smart_detail_enhance(img, params.get("smart_enhance", 0), params.get("smart_enhance_radius", 3))
-    img = _apply_sharpen(img, params.get("sharpen", 0), params.get("sharpen_radius", 2))
-    img = _apply_vignette(img, params.get("vignette", 0))
+    # Terapkan semua operasi dengan metode kelas
+    editor.apply_denoise(params.get("noise_reduction", 0))
+    editor.apply_exposure_contrast_lut(params.get("exposure", 0.0), params.get("contrast", 0))
+    editor.apply_highlights_shadows(params.get("highlights", 0), params.get("shadows", 0))
+    # Untuk shadow_lift dan highlight_recovery (tidak ada di kelas), Anda bisa abaikan atau tambahkan sendiri
+    editor.apply_temp_tint(params.get("temp", 0), params.get("tint", 0))
+    editor.apply_vibrance_saturation(params.get("vibrance", 0), params.get("saturation", 0))
+    editor.apply_clarity_dehaze(params.get("clarity", 0), params.get("dehaze", 0))
+    editor.apply_sharpen(params.get("sharpen", 0), params.get("sharpen_radius", 1))
+    editor.apply_vignette(params.get("vignette", 0))
+    editor.apply_current_params(params.get("current", 0))
+    # Jika ingin pakai smart_enhance, Anda bisa tambahkan metode baru di kelas atau lewati
 
+    result = editor.get_result()
+
+    # Upscale jika diperlukan
     if params.get("upscale_choice"):
-        # Tier otomatis: Real-ESRGAN -> OpenCV DNN Super-Res -> Classical Multi-Pass.
-        # Kalau server sering timeout/OOM karena Tier 1 terlalu berat,
-        # ganti method="auto" jadi method="dnn" (Tier 2 saja, lebih ringan).
-        img = apply_advanced_upscale(img, params["upscale_choice"], method="auto")
+        result = apply_advanced_upscale(result, params["upscale_choice"], method="auto")
 
-    return _cv2_to_pil(img)
-
+    return _cv2_to_pil(result)
 
 # Inisialisasi Default State jika belum ada
 default_state = {
@@ -915,8 +916,7 @@ if uploaded_file is not None:
 else:
     st.info("📤 Silakan unggah gambar terlebih dahulu.")
     # Jangan panggil st.stop() di sini agar aplikasi tetap berjalan
-      st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
-
+    st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
   
 # ==========================================================
 # SIDEBAR KONTROL
@@ -1116,17 +1116,18 @@ if img is not None:
         st.markdown("#### ✨ Hasil Edit")
         result_img = st.session_state.get("processed_img")
         if result_img is not None:
-            st.image(result_img, use_container_width=True)
+          st.image(result_img, use_container_width=True)
 
-            # Gunakan fungsi konversi yang sudah ada
-            result_img_pil = _cv2_to_pil(result_img) if isinstance(result_img, np.ndarray) else result_img
-            result_img_pil.save(buf, format="PNG")
-            st.download_button(
-                "⬇️ Unduh Hasil (PNG)",
-                data=buf.getvalue(),
-                file_name="ampera_ai_result.png",
-                mime="image/png",
-            )
+          # Buat buffer baru
+          buf = io.BytesIO()
+          result_img_pil = _cv2_to_pil(result_img) if isinstance(result_img, np.ndarray) else result_img
+          result_img_pil.save(buf, format="PNG")
+          st.download_button(
+              "⬇️ Unduh Hasil (PNG)",
+              data=buf.getvalue(),
+              file_name="ampera_ai_result.png",
+              mime="image/png",
+          )
         else:
             st.info("Klik '⬆️ Terapkan & Render Instan' untuk melihat hasilnya di sini.")
 else:
