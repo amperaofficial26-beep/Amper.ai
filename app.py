@@ -889,14 +889,18 @@ if uploaded_file is not None:
         st.session_state.pop("auto_applied_for", None)
 
     # Baca file bytes
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    try:
+        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    except Exception as e:
+        st.error(f"❌ Gagal membaca file: {e}")
+        st.stop()
 
     if img is None:
         st.error("❌ Oppss.. Gagal membaca file gambar. Coba unggah file lain.")
         st.stop()
 
-    # Resize jika terlalu besar, tapi jika tidak, tetap pakai asli
+    # Resize jika terlalu besar
     h0, w0 = img.shape[:2]
     if max(h0, w0) > MAX_INPUT_DIM:
         input_scale = MAX_INPUT_DIM / max(h0, w0)
@@ -905,13 +909,13 @@ if uploaded_file is not None:
             (int(w0 * input_scale), int(h0 * input_scale)),
             interpolation=cv2.INTER_AREA,
         )
-    # else: tidak perlu resize, img tetap seperti aslinya
-
-    # Tampilkan preview (opsional)
+    
+    # Tampilkan preview HANYA jika img tidak None
     st.image(img, caption="Foto Asli", use_column_width=True)
+
 else:
-    st.info("Silakan unggah gambar terlebih dahulu.")
-    st.stop()
+    st.info("📤 Silakan unggah gambar terlebih dahulu.")
+    # Jangan panggil st.stop() di sini agar aplikasi tetap berjalan
     st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
   
