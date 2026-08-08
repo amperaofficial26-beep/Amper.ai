@@ -45,6 +45,7 @@ MODEL_DIR = os.environ.get("AMPERA_MODEL_DIR", "models")
 def get_base64_of_bin_file(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
+buf = io.BytesIO()
        
 def _cv2_to_pil(cv2_img):
     """
