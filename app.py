@@ -55,6 +55,46 @@ def _cv2_to_pil(cv2_img):
     # OpenCV pakai BGR, PIL pakai RGB
     rgb_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
     return Image.fromarray(rgb_img)
+    
+def apply_tone_curve(img, curve_preset):
+    """
+    Menerapkan kurva nada (gamma correction / tone curve) pada gambar.
+    
+    Args:
+        img (np.ndarray): Gambar dalam format BGR (OpenCV) atau RGB.
+        curve_preset (str / dict): Nama preset atau dictionary titik kurva.
+    
+    Returns:
+        np.ndarray: Gambar yang sudah diproses.
+    """
+    if img is None:
+        return None
+
+    # Baca nilai gamma berdasarkan preset (nama string)
+    if isinstance(curve_preset, str):
+        presets = {
+            "linear": 1.0,        # Tidak berubah
+            "bright": 0.7,        # Lebih terang
+            "dark": 1.5,          # Lebih gelap
+            "high_contrast": 0.6, # Kontras tinggi
+            "vibrant": 0.75,      # Cerah dan hidup
+            "soft": 1.2,          # Lembut / redup
+            "dramatic": 0.5,      # Dramatis
+        }
+        gamma = presets.get(curve_preset, 1.0)
+    else:
+        # Jika curve_preset berupa dictionary/angka, fallback ke 1.0
+        gamma = 1.0
+
+    # Ubah ke float 0.0 - 1.0 agar perhitungan gamma tepat
+    img_float = img.astype(np.float32) / 255.0
+    
+    # Terapkan gamma correction: output = input ^ gamma
+    # (gamma < 1 = terang, gamma > 1 = gelap)
+    img_corrected = np.power(np.clip(img_float, 0, 1), gamma)
+    
+    # Kembalikan ke format uint8 (0-255) seperti OpenCV biasa
+    return (img_corrected * 255).astype(np.uint8)
 
 
 def set_background(image_path):
