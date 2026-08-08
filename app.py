@@ -1356,6 +1356,17 @@ const YukiBrain = (function () {
         followUp: false
       };
     }
+
+    // ---------------------------------------------------------
+// 8. FALLBACK (skor terlalu rendah / tidak ketemu)
+// ---------------------------------------------------------
+lastMatchedItem = null;
+const fallbackText =
+  `🌸 Maaf ya~ Yuki hanya bisa membantu pertanyaan seputar <b>AMPER.AI Upscaler</b> saja.<br><br>` +
+  `Coba tanyakan ulang dengan kata kunci yang lebih jelas, atau hubungi tim support kami ya!`;
+    return { text: fallbackText, matched: false, confidence: bestScore, followUp: false };
+  }
+
   function resetContext() {
     lastMatchedItem = null;
     history = [];
