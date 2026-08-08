@@ -96,6 +96,56 @@ def apply_tone_curve(img, curve_preset):
     # Kembalikan ke format uint8 (0-255) seperti OpenCV biasa
     return (img_corrected * 255).astype(np.uint8)
 
+def apply_advanced_upscale_to_size(img, target_w, target_h, method="auto"):
+    """
+    Memperbesar gambar ke ukuran target (target_w x target_h) 
+    dengan berbagai metode interpolasi canggih.
+
+    Args:
+        img (np.ndarray): Gambar input dalam format BGR (OpenCV).
+        target_w (int): Lebar target (dalam pixel).
+        target_h (int): Tinggi target (dalam pixel).
+        method (str): Metode upscaling. Opsi: "auto", "lanczos", "cubic", "area", "nearest".
+
+    Returns:
+        np.ndarray: Gambar yang sudah diperbesar ke ukuran target.
+    """
+    if img is None:
+        return None
+    
+    # Pilih metode interpolasi OpenCV berdasarkan parameter 'method'
+    if method == "auto":
+        # "auto" akan memilih interpolasi terbaik untuk pembesaran:
+        # Jika ukuran membesar -> pakai INTER_CUBIC (kualitas tinggi)
+        # Jika ukuran mengecil -> pakai INTER_AREA (lebih tajam)
+        h, w = img.shape[:2]
+        if target_w > w and target_h > h:
+            # Pembesaran (Upscale)
+            interpolation = cv2.INTER_CUBIC
+        else:
+            # Pengecilan (Downscale)
+            interpolation = cv2.INTER_AREA
+    elif method == "lanczos":
+        # Metode kualitas sangat tinggi, cocok untuk upscale besar
+        interpolation = cv2.INTER_LANCZOS4
+    elif method == "cubic":
+        # Metode standar kualitas tinggi
+        interpolation = cv2.INTER_CUBIC
+    elif method == "area":
+        # Terbaik untuk mengecilkan gambar
+        interpolation = cv2.INTER_AREA
+    elif method == "nearest":
+        # Tercepat, tapi hasilnya berpiksel (jarang dipakai untuk upscale)
+        interpolation = cv2.INTER_NEAREST
+    else:
+        # Default fallback ke cubic
+        interpolation = cv2.INTER_CUBIC
+
+    # Lakukan resize ke ukuran target (lebar, tinggi)
+    # cv2.resize menggunakan format (width, height)
+    upscaled_img = cv2.resize(img, (target_w, target_h), interpolation=interpolation)
+    
+    return upscaled_img
 
 def set_background(image_path):
     try:
