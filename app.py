@@ -912,7 +912,7 @@ if uploaded_file is not None:
         )
     
     if img is not None:
-        st.image(cv.2cvtColor(img, cv2.COLOR_BGR2RGB), caption="foto asli", use_container_width=true)
+        st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), caption="foto asli", use_container_width=true)
 else:
     st.info("📤 Silakan unggah gambar terlebih dahulu.")
     # Jangan panggil st.stop() di sini agar aplikasi tetap berjalan
