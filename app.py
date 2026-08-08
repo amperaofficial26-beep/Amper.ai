@@ -912,7 +912,7 @@ if uploaded_file is not None:
         )
     
     if img is not None:
-    st.image(img, caption="Foto Asli", use_container_width=True)
+        st.image(img, caption="Foto Asli", use_container_width=True)
 else:
     st.info("📤 Silakan unggah gambar terlebih dahulu.")
     # Jangan panggil st.stop() di sini agar aplikasi tetap berjalan
