@@ -791,11 +791,7 @@ if uploaded_file is not None:
         )
         st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
-    if st.session_state.get("auto_applied_for") != file_signature:
-        for slider_key, val in auto_suggestions.items():
-            st.session_state[slider_key] = val
-        st.session_state["auto_applied_for"] = file_signature
-
+  
 # ==========================================================
 # SIDEBAR KONTROL
 # ==========================================================
@@ -916,13 +912,14 @@ with st.sidebar:
 
     st.markdown("---")
 
+      '''
     if auto_suggestions is not None and capcut_preset == "Normal / Manual":
         if st.button("🪄 Auto Enhance Standar"):
             for slider_key, val in auto_suggestions.items():
                 st.session_state[slider_key] = val
             st.rerun()
         st.markdown("---")
-
+      '''
     st.markdown("### 1. Light & Exposure")
     exposure = st.slider("Exposure", -2.0, 2.0, key="exposure", step=0.05)
     contrast = st.slider("Contrast", -50, 50, key="contrast", step=1)
