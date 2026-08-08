@@ -791,8 +791,6 @@ if uploaded_file is not None:
         )
         st.info("ℹ️ Foto asli diturunkan sementara ke resolusi aman untuk server.")
 
-   # auto_suggestions = compute_auto_suggestions()
-
     if st.session_state.get("auto_applied_for") != file_signature:
         for slider_key, val in auto_suggestions.items():
             st.session_state[slider_key] = val
