@@ -56,6 +56,18 @@ def _cv2_to_pil(cv2_img):
     # OpenCV pakai BGR, PIL pakai RGB
     rgb_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
     return Image.fromarray(rgb_img)
+
+def _pil_to_cv2(pil_img):
+    """
+    Mengubah gambar PIL (RGB) menjadi format OpenCV (BGR).
+    """
+    if pil_img is None:
+        return None
+    # PIL Image ke numpy array (RGB)
+    rgb_array = np.array(pil_img)
+    # Ubah RGB ke BGR (karena OpenCV pakai BGR)
+    bgr_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2BGR)
+    return bgr_array
     
 def apply_tone_curve(img, curve_preset):
     """
