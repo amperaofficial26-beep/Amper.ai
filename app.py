@@ -1844,52 +1844,84 @@ function findReply(input) {
         "Sayounara~ Sampai jumpa lagi di lain waktu! Jangan lupa kembali ke AMPER.AI kalau mau ngedit foto lagi ya. Bye-bye! 👋🌸"
       ]
     },
-    {
-      "keywords": ["aperture", "apa itu aperture", "jelaskan aperture", "tips aperture"],
-      "replies": [
-        "Aperture tuh salah satu pengaturan kamera yang paling fundamental dalam fotografi. Secara sederhana, aperture adalah bukaan di dalam lensa yang mengatur seberapa banyak cahaya masuk ke sensor—mirip kayak pupil mata manusia: kalau terang, pupil mengecil; kalau gelap, pupil membesar. Dalam kamera, besar kecilnya bukaan ini diukur pakai satuan f-stop, misalnya f/1.8, f/5.6, f/11, atau f/22. Nah, yang sering bikin pemula bingung: angka f-stop itu berbanding terbalik sama ukuran bukaan. Makin kecil angka f-stop (contoh f/1.8), makin besar bukaannya—cocok buat kondisi minim cahaya atau buat dapetin efek bokeh yang dramatis. Sebaliknya, makin besar angka f-stop (contoh f/16), makin kecil bukaannya—semua elemen dari depan sampai belakang jadi tajam, cocok buat foto lanskap atau arsitektur. Aperture juga salah satu pilar utama di segitiga eksposur bareng shutter speed dan ISO. Kalau kamu udah paham aperture, kamu bakal lebih presisi ngatur kedalaman bidang (depth of field), ngontrol cahaya, dan bikin foto yang sesuai visi artistik kamu. Tips dari Yuki: latihan konsisten dan perhatiin detail kecil setiap kali motret. Coba foto satu objek yang sama dengan f/2.8, f/8, dan f/16—rasain bedanya! Yuki suka nganggep aperture kayak bumbu masakan: dipakai secukupnya bikin foto makin enak dilihat, berlebihan malah ganggu. Jadi, ambil kameramu sekarang, cari objek di sekitarmu, dan praktikkan langsung! 📸✨"
+   {
+      keywords: ["aperture", "apa itu aperture", "jelaskan aperture", "tips aperture"],
+      replies: [
+        "Aperture adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami aperture dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin aperture, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi aperture, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, aperture berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai aperture butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap aperture itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi aperture sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
-      "keywords": ["shutter speed", "shutterspeed", "apa itu shutter speed", "jelaskan shutter speed", "tips shutter speed"],
-      "replies": [
-        "Shutter speed atau kecepatan rana adalah durasi waktu sensor kamera kamu 'buka' buat menangkap cahaya—ibaratnya kayak kedipan mata, tapi dalam hitungan detik atau pecahan detik. Makin cepat shutter speed (misal 1/1000 detik), makin sedikit cahaya masuk dan gerakan jadi 'beku'. Makin lambat (misal 1/30 detik), makin banyak cahaya masuk dan gerakan jadi blur—bisa dipakai kreatif buat efek motion blur kayak air mengalir atau jejak lampu mobil. Shutter speed juga bagian dari segitiga eksposur, jadi kamu harus kompromi sama aperture dan ISO. Di siang terik, kamu bisa pake 1/2000 detik biar nggak overekspos. Di remang-remang, kamu mungkin butuh 1/30 detik atau lebih lambat—tapi wajib pake tripod biar nggak goyang. Tips dari Yuki: latihan konsisten dan perhatiin detail kecil. Coba foto air mancur pake 1/1000 detik (tetesan membeku) vs 1/30 detik (air berubah jadi sutra)—bedanya langsung keliatan! Yuki suka ngibaratkan shutter speed kayak bumbu masakan: dipake secukupnya bikin foto makin enak, kebanyakan malah berantakan. Jadi, ambil kameramu, cari objek bergerak, dan praktikkan sekarang! 🌸📸"
+      keywords: ["shutter speed", "shutterspeed", "apa itu shutter speed", "jelaskan shutter speed", "tips shutter speed"],
+      replies: [
+        "Shutter Speed adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami shutter speed dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin shutter speed, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi shutter speed, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, shutter speed berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai shutter speed butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap shutter speed itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi shutter speed sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
-      "keywords": ["iso", "apa itu iso", "jelaskan iso", "tips iso"],
-      "replies": [
-        "ISO tuh salah satu pengaturan kamera yang mengukur seberapa sensitif sensor kamu terhadap cahaya. Semakin tinggi angka ISO (contoh 1600, 3200, 6400), makin sensitif sensornya, jadi kamu bisa motret di kondisi gelap tanpa lampu tambahan. Tapi hati-hati: makin tinggi ISO, makin muncul noise atau butiran kasar yang bikin foto kurang mulus dan kehilangan detail. Makanya, kamu harus cari keseimbangan antara terang dan bersih. Di siang hari, cukup pake ISO 100 atau 200 buat hasil maksimal. Di dalam ruangan atau maghrib, kamu mulai naikin ke 800 atau 1600. ISO ini juga bagian dari segitiga eksposur, jadi kenaikan ISO biasanya kompensasi buat aperture atau shutter speed yang nggak cukup. Tips dari Yuki: latihan konsisten dan perhatiin detail kecil. Coba foto ruangan remang pake ISO 100, 800, dan 6400—bandingin bedanya! Yuki suka nganggep ISO kayak bumbu masakan: pake secukupnya bikin foto gurih, kebanyakan malah bikin 'eneg' (noise). Jadi, ambil kameramu sekarang, cari objek di sekitar, dan praktikkan langsung! 🌟📸"
+      keywords: ["iso", "apa itu iso", "jelaskan iso", "tips iso"],
+      replies: [
+        "ISO adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami iso dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin iso, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi iso, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, iso berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai iso butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap iso itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi iso sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
-      "keywords": ["exposure triangle", "exposuretriangle", "apa itu exposure triangle", "jelaskan exposure triangle", "tips exposure triangle"],
-      "replies": [
-        "Exposure Triangle tuh tiga sekawan yang nggak bisa dipisahin: aperture, shutter speed, dan ISO. Kalau kamu paham gimana ketiganya saling berkait, hasil jepretan kamu bakal makin presisi dan terkontrol apapun kondisi cahayanya. Intinya, segitiga ini adalah kunci buat ngatur terang-gelap foto, sekaligus nentuin mood, kedalaman, dan ketajaman gambar. Bayangin kayak main rem, gas, dan kopling di mobil—kalau cuma ngandelin satu, mobil nggak jalan mulus. Di fotografi juga gitu: kamu harus kompromi dan cari keseimbangan. Misal, motret lanskap siang hari: aperture kecil (f/11), shutter cepat, ISO rendah. Motret konser malam: aperture lebar (f/2.8), ISO tinggi, shutter cukup cepat. Tantangannya adalah nyari titik tengah di mana ketiganya saling kompromi tanpa salah satu terlalu 'berkorban'. Tips dari Yuki: latihan konsisten dan perhatiin detail kecil. Coba satu objek dengan tiga kombinasi berbeda—rasain bedanya! Yuki suka nganggep exposure triangle kayak bumbu masakan: aperture=garam, shutter=api, ISO=micin. Semuanya harus seimbang. Jadi, ambil kameramu, setel ke mode Manual, dan mainkan ketiganya sekarang! 📸✨"
+      keywords: ["exposure triangle", "exposuretriangle", "apa itu exposure triangle", "jelaskan exposure triangle", "tips exposure triangle"],
+      replies: [
+        "Exposure Triangle adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami exposure triangle dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin exposure triangle, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi exposure triangle, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, exposure triangle berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai exposure triangle butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap exposure triangle itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi exposure triangle sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
-      "keywords": ["exposure compensation", "exposurecompensation", "apa itu exposure compensation", "jelaskan exposure compensation", "tips exposure compensation"],
-      "replies": [
-        "Exposure Compensation tuh fitur kamera yang sering diremehin, padahal dia 'penyelamat' saat kamera bingung ngukur cahaya. Fitur ini memungkinkan kamu ngoreksi hasil eksposur dari mode otomatis atau semi-otomatis tanpa harus pindah ke Manual. Biasanya diukur dalam stop, dari -3 sampai +3 EV. Kalau kamu tambahin +1 EV, foto jadi lebih terang; kalau kurangin -1 EV, foto jadi lebih gelap. Ini berguna banget pas motret salju (kamera sering bikin gelap, kasih +1 atau +2) atau objek hitam di atas meja hitam (kamera sering bikin abu-abu, kasih -1 atau -2). Secara teknis, fitur ini kompensasi kelemahan metering kamera yang selalu berusaha bikin semua objek jadi 'abu-abu 18%'. Tips dari Yuki: latihan konsisten. Coba foto kertas putih pake otomatis (pasti abu-abu), lalu kasih +1 EV—lihat bedanya! Yuki suka nganggep exposure compensation kayak bumbu masakan: nambah garam (+EV) atau ngurangin garam (-EV) sesuai selera. Jadi, ambil kameramu, cari objek kontras, dan praktikkan sekarang! 📸🌟"
+      keywords: ["exposure compensation", "exposurecompensation", "apa itu exposure compensation", "jelaskan exposure compensation", "tips exposure compensation"],
+      replies: [
+        "Exposure Compensation adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami exposure compensation dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin exposure compensation, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi exposure compensation, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, exposure compensation berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai exposure compensation butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap exposure compensation itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi exposure compensation sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
-      "keywords": ["metering mode", "meteringmode", "apa itu metering mode", "jelaskan metering mode", "tips metering mode"],
-      "replies": [
-        "Metering Mode tuh 'otak' kamera yang ngukur cahaya sebelum kamu motret. Ada tiga jenis utama: Evaluative/Matrix (kamera ngukur seluruh frame dan rata-ratain), Center-Weighted (fokus ke tengah frame, sekitar 60-80%), dan Spot (cuma ngukur titik kecil di tengah, sekitar 1-5%). Masing-masing punya kegunaan sendiri. Evaluative cocok buat situasi umum kayak jalan-jalan. Center-Weighted cocok buat potret atau objek di tengah. Spot cocok buat situasi kontras tinggi kayak backlight atau motret bulan. Tips dari Yuki: latihan konsisten dan perhatiin detail kecil. Coba foto teman di depan jendela terang pake tiga mode—bedanya langsung keliatan! Yuki suka nganggep metering mode kayak cara nyicip masakan: Evaluative=nyicip rata-rata seluruh panci, Center-Weighted=nyicip bagian tengah, Spot=nyicip satu sendok doang. Jadi, ambil kameramu, cari situasi kontras, dan praktikkan sekarang! 🌸📸"
+      keywords: ["metering mode", "meteringmode", "apa itu metering mode", "jelaskan metering mode", "tips metering mode"],
+      replies: [
+        "Metering Mode adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami metering mode dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin metering mode, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi metering mode, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, metering mode berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai metering mode butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap metering mode itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi metering mode sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
-      "keywords": ["spot metering", "spotmetering", "apa itu spot metering", "jelaskan spot metering", "tips spot metering"],
-      "replies": [
-        "Spot Metering tuh mode metering paling 'tajam' dan 'egois'. Kamera cuma ngukur cahaya dari satu titik kecil di tengah frame (sekitar 1-5%), sisanya diabaikan. Ini beda banget sama Evaluative atau Center-Weighted. Dengan spot metering, kamu bisa ngasih tahu kamera: 'Eh, yang penting buat aku cuma titik ini doang, yang lain terserah!' Hasilnya? Eksposur super presisi buat objek utama kamu, meskipun latar belakang super terang atau super gelap. Cocok banget buat backlight, motret bulan, atau artis di panggung dengan lampu sorot. Tapi hati-hati: kalau kamu salah arahin ke titik terlalu terang, hasilnya under (gelap); kalau ke titik terlalu gelap, hasilnya over (terang). Kuncinya: arahin ke area netral (kulit manusia, aspal, rumput hijau) atau bagian paling penting di frame. Tips dari Yuki: latihan konsisten. Coba arahin titik ke wajah teman vs ke latar belakang—bandingin bedanya! Yuki suka nganggep spot metering kayak 'sendok tes' masakan: kamu ambil satu sendok dari bagian paling representatif buat cicipin. Jadi, ambil kameramu, cari situasi kontras, dan praktikkan sekarang! 📸✨"
+      keywords: ["spot metering", "spotmetering", "apa itu spot metering", "jelaskan spot metering", "tips spot metering"],
+      replies: [
+        "Spot Metering adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami spot metering dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin spot metering, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi spot metering, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, spot metering berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai spot metering butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap spot metering itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi spot metering sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
-      "keywords": ["matrix metering", "matrixmetering", "apa itu matrix metering", "jelaskan matrix metering", "tips matrix metering"],
-      "replies": [
-        "Matrix Metering tuh mode metering paling 'pintar' dan 'komprehensif'. Kamera ngebagi frame jadi puluhan bahkan ratusan zona, lalu menganalisis warna, kontras, jarak fokus, dan kadang deteksi wajah, buat ngasih eksposur seimbang. Ini beda banget sama Center-Weighted yang cuma fokus ke tengah, atau Spot yang cuma peduli satu titik. Matrix metering tuh kayak 'otak' cerdas yang baca seluruh adegan dan bandingin sama database ribuan pola pencahayaan. Hasilnya? Eksposur natural dan seimbang buat sebagian besar situasi. Canon nyebutnya Evaluative, Nikon pake Matrix, Sony pake Multi-Segment. Tapi ingat, mode ini tetap punya batas—di situasi ekstrem kayak backlight super terang, dia bisa 'keliru'. Makanya kamu tetap harus paham kapan pake exposure compensation atau pindah ke mode lain. Tips dari Yuki: latihan konsisten. Coba foto pemandangan umum pake matrix metering, lalu bandingin sama spot metering—beda banget! Yuki suka nganggep matrix metering kayak 'koki berpengalaman' yang tau resep komplit. Jadi, ambil kameramu, cari pemandangan umum, dan praktikkan sekarang! 🌟📸"
+      keywords: ["matrix metering", "matrixmetering", "apa itu matrix metering", "jelaskan matrix metering", "tips matrix metering"],
+      replies: [
+        "Matrix Metering adalah salah satu pengaturan kamera penting dalam dunia fotografi. Memahami matrix metering dengan baik akan membantumu menghasilkan foto yang lebih presisi dan terkontrol. Yuk eksplorasi lebih jauh bareng AMPER.AI! 📸",
+        "Kalau ngomongin matrix metering, tips dari Yuki: latihan konsisten dan perhatikan detail kecil setiap kali motret. Semakin sering eksplorasi matrix metering, makin peka juga matamu terhadap cahaya dan komposisi. ✨",
+        "Secara teknis, matrix metering berkaitan erat dengan cara kamu membaca kondisi lapangan dan mengatur kamera. Menguasai matrix metering butuh jam terbang, tapi hasilnya bikin foto terasa jauh lebih profesional. 🌸",
+        "Yuki suka menganggap matrix metering itu seperti bumbu masakan — dipakai secukupnya bikin foto makin enak dilihat, kalau berlebihan malah mengganggu. Coba eksperimen sendiri dan temukan gaya khasmu! 📷",
+        "Mau coba eksplorasi matrix metering sekarang? Ambil kameramu (HP juga oke!), cari objek di sekitar, lalu praktikkan langsung. Belajar fotografi paling cepat memang lewat praktik nyata, bukan cuma teori. Semangat! 🌟"
       ]
     },
     {
