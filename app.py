@@ -10,7 +10,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from functools import lru_cache
 from typing import Dict, Tuple, Optional
-
+ 
 
 logger = logging.getLogger("ampera_upscaler")
 logging.basicConfig(level=logging.INFO)
@@ -45,6 +45,16 @@ MODEL_DIR = os.environ.get("AMPERA_MODEL_DIR", "models")
 def get_base64_of_bin_file(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
+       
+def _cv2_to_pil(cv2_img):
+    """
+    Mengubah gambar OpenCV (format BGR) menjadi gambar PIL (format RGB).
+    """
+    if cv2_img is None:
+        return None
+    # OpenCV pakai BGR, PIL pakai RGB
+    rgb_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(rgb_img)
 
 
 def set_background(image_path):
