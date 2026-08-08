@@ -8,6 +8,9 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 import streamlit.components.v1 as components
+from functools import lru_cache
+from typing import Dict, Tuple, Optional
+
 
 logger = logging.getLogger("ampera_upscaler")
 logging.basicConfig(level=logging.INFO)
@@ -117,189 +120,338 @@ def set_custom_theme():
     """
     st.markdown(css, unsafe_allow_html=True)
 
+class AdvancedImageEditor:
+    def __init__(self, img_bgr: np.ndarray):
+        """
+        Inisialisasi editor dengan gambar BGR (numpy array).
+        """
+        self.original = img_bgr.copy()
+        self.processed = img_bgr.copy()
+        self._cache = {}  # Untuk menyimpan hasil sementara jika perlu
 
-def compute_auto_suggestions(img_bgr):
-    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-    mean_brightness = float(np.mean(gray))
-    contrast_std = float(np.std(gray))
-    laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+    # ==================== 1. UTILITY & CACHE ====================
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def _get_vignette_kernel(cols: int, rows: int, strength: int):
+        """Membuat kernel vignette sekali lalu di-cache."""
+        kernel_x = cv2.getGaussianKernel(cols, cols / (0.5 + strength / 100.0))
+        kernel_y = cv2.getGaussianKernel(rows, rows / (0.5 + strength / 100.0))
+        mask = kernel_y * kernel_x.T
+        return mask / mask.max()
 
-    target_brightness = 125.0
-    diff = target_brightness - mean_brightness
-    suggested_exposure = float(np.clip(diff / 90.0, -1.2, 1.2))
-    suggested_contrast = int(np.clip((45 - contrast_std) * 1.1, 0, 40))
+    @staticmethod
+    def _create_lut(func):
+        """Buat LUT 256 untuk akselerasi."""
+        lut = np.array([func(i / 255.0) for i in range(256)], dtype=np.uint8)
+        return lut
 
-    hist = cv2.calcHist([gray], [0], None, [256], [0, 256]).flatten()
-    total_px = gray.size
-    shadow_clip_ratio = hist[:15].sum() / total_px
-    highlight_clip_ratio = hist[240:].sum() / total_px
-    suggested_shadows = int(np.clip(shadow_clip_ratio * 400, 0, 60))
-    suggested_highlights = int(np.clip(-highlight_clip_ratio * 400, -60, 0))
+    @staticmethod
+    def _srgb_to_linear(x):
+        return x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4
 
-    if laplacian_var < 60:
-        suggested_sharpen, suggested_clarity = 55, 30
-    elif laplacian_var < 150:
-        suggested_sharpen, suggested_clarity = 35, 20
-    else:
-        suggested_sharpen, suggested_clarity = 15, 10
+    @staticmethod
+    def _linear_to_srgb(x):
+        return x * 12.92 if x <= 0.0031308 else (1.055 * (x ** (1/2.4)) - 0.055)
 
-    return {
-        "exposure": round(suggested_exposure, 1),
-        "contrast": suggested_contrast,
-        "highlights": suggested_highlights,
-        "shadows": suggested_shadows,
-        "sharpen": suggested_sharpen,
-        "clarity": suggested_clarity,
-        "whites": 0,
-        "blacks": 0,
-        "temp": -5,
-        "tint": 0,
-        "vibrance": 15,
-        "saturation": 10,
-        "dehaze": 10,
-        "vignette": 25,
-        "noise_reduction": 0,
-        "smart_enhance": 0,
-    }
+    # ==================== 2. TONE & CURVE (Dengan LUT) ====================
+    def apply_tone_curve(self, preset: str = "Linear (Standard)") -> 'AdvancedImageEditor':
+        """
+        Menerapkan kurva nada menggunakan LUT. 
+        Preset: Linear, S-Curve, Matte, Bright Pop.
+        """
+        if preset == "Linear (Standard)":
+            return self
+        
+        img_f = self.processed.astype(np.float32) / 255.0
+        
+        if preset == "S-Curve (Kontras Tinggi & Sinematik)":
+            # Menggunakan cubic bezier approximation via sin, tapi di-clip aman
+            result = np.sin(img_f * np.pi - np.pi / 2) * 0.5 + 0.5
+            result = np.clip(result, 0, 1)
+        elif preset == "Matte / Fade (Gaya Film Indie)":
+            # Angkat shadow, pertahankan highlight
+            result = img_f * 0.75 + 0.12
+            result = np.clip(result, 0, 1)
+        elif preset == "Bright Pop (Terang & Segar)":
+            # Gamma 0.85 dengan sentuhan kontras ringan
+            result = np.power(img_f, 0.85)
+            result = np.clip(result, 0, 1)
+        else:
+            return self
+            
+        self.processed = (result * 255).astype(np.uint8)
+        return self
 
+    def apply_exposure_contrast_lut(self, exposure: float = 0.0, contrast: int = 0) -> 'AdvancedImageEditor':
+        """
+        Versi LUT untuk exposure (stop) dan contrast. 
+        Jauh lebih cepat dari operasi matriks langsung.
+        """
+        if exposure == 0 and contrast == 0:
+            return self
 
-def apply_tone_curve(img_f, curve_preset):
-    if curve_preset == "Linear (Standard)":
-        return img_f
-    elif curve_preset == "S-Curve (Kontras Tinggi & Sinematik)":
-        return np.sin(img_f * np.pi - np.pi / 2) * 0.5 + 0.5
-    elif curve_preset == "Matte / Fade (Gaya Film Indie)":
-        return img_f * 0.8 + 0.1
-    elif curve_preset == "Bright Pop (Terang & Segar)":
-        return np.power(img_f, 0.85)
-    return img_f
+        def _exposure_contrast_func(x):
+            # 1. Exposure dalam ruang linear (approximasi LUT)
+            lin = self._srgb_to_linear(x)
+            lin = lin * (2.0 ** exposure)
+            val = self._linear_to_srgb(lin)
+            
+            # 2. Contrast
+            if contrast != 0:
+                factor = (259 * (contrast + 255)) / (255 * (259 - contrast)) if contrast != 0 else 1.0
+                val = factor * (val - 0.5) + 0.5
+            return np.clip(val, 0, 1)
+        
+        lut = self._create_lut(_exposure_contrast_func)
+        self.processed = cv2.LUT(self.processed, lut)
+        return self
 
+    # ==================== 3. HIGHLIGHTS & SHADOWS (Hermite Smooth) ====================
+    def apply_highlights_shadows(self, highlights: int = 0, shadows: int = 0) -> 'AdvancedImageEditor':
+        """Menggunakan Hermite interpolation untuk mask yang lebih halus."""
+        if highlights == 0 and shadows == 0:
+            return self
 
-def _pil_to_cv2(img: Image.Image) -> np.ndarray:
-    arr = np.array(img.convert("RGB"))
-    return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+        img_f = self.processed.astype(np.float32) / 255.0
+        # Luminance di BGR: B=0.114, G=0.587, R=0.299
+        lum = 0.114 * img_f[:, :, 0] + 0.587 * img_f[:, :, 1] + 0.299 * img_f[:, :, 2]
+        
+        if highlights != 0:
+            # Hermite smoothstep untuk highlight: f(x) = x^2 * (3 - 2x) dengan x = (lum - 0.4)/0.6
+            x_high = np.clip((lum - 0.4) / 0.6, 0, 1)
+            mask_high = x_high * x_high * (3 - 2 * x_high)
+            mask_high = mask_high[:, :, None]  # expand dims
+            # Apply: kurangi highlight (jika negatif) atau tambah (jika positif)
+            self.processed = self.processed + (highlights / 100.0) * mask_high * (1 - img_f) * 0.6
+            self.processed = np.clip(self.processed, 0, 1)
+        
+        if shadows != 0:
+            x_shadow = np.clip((0.6 - lum) / 0.6, 0, 1)
+            mask_shadow = x_shadow * x_shadow * (3 - 2 * x_shadow)
+            mask_shadow = mask_shadow[:, :, None]
+            self.processed = self.processed + (shadows / 100.0) * mask_shadow * img_f * 0.6
+            self.processed = np.clip(self.processed, 0, 1)
+        
+        self.processed = (self.processed * 255).astype(np.uint8)
+        return self
 
+    # ==================== 4. CLARITY & DEHAZE (Anti-Halo) ====================
+    def apply_clarity_dehaze(self, clarity: int = 0, dehaze: int = 0) -> 'AdvancedImageEditor':
+        """Clarity pakai Difference of Gaussians (DoG) + threshold untuk hindari halo."""
+        if clarity == 0 and dehaze == 0:
+            return self
+        
+        img_f = self.processed.astype(np.float32)
+        
+        # --- CLARITY dengan DoG ---
+        if clarity != 0:
+            blur1 = cv2.GaussianBlur(img_f, (0, 0), 1.0)  # Radius kecil
+            blur2 = cv2.GaussianBlur(img_f, (0, 0), 3.0)  # Radius besar
+            detail = blur1 - blur2  # Difference of Gaussians
+            
+            # Threshold untuk mencegah halo di tepi ekstrim
+            threshold = 15.0 / 255.0
+            detail = np.where(np.abs(detail) < threshold, 0, detail)
+            
+            # Terapkan
+            amount = clarity / 100.0
+            img_f = img_f + amount * detail
+            img_f = np.clip(img_f, 0, 255)
+        
+        # --- DEHAZE dengan CLAHE adaptif ---
+        if dehaze != 0:
+            lab = cv2.cvtColor(img_f.astype(np.uint8), cv2.COLOR_BGR2LAB)
+            l, a, b = cv2.split(lab)
+            # CLAHE strength dinamis berdasarkan nilai dehaze
+            strength = max(1.5, 2.0 + abs(dehaze) / 20.0)
+            clahe = cv2.createCLAHE(clipLimit=strength, tileGridSize=(8, 8))
+            l = clahe.apply(l)
+            lab = cv2.merge((l, a, b))
+            img_f = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR).astype(np.float32)
+        
+        self.processed = np.clip(img_f, 0, 255).astype(np.uint8)
+        return self
 
-def _cv2_to_pil(arr: np.ndarray) -> Image.Image:
-    rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
-    return Image.fromarray(rgb)
+    # ==================== 5. SHARPEN (Smart Unsharp) ====================
+    def apply_sharpen(self, sharpen: int = 0, radius: int = 1) -> 'AdvancedImageEditor':
+        """Unsharp mask dengan threshold agar noise tidak ikut tajam."""
+        if sharpen <= 0:
+            return self
+        
+        radius = max(1, radius)
+        img_f = self.processed.astype(np.float32)
+        blurred = cv2.GaussianBlur(img_f, (0, 0), radius)
+        mask = img_f - blurred
+        
+        # Threshold kecil untuk menghindari noise menjadi tajam
+        threshold = 5.0
+        mask = np.where(np.abs(mask) < threshold, 0, mask)
+        
+        amount = sharpen / 100.0
+        img_f = img_f + amount * mask
+        self.processed = np.clip(img_f, 0, 255).astype(np.uint8)
+        return self
 
+    # ==================== 6. WARNA (Temp, Tint, Vibrance, Saturation) ====================
+    def apply_temp_tint(self, temp: int = 0, tint: int = 0) -> 'AdvancedImageEditor':
+        if temp == 0 and tint == 0:
+            return self
+        img_f = self.processed.astype(np.float32)
+        img_f[:, :, 2] += temp * 0.6  # R
+        img_f[:, :, 0] -= temp * 0.6  # B
+        img_f[:, :, 1] += tint * 0.5  # G
+        self.processed = np.clip(img_f, 0, 255).astype(np.uint8)
+        return self
 
-def _apply_exposure_contrast(img, exposure, contrast, whites, blacks):
-    img = img.astype(np.float32)
-    img = img * (2.0 ** exposure)
-    factor = (259 * (contrast + 255)) / (255 * (259 - contrast)) if contrast != 0 else 1.0
-    img = factor * (img - 128) + 128
-    if whites != 0:
-        mask = img > 200
-        img[mask] += whites * 0.5
-    if blacks != 0:
-        mask = img < 55
-        img[mask] += blacks * 0.5
-    return np.clip(img, 0, 255).astype(np.uint8)
+    def apply_vibrance_saturation(self, vibrance: int = 0, saturation: int = 0) -> 'AdvancedImageEditor':
+        if vibrance == 0 and saturation == 0:
+            return self
+        hsv = cv2.cvtColor(self.processed, cv2.COLOR_BGR2HSV).astype(np.float32)
+        if saturation != 0:
+            hsv[:, :, 1] = np.clip(hsv[:, :, 1] * (1 + saturation / 50.0), 0, 255)
+        if vibrance != 0:
+            sat = hsv[:, :, 1] / 255.0
+            vib_mask = 1 - sat
+            hsv[:, :, 1] = np.clip(hsv[:, :, 1] + (vibrance / 50.0) * vib_mask * 60, 0, 255)
+        self.processed = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+        return self
 
+    # ==================== 7. DENOISE (Smart) ====================
+    def apply_denoise(self, strength: int = 0) -> 'AdvancedImageEditor':
+        if strength <= 0:
+            return self
+        h = max(1, int(strength * 0.6))
+        self.processed = cv2.fastNlMeansDenoisingColored(self.processed, None, h, h, 7, 21)
+        return self
 
-def _apply_highlights_shadows(img, highlights, shadows):
-    img = img.astype(np.float32) / 255.0
-    luminance = 0.299 * img[:, :, 2] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 0]
-    if highlights != 0:
-        highlight_mask = np.clip((luminance - 0.5) * 2, 0, 1)[:, :, None]
-        img = img + (highlights / 100.0) * highlight_mask * (1 - img) * 0.5
-    if shadows != 0:
-        shadow_mask = np.clip((0.5 - luminance) * 2, 0, 1)[:, :, None]
-        img = img + (shadows / 100.0) * shadow_mask * img * 0.5
-    return np.clip(img * 255, 0, 255).astype(np.uint8)
+    # ==================== 8. VIGNETTE (Cached Kernel) ====================
+    def apply_vignette(self, strength: int = 0) -> 'AdvancedImageEditor':
+        if strength <= 0:
+            return self
+        rows, cols = self.processed.shape[:2]
+        mask = self._get_vignette_kernel(cols, rows, strength)
+        vignette_mask = 1 - (1 - mask) * (strength / 100.0)
+        img_f = self.processed.astype(np.float32)
+        for c in range(3):
+            img_f[:, :, c] *= vignette_mask
+        self.processed = np.clip(img_f, 0, 255).astype(np.uint8)
+        return self
 
+    # ==================== 9. AUTO SUGGESTIONS (Dengan White Balance) ====================
+    @staticmethod
+    def compute_auto_suggestions(img_bgr: np.ndarray) -> Dict:
+        """
+        Menghitung rekomendasi otomatis, termasuk Auto White Balance (Gray World).
+        """
+        gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+        mean_brightness = float(np.mean(gray))
+        contrast_std = float(np.std(gray))
+        laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
 
-def _apply_shadow_lift_highlight_recovery(img, shadow_lift, highlight_recovery):
-    if shadow_lift == 0 and highlight_recovery == 0:
-        return img
-    img_f = img.astype(np.float32) / 255.0
-    lum = 0.299 * img_f[:, :, 2] + 0.587 * img_f[:, :, 1] + 0.114 * img_f[:, :, 0]
-    if shadow_lift > 0:
-        mask = np.clip(1 - lum * 3, 0, 1)[:, :, None]
-        img_f = img_f + (shadow_lift / 100.0) * mask * (0.5 - img_f) * 0.6
-    if highlight_recovery > 0:
-        mask = np.clip((lum - 0.75) * 4, 0, 1)[:, :, None]
-        img_f = img_f - (highlight_recovery / 100.0) * mask * (img_f - 0.75) * 0.6
-    return np.clip(img_f * 255, 0, 255).astype(np.uint8)
+        # --- Exposure & Contrast ---
+        target_brightness = 125.0
+        diff = target_brightness - mean_brightness
+        suggested_exposure = float(np.clip(diff / 90.0, -1.2, 1.2))
+        suggested_contrast = int(np.clip((45 - contrast_std) * 1.1, 0, 40))
 
+        # --- Shadows & Highlights ---
+        hist = cv2.calcHist([gray], [0], None, [256], [0, 256]).flatten()
+        total_px = gray.size
+        shadow_clip_ratio = hist[:15].sum() / total_px
+        highlight_clip_ratio = hist[240:].sum() / total_px
+        suggested_shadows = int(np.clip(shadow_clip_ratio * 400, 0, 60))
+        suggested_highlights = int(np.clip(-highlight_clip_ratio * 400, -60, 0))
 
-def _apply_temp_tint(img, temp, tint):
-    img = img.astype(np.float32)
-    img[:, :, 2] += temp * 0.6
-    img[:, :, 0] -= temp * 0.6
-    img[:, :, 1] += tint * 0.5
-    return np.clip(img, 0, 255).astype(np.uint8)
+        # --- Sharpness ---
+        if laplacian_var < 60:
+            suggested_sharpen, suggested_clarity = 55, 30
+        elif laplacian_var < 150:
+            suggested_sharpen, suggested_clarity = 35, 20
+        else:
+            suggested_sharpen, suggested_clarity = 15, 10
 
+        # --- AUTO WHITE BALANCE (Gray World) ---
+        # BGR split
+        b, g, r = cv2.split(img_bgr.astype(np.float32))
+        avg_b, avg_g, avg_r = np.mean(b), np.mean(g), np.mean(r)
+        avg_gray = (avg_b + avg_g + avg_r) / 3.0
+        
+        # Hitung delta terhadap gray (skala 0-255)
+        delta_r = avg_gray - avg_r
+        delta_b = avg_gray - avg_b
+        # Konversi ke skala temp (biasanya -100 s/d 100)
+        # Asumsi: 1 unit temp ~ 0.6 perubahan pada channel R/B
+        suggested_temp = int(np.clip((delta_b - delta_r) * 0.8, -50, 50))
+        suggested_tint = int(np.clip((delta_g - avg_gray) * 0.5, -20, 20))
 
-def _apply_vibrance_saturation(img, vibrance, saturation):
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float32)
-    if saturation != 0:
-        hsv[:, :, 1] = np.clip(hsv[:, :, 1] * (1 + saturation / 50.0), 0, 255)
-    if vibrance != 0:
-        sat = hsv[:, :, 1] / 255.0
-        vib_mask = 1 - sat
-        hsv[:, :, 1] = np.clip(hsv[:, :, 1] + (vibrance / 50.0) * vib_mask * 60, 0, 255)
-    return cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+        return {
+            "exposure": round(suggested_exposure, 1),
+            "contrast": suggested_contrast,
+            "highlights": suggested_highlights,
+            "shadows": suggested_shadows,
+            "sharpen": suggested_sharpen,
+            "clarity": suggested_clarity,
+            "whites": 0,
+            "blacks": 0,
+            "temp": suggested_temp,      # <--- Sekarang terisi otomatis
+            "tint": suggested_tint,      # <--- Sekarang terisi otomatis
+            "vibrance": 15,
+            "saturation": 10,
+            "dehaze": 10,
+            "vignette": 25,
+            "noise_reduction": 0,
+            "smart_enhance": 0,
+        }
 
+    # ==================== 10. PIPELINE EKSEKUSI ====================
+    def apply_full_pipeline(self, params: Dict) -> np.ndarray:
+        """
+        Jalankan semua parameter secara berurutan dengan urutan yang benar.
+        Cocok untuk tombol "Auto Enhance" atau "Apply All".
+        """
+        # Reset ke original
+        self.processed = self.original.copy()
+        
+        # 1. Tone Curve (harus pertama)
+        if "curve_preset" in params:
+            self.apply_tone_curve(params["curve_preset"])
+        
+        # 2. White Balance & Warna Dasar
+        self.apply_temp_tint(params.get("temp", 0), params.get("tint", 0))
+        self.apply_vibrance_saturation(params.get("vibrance", 0), params.get("saturation", 0))
+        
+        # 3. Exposure & Contrast
+        self.apply_exposure_contrast_lut(params.get("exposure", 0.0), params.get("contrast", 0))
+        
+        # 4. Highlights, Shadows, Whites, Blacks (saya gabung disini)
+        # (Whites/Blacks bisa diimplementasikan terpisah jika perlu)
+        self.apply_highlights_shadows(params.get("highlights", 0), params.get("shadows", 0))
+        
+        # 5. Detail (Clarity, Dehaze, Sharpen)
+        self.apply_clarity_dehaze(params.get("clarity", 0), params.get("dehaze", 0))
+        self.apply_sharpen(params.get("sharpen", 0), 1)
+        
+        # 6. Denoise (terakhir sebelum efek)
+        self.apply_denoise(params.get("noise_reduction", 0))
+        
+        # 7. Efek Akhir (Vignette)
+        self.apply_vignette(params.get("vignette", 0))
+        
+        return self.processed
 
-def _apply_clarity_dehaze(img, clarity, dehaze):
-    if clarity != 0:
-        blurred = cv2.GaussianBlur(img, (0, 0), 3)
-        img = cv2.addWeighted(img, 1 + clarity / 100.0, blurred, -clarity / 100.0, 0)
-    if dehaze != 0:
-        lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-        l_channel, a, b = cv2.split(lab)
-        strength = 2.0 + abs(dehaze) / 25.0
-        clahe = cv2.createCLAHE(clipLimit=strength, tileGridSize=(8, 8))
-        l_channel = clahe.apply(l_channel) if dehaze > 0 else cv2.GaussianBlur(l_channel, (0, 0), 2)
-        img = cv2.cvtColor(cv2.merge((l_channel, a, b)), cv2.COLOR_LAB2BGR)
-    return img
+    def get_result(self) -> np.ndarray:
+        return self.processed
 
+    # ==================== 11. KONVERSI PIL <-> CV2 ====================
+    @staticmethod
+    def pil_to_cv2(img: Image.Image) -> np.ndarray:
+        arr = np.array(img.convert("RGB"))
+        return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
 
-def _apply_sharpen(img, sharpen, radius):
-    if sharpen <= 0:
-        return img
-    radius = max(1, radius)
-    blurred = cv2.GaussianBlur(img, (0, 0), radius)
-    amount = sharpen / 100.0
-    return cv2.addWeighted(img, 1 + amount, blurred, -amount, 0)
-
-
-def _apply_smart_detail_enhance(img, strength, radius):
-    if strength <= 0:
-        return img
-    radius = max(1, radius)
-    blurred = cv2.GaussianBlur(img, (0, 0), radius)
-    detail = cv2.subtract(img, blurred)
-    boosted = cv2.addWeighted(img, 1.0, detail, strength / 40.0, 0)
-    return boosted
-
-
-def _apply_denoise(img, luminance_strength, color_strength):
-    if luminance_strength <= 0 and color_strength <= 0:
-        return img
-    h_luma = max(1, int(luminance_strength))
-    h_color = max(1, int(color_strength))
-    return cv2.fastNlMeansDenoisingColored(img, None, h_luma, h_color, 7, 21)
-
-
-def _apply_vignette(img, strength):
-    if strength <= 0:
-        return img
-    rows, cols = img.shape[:2]
-    kernel_x = cv2.getGaussianKernel(cols, cols / (0.5 + strength / 100.0))
-    kernel_y = cv2.getGaussianKernel(rows, rows / (0.5 + strength / 100.0))
-    mask = kernel_y * kernel_x.T
-    mask = mask / mask.max()
-    vignette_mask = 1 - (1 - mask) * (strength / 100.0)
-    out = img.astype(np.float32)
-    for c in range(3):
-        out[:, :, c] *= vignette_mask
-    return np.clip(out, 0, 255).astype(np.uint8)
-
-
+    @staticmethod
+    def cv2_to_pil(arr: np.ndarray) -> Image.Image:
+        rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
+        return Image.fromarray(rgb)
 # ==================================================================================
 # 🚀 ADVANCED RESOLUTION ENGINE — pengganti _apply_upscale() lama yang cuma
 # cv2.resize biasa. Sekarang bertingkat 3 (otomatis fallback ke bawah kalau
